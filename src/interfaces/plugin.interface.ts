@@ -1,4 +1,4 @@
-import { FilesystemInterface } from './filesystem.interface';
+import { FilesystemAbstract } from './filesystem.abstract';
 
 export interface PluginInterface {
   /**
@@ -11,7 +11,7 @@ export interface PluginInterface {
   /**
    * Set the Filesystem object.
    *
-   * @param {FilesystemInterface} filesystem
+   * @param {FilesystemAbstract} filesystem
    */
-  setFilesystem(filesystem: FilesystemInterface): void;
+  setFilesystem(filesystem: FilesystemAbstract): void;
 }

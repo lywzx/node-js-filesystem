@@ -1,1 +1,1 @@
-export class NotSupportedException {}
+export class NotSupportedException extends Error {}

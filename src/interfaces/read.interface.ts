@@ -7,21 +7,21 @@ export interface ReadInterface {
    * @param {string} path
    * @returns {boolean}
    */
-  has(path: string): boolean;
+  has(path: string): Promise<boolean>;
 
   /**
    * Read a file.
    * @param {string} path  file path
    * @returns {false|Array<any>}
    */
-  read(path: string): false | Array<any>;
+  read(path: string): Promise<false | Array<any>>;
 
   /**
    * Read a file as a stream.
    * @param path string
    * @return ReadStream|false
    */
-  readStream(path: string): ReadStream;
+  readStream(path: string): Promise<ReadStream>;
 
   /**
    * List contents of a directory.
@@ -29,7 +29,7 @@ export interface ReadInterface {
    * @param {boolean} recursive
    * @returns {Array}
    */
-  listContents(directory: string, recursive: boolean): Array<any>;
+  listContents(directory: string, recursive: boolean): Promise<Array<any>>;
 
   /**
    * Get all the meta data of a file or directory.
@@ -37,7 +37,7 @@ export interface ReadInterface {
    * @param {string} path
    * @returns {false|object}
    */
-  getMetadata(path: string): object;
+  getMetadata(path: string): Promise<object>;
 
   /**
    * Get the size of a file.
@@ -46,7 +46,7 @@ export interface ReadInterface {
    *
    * @returns {Array| false}
    */
-  getSize(path: string): Array<any>;
+  getSize(path: string): Promise<Array<any>>;
 
   /**
    * Get the mimetype of a file.
@@ -55,7 +55,7 @@ export interface ReadInterface {
    *
    * @returns {array|false}
    */
-  getMimetype(path: string): string;
+  getMimetype(path: string): Promise<string>;
 
   /**
    * Get the last modified time of a file as a timestamp.
@@ -64,7 +64,7 @@ export interface ReadInterface {
    *
    * @returns {number | false}
    */
-  getTimestamp(path: string): number;
+  getTimestamp(path: string): Promise<number>;
 
   /**
    * Get the visibility of a file.
@@ -72,5 +72,5 @@ export interface ReadInterface {
    *
    * @returns {object|false}
    */
-  getVisibility(path: string): object | false;
+  getVisibility(path: string): Promise<object | false>;
 }

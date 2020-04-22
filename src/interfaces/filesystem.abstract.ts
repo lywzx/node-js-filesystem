@@ -3,15 +3,15 @@ import { FileVisible } from '../enum';
 import { Handler } from '../handler';
 import { PluginInterface } from './plugin.interface';
 
-export interface FilesystemInterface {
+export abstract class FilesystemAbstract {
   /**
    * Check whether a file exists.
    *
    * @param {string} path
    *
-   * @return {boolean}
+   * @return {boolean}0.
    */
-  has(path: string): boolean;
+  public abstract async has(path: string): Promise<boolean>;
 
   /**
    * Read a file.
@@ -22,7 +22,7 @@ export interface FilesystemInterface {
    *
    * @return {string|false} The file contents or false on failure.
    */
-  read(path: string): string | false;
+  public abstract async read(path: string): Promise<string | false>;
 
   /**
    * Retrieves a read-stream for a path.
@@ -33,7 +33,7 @@ export interface FilesystemInterface {
    *
    * @return {Stream|false} The path resource or false on failure.
    */
-  readStream(path: string): Stream;
+  public abstract async readStream(path: string): Promise<Stream | false>;
 
   /**
    * List contents of a directory.
@@ -43,7 +43,7 @@ export interface FilesystemInterface {
    *
    * @return array A list of file metadata.
    */
-  listContents(directory: string, recursive: boolean): Array<any>;
+  public abstract async listContents(directory: string, recursive: boolean): Promise<any[]>;
 
   /**
    * Get a file's metadata.
@@ -52,9 +52,9 @@ export interface FilesystemInterface {
    *
    * @throws {FileNotFoundException}
    *
-   * @return array|false The file metadata or false on failure.
+   * @return {Promise<array|false>} The file metadata or false on failure.
    */
-  getMetadata(path: string): object | false;
+  public abstract async getMetadata(path: string): Promise<object | false>;
 
   /**
    * Get a file's size.
@@ -65,7 +65,7 @@ export interface FilesystemInterface {
    *
    * @return {number|false} The file size or false on failure.
    */
-  getSize(path: string): number | false;
+  public abstract async getSize(path: string): Promise<number | false>;
 
   /**
    * Get a file's mime-type.
@@ -74,9 +74,9 @@ export interface FilesystemInterface {
    *
    * @throws {FileNotFoundException}
    *
-   * @return {string|false} The file mime-type or false on failure.
+   * @return {Promise<string|false>} The file mime-type or false on failure.
    */
-  getMimetype(path: string): string | false;
+  public abstract async getMimetype(path: string): Promise<string | false>;
 
   /**
    * Get a file's timestamp.
@@ -87,7 +87,7 @@ export interface FilesystemInterface {
    *
    * @return {string|false} The timestamp or false on failure.
    */
-  getTimestamp(path: string): string | false;
+  public abstract async getTimestamp(path: string): Promise<string | false>;
 
   /**
    * Get a file's visibility.
@@ -98,7 +98,7 @@ export interface FilesystemInterface {
    *
    * @return {FileVisible|false} The visibility (public|private) or false on failure.
    */
-  getVisibility(path: string): FileVisible | false;
+  public abstract async getVisibility(path: string): Promise<FileVisible | false>;
 
   /**
    * Write a new file.
@@ -109,9 +109,9 @@ export interface FilesystemInterface {
    *
    * @throws FileExistsException
    *
-   * @return bool True on success, false on failure.
+   * @return {Promise<boolean>} True on success, false on failure.
    */
-  write(path: string, contents: string, config: any): boolean;
+  public abstract write(path: string, contents: string, config: any): Promise<boolean>;
 
   /**
    * Write a new file using a stream.
@@ -125,7 +125,7 @@ export interface FilesystemInterface {
    *
    * @return bool True on success, false on failure.
    */
-  writeStream(path: string, resource: Stream, config?: any): boolean;
+  public abstract async writeStream(path: string, resource: Stream, config?: any): Promise<boolean>;
 
   /**
    * Update an existing file.
@@ -136,9 +136,9 @@ export interface FilesystemInterface {
    *
    * @throws FileNotFoundException
    *
-   * @return bool True on success, false on failure.
+   * @return {Promise<boolean>} True on success, false on failure.
    */
-  update(path: string, contents: string, config?: any): boolean;
+  public abstract async update(path: string, contents: string, config?: any): Promise<boolean>;
 
   /**
    * Update an existing file using a stream.
@@ -150,9 +150,9 @@ export interface FilesystemInterface {
    * @throws InvalidArgumentException If resource is not a file handle.
    * @throws FileNotFoundException
    *
-   * @return bool True on success, false on failure.
+   * @return {Promise<boolean>} True on success, false on failure.
    */
-  updateStream(path: string, resource: Stream, config: any): boolean;
+  public abstract async updateStream(path: string, resource: Stream, config: any): Promise<boolean>;
 
   /**
    * Rename a file.
@@ -163,9 +163,9 @@ export interface FilesystemInterface {
    * @throws FileExistsException   Thrown if newPath exists.
    * @throws FileNotFoundException Thrown if path does not exist.
    *
-   * @return bool True on success, false on failure.
+   * @return {Promise<boolean>} True on success, false on failure.
    */
-  rename(path: string, newPath: string): boolean;
+  public abstract async rename(path: string, newPath: string): Promise<boolean>;
 
   /**
    * Copy a file.
@@ -176,9 +176,9 @@ export interface FilesystemInterface {
    * @throws FileExistsException   Thrown if `newPath` exists.
    * @throws FileNotFoundException Thrown if `path` does not exist.
    *
-   * @return bool True on success, false on failure.
+   * @return {Promise<boolean>>} True on success, false on failure.
    */
-  copy(path: string, newPath: string): boolean;
+  public abstract async copy(path: string, newPath: string): Promise<boolean>;
 
   /**
    * Delete a file.
@@ -187,9 +187,9 @@ export interface FilesystemInterface {
    *
    * @throws FileNotFoundException
    *
-   * @return {boolean} True on success, false on failure.
+   * @return {Promise<boolean>} True on success, false on failure.
    */
-  delete(path: string): boolean;
+  public abstract async delete(path: string): Promise<boolean>;
 
   /**
    * Delete a directory.
@@ -198,9 +198,9 @@ export interface FilesystemInterface {
    *
    * @throws RootViolationException Thrown if $dirname is empty.
    *
-   * @return bool True on success, false on failure.
+   * @return {Promise<boolean>} True on success, false on failure.
    */
-  deleteDir(dirname: string): boolean;
+  public abstract async deleteDir(dirname: string): Promise<boolean>;
 
   /**
    * Create a directory.
@@ -210,7 +210,7 @@ export interface FilesystemInterface {
    *
    * @return {boolean} True on success, false on failure.
    */
-  createDir(dirname: string, config?: object): boolean;
+  public abstract async createDir(dirname: string, config?: object): Promise<boolean>;
 
   /**
    * Set the visibility for a file.
@@ -222,7 +222,7 @@ export interface FilesystemInterface {
    *
    * @return {boolean} True on success, false on failure.
    */
-  setVisibility(path: string, visibility: FileVisible): boolean;
+  public abstract async setVisibility(path: string, visibility: FileVisible): Promise<boolean>;
 
   /**
    * Create a file or update if exists.
@@ -233,7 +233,7 @@ export interface FilesystemInterface {
    *
    * @return {boolean} True on success, false on failure.
    */
-  put(path: string, contents: string, config?: object): boolean;
+  public abstract async put(path: string, contents: string, config?: object): Promise<boolean>;
 
   /**
    * Create a file or update if exists.
@@ -246,7 +246,7 @@ export interface FilesystemInterface {
    *
    * @return {boolean} True on success, false on failure.
    */
-  putStream(path: string, resource: Stream, config?: object): boolean;
+  public abstract async putStream(path: string, resource: Stream, config?: object): Promise<boolean>;
 
   /**
    * Read and delete a file.
@@ -257,7 +257,7 @@ export interface FilesystemInterface {
    *
    * @return {string|false} The file contents, or false on failure.
    */
-  readAndDelete(path: string): string | false;
+  public abstract async readAndDelete(path: string): Promise<string | false>;
 
   /**
    * Get a file/directory handler.
@@ -269,7 +269,7 @@ export interface FilesystemInterface {
    *
    * @return Handler Either a file or directory handler.
    */
-  get(path: string, handler: Handler): Handler;
+  public abstract async get(path: string, handler: Handler): Promise<Handler>;
 
   /**
    * Register a plugin.
@@ -278,5 +278,5 @@ export interface FilesystemInterface {
    *
    * @return $this
    */
-  addPlugin(plugin: PluginInterface): FilesystemInterface;
+  public abstract addPlugin(plugin: PluginInterface): FilesystemAbstract;
 }

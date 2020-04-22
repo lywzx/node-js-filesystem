@@ -1,7 +1,6 @@
-import { AdapterInterface } from '../adapter.interface';
 import { sep } from 'path';
 
-export abstract class AbstractAdapter implements AdapterInterface {
+export abstract class AbstractAdapter {
   /**
    * @var string|undefined path prefix
    */

@@ -12,7 +12,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @return array|false false on failure file meta data on success
    */
-  write(path: string, contents: string, config: any): Array<any> | false;
+  write(path: string, contents: string, config: any): Promise<Array<any> | false>;
   /**
    * Write a new file using a stream.
    *
@@ -22,7 +22,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @return array|false false on failure file meta data on success
    */
-  writeStream(path: string, resource: Stream, config: any): object | false;
+  writeStream(path: string, resource: Stream, config: any): Promise<object | false>;
 
   /**
    * Update a file.
@@ -33,7 +33,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @return array|false false on failure file meta data on success
    */
-  update(path: string, contents: string, config: any): object | false;
+  update(path: string, contents: string, config: any): Promise<object | false>;
 
   /**
    * Update a file using a stream.
@@ -44,7 +44,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @returns {object | false} false on failure file meta data on success
    */
-  updateStream(path: string, resource: Stream, config: any): object | false;
+  updateStream(path: string, resource: Stream, config: any): Promise<object | false>;
 
   /**
    * Rename a file.
@@ -54,7 +54,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @returns {boolean}
    */
-  rename(path: string, newPath: string): boolean;
+  rename(path: string, newPath: string): Promise<boolean>;
 
   /**
    * Copy a file.
@@ -64,7 +64,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @returns {boolean}
    */
-  copy(path: string, newPath: string): boolean;
+  copy(path: string, newPath: string): Promise<boolean>;
 
   /**
    * Delete a file.
@@ -73,7 +73,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @returns {boolean}
    */
-  delete(path: string): boolean;
+  delete(path: string): Promise<boolean>;
 
   /**
    * Delete a directory.
@@ -82,7 +82,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @return {boolean}
    */
-  deleteDir(dirname: string): boolean;
+  deleteDir(dirname: string): Promise<boolean>;
 
   /**
    * Create a directory.
@@ -92,7 +92,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @returns {array|false}
    */
-  createDir(dirname: string, config: any): boolean;
+  createDir(dirname: string, config: any): Promise<boolean>;
 
   /**
    * Set the visibility for a file.
@@ -102,5 +102,5 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @return array|false file meta data
    */
-  setVisibility(path: string, visibility: FileVisible): object | false;
+  setVisibility(path: string, visibility: FileVisible): Promise<object | false>;
 }
