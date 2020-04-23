@@ -211,7 +211,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
     const location = this.applyPathPrefix(path);
     await this.ensureDirectory(dirname(location));
 
-    writeFileSync(location, contents, {
+    await writeFilePromisify(location, contents, {
       flag: this.writeFlags,
     });
 
@@ -325,7 +325,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
 
     let contents;
     try {
-      contents = readFilePromisify(location);
+      contents = await readFilePromisify(location);
     } catch (e) {
       return false;
     }
