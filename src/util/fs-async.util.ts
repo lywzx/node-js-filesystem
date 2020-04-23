@@ -1,6 +1,6 @@
-import { constants, Stats } from 'fs';
+import { accessSync, constants, Stats } from 'fs';
 import { PathStatsInterface } from '../interfaces';
-import { accessPromisify, readDirPromisify, statPromisify } from './fs-promisify';
+import { accessPromisify, readDirPromisify, rmdirPromisify, statPromisify, unlinkPromisify } from './fs-promisify';
 
 /**
  * check director is symbolic link
@@ -77,4 +77,29 @@ export async function getDirectoryIterator(path: string): Promise<PathStatsInter
       })
     )
   );
+}
+
+/**
+ * remove directory and files
+ * @param dir
+ */
+export async function rmDir(dir: string): Promise<boolean> {
+  const files = await readDirPromisify(dir);
+
+  try {
+    for (const file of files) {
+      const stats = await statPromisify(file);
+
+      if (stats.isDirectory()) {
+        await deleteDir(file);
+      } else {
+        await unlinkPromisify(file);
+      }
+    }
+
+    await rmdirPromisify(dir);
+    return true;
+  } catch (e) {
+    return false;
+  }
 }

@@ -1,6 +1,7 @@
 import { createReadStream, createWriteStream, ReadStream, realpathSync, writeFileSync } from 'fs';
 import { format } from 'util';
 import { FileVisible } from '../enum';
+import { UnReadableFileException } from '../exceptions';
 import { NotSupportedException } from '../exceptions/not-supported.exception';
 import {
   AdapterInterface,
@@ -13,11 +14,13 @@ import {
   getRecursiveDirectoryIterator,
   isDir,
   isDirSync,
+  isReadable,
   isReadableSync,
   isSymbolicLinkSync,
   mkDir,
   mkDirSync,
   normalizeDirname,
+  rmDir,
 } from '../util';
 import {
   chmodPromisify,
@@ -456,6 +459,8 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   public async getVisibility(path: string): Promise<FileWithVisibilityInterface> {
     const location = this.applyPathPrefix(path);
     const stats = await statPromisify(location);
+    const visibility = FileVisible.VISIBILITY_PRIVATE;
+    // TODO need add some code
     /*$permissions = octdec(substr(sprintf('%o', fileperms(location)), -4));
     const type = await isDir(location) ? 'dir' : 'file';
 
@@ -468,6 +473,10 @@ export class Local extends AbstractAdapter implements AdapterInterface {
     $visibility = substr(sprintf('%o', fileperms(location)), -4);
 
     return compact('path', 'visibility');*/
+    return {
+      path,
+      visibility,
+    };
   }
 
   /**
@@ -493,6 +502,19 @@ export class Local extends AbstractAdapter implements AdapterInterface {
    * @inheritdoc
    */
   public async createDir(dirname: string, config: any) {
+    const location = this.applyPathPrefix(dirname);
+
+    const mkdirResult = await mkDir(location);
+
+    if (mkdirResult) {
+      return {
+        type: 'dir',
+        path: dirname,
+      };
+    }
+
+    return mkdirResult;
+
     /*$location = this.applyPathPrefix(dirname);
     $umask = umask(0);
     $visibility = $config.get('visibility', 'public');
@@ -508,46 +530,36 @@ export class Local extends AbstractAdapter implements AdapterInterface {
     umask($umask);
 
     return $return;*/
-    return true;
   }
 
   /**
    * @inheritdoc
    */
-  public deleteDir(dirname: string) {
-    /*$location = this.applyPathPrefix($dirname);
+  public async deleteDir(dirname: string) {
+    const location = this.applyPathPrefix(dirname);
 
-    if ( ! is_dir($location)) {
+    if (!(await isDir(location))) {
       return false;
     }
 
-    $contents = this.getRecursiveDirectoryIterator($location, RecursiveIteratorIterator::CHILD_FIRST);
-
-    /!** @var SplFileInfo $file *!/
-    foreach ($contents as $file) {
-    this.guardAgainstUnreadableFileInfo($file);
-    this.deleteFileInfoObject($file);
-  }
-
-    unset($contents);
-
-    return rmdir($location);*/
+    return rmDir(location);
   }
 
   /**
    * @param {PathStatsInterface} file
    */
-  protected deleteFileInfoObject(file: PathStatsInterface) {
-    /*switch ($file.getType()) {
-      case 'dir':
-        rmdir($file.getRealPath());
+  protected async deleteFileInfoObject(file: PathStatsInterface) {
+    switch (getType(file.stats)) {
+      case 'dir': {
+        await this.deleteDir(file.path);
         break;
-      case 'link':
-        unlink($file.getPathname());
+      }
+      case 'file':
+      case 'link': {
+        await this.delete(file.path);
         break;
-      default:
-        unlink($file.getRealPath());
-    }*/
+      }
+    }
   }
 
   /**
@@ -602,9 +614,9 @@ export class Local extends AbstractAdapter implements AdapterInterface {
    *
    * @throws UnreadableFileException
    */
-  protected guardAgainstUnreadableFileInfo(file: PathStatsInterface) {
-    /*if ( ! $file.isReadable()) {
-      throw UnreadableFileException::forFileInfo($file);
-    }*/
+  protected async guardAgainstUnreadableFileInfo(file: PathStatsInterface) {
+    if (!(await isReadable(file.path))) {
+      throw new UnReadableFileException(`file ${file.path} unreadable`);
+    }
   }
 }
