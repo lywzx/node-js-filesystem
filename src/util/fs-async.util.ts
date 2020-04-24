@@ -50,7 +50,7 @@ export async function mkDir(dir: string): Promise<boolean> {
 export async function getRecursiveDirectoryIterator(path: string): Promise<PathStatsInterface[]> {
   const files = await readDirPromisify(path);
   return Promise.all(
-    files.map(file =>
+    files.map((file) =>
       statPromisify(file).then((stats: Stats) => {
         return {
           stats,
@@ -68,7 +68,7 @@ export async function getRecursiveDirectoryIterator(path: string): Promise<PathS
 export async function getDirectoryIterator(path: string): Promise<PathStatsInterface[]> {
   const files = await readDirPromisify(path);
   return Promise.all(
-    files.map(file =>
+    files.map((file) =>
       statPromisify(file).then((stats: Stats) => {
         return {
           stats,
@@ -91,7 +91,7 @@ export async function rmDir(dir: string): Promise<boolean> {
       const stats = await statPromisify(file);
 
       if (stats.isDirectory()) {
-        await deleteDir(file);
+        await rmDir(file);
       } else {
         await unlinkPromisify(file);
       }
