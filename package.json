@@ -7,12 +7,16 @@
     "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
     "build": "tsc",
     "lint": "eslint src --ext .ts --fix",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.ts\"",
-    "test": "mocha --require ts-node/register test/*.ts test/**/*.ts"
+    "format": "prettier --write \"+(src|test)/**/*.ts\"",
+    "test": "mocha --require ts-node/register test/*.ts test/**/*.ts",
+    "report-coverage": "codecov"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lywzx/node-js-filesystem.git"
+  },
+  "engines": {
+    "node": ">=8.0.0"
   },
   "keywords": [
     "filesystem"
