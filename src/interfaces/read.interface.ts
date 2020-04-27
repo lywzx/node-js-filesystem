@@ -1,4 +1,5 @@
-import { ReadStream } from 'fs';
+import { ListContentInfo, ReadFileResult, ReadStreamResult } from '../types/local-adpater.types';
+import { FileWithMimetypeInterface } from './path-stats.interface';
 
 export interface ReadInterface {
   /**
@@ -14,14 +15,14 @@ export interface ReadInterface {
    * @param {string} path  file path
    * @returns {false|Array<any>}
    */
-  read(path: string): Promise<false | Array<any>>;
+  read(path: string): Promise<ReadFileResult | false>;
 
   /**
    * Read a file as a stream.
    * @param path string
    * @return ReadStream|false
    */
-  readStream(path: string): Promise<ReadStream>;
+  readStream(path: string): ReadStreamResult;
 
   /**
    * List contents of a directory.
@@ -37,7 +38,7 @@ export interface ReadInterface {
    * @param {string} path
    * @returns {false|object}
    */
-  getMetadata(path: string): Promise<object>;
+  getMetadata(path: string): Promise<ListContentInfo | undefined>;
 
   /**
    * Get the size of a file.
@@ -46,7 +47,7 @@ export interface ReadInterface {
    *
    * @returns {Array| false}
    */
-  getSize(path: string): Promise<Array<any>>;
+  getSize(path: string): Promise<number>;
 
   /**
    * Get the mimetype of a file.
@@ -55,7 +56,7 @@ export interface ReadInterface {
    *
    * @returns {array|false}
    */
-  getMimetype(path: string): Promise<string>;
+  getMimetype(path: string): Promise<FileWithMimetypeInterface>;
 
   /**
    * Get the last modified time of a file as a timestamp.
@@ -64,7 +65,7 @@ export interface ReadInterface {
    *
    * @returns {number | false}
    */
-  getTimestamp(path: string): Promise<number>;
+  getTimestamp(path: string): Promise<any>;
 
   /**
    * Get the visibility of a file.

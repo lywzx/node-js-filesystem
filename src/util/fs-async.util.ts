@@ -1,6 +1,14 @@
-import { accessSync, constants, Stats } from 'fs';
+import { constants, Stats } from 'fs';
+import { dirname } from 'path';
 import { PathStatsInterface } from '../interfaces';
-import { accessPromisify, readDirPromisify, rmdirPromisify, statPromisify, unlinkPromisify } from './fs-promisify';
+import {
+  accessPromisify,
+  mkdirPromisify,
+  readDirPromisify,
+  rmdirPromisify,
+  statPromisify,
+  unlinkPromisify,
+} from './fs-promisify';
 
 /**
  * check director is symbolic link
@@ -39,8 +47,40 @@ export async function isReadable(dir: string): Promise<boolean> {
  *
  * @param dir
  */
-export async function mkDir(dir: string): Promise<boolean> {
-  return true;
+export async function mkDir(dir: string, mode?: number): Promise<string[]> {
+  if (mode === undefined) {
+    mode = 0x1ff ^ process.umask();
+  }
+  const pathsCreated: string[] = [],
+    pathsFound = [];
+
+  let cDir = dir;
+  while (true) {
+    try {
+      const stats = await statPromisify(cDir);
+
+      if (stats.isDirectory()) {
+        break;
+      }
+
+      throw new Error('Unable to create directory at ' + cDir);
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        pathsFound.push(cDir);
+        cDir = dirname(cDir);
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  for (let i = pathsFound.length - 1; i > -1; i--) {
+    const currentFound = pathsFound[i];
+    await mkdirPromisify(currentFound, mode);
+    pathsCreated.push(currentFound);
+  }
+
+  return pathsCreated;
 }
 
 /**

@@ -10,6 +10,14 @@ import {
   PathStatsInterface,
 } from '../interfaces';
 import {
+  DirType,
+  ListContentInfo,
+  ReadFileResult,
+  ReadStreamResult,
+  UpdateFileResult,
+  WriteConfig,
+} from '../types/local-adpater.types';
+import {
   getDirectoryIterator,
   getRecursiveDirectoryIterator,
   isDir,
@@ -37,41 +45,6 @@ import { FileType, getType, guessFileMimetype } from '../util/util';
 import { AbstractAdapter } from './abstract-adapter';
 import { merge, filter } from 'lodash';
 import { dirname, sep } from 'path';
-
-type writeConfig = {
-  visibility?: FileVisible;
-};
-
-type readStreamResult = {
-  type: string;
-  path: string;
-  stream: ReadStream;
-};
-type updateFileResult = {
-  type: string;
-  path: string;
-  size: number;
-  contents: string;
-  mimetype: string;
-};
-type readFileResult = {
-  type: string;
-  path: string;
-  contents: string | Buffer;
-};
-type listContentInfo = {
-  basename?: string;
-  path: string;
-  type: FileType;
-  timestamp: number;
-  size: number;
-};
-type fileInfo = {
-  type: FileType;
-  path: string;
-  timestamp: number;
-  size: number;
-};
 
 export class Local extends AbstractAdapter implements AdapterInterface {
   /**
@@ -130,7 +103,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
    *
    * @throws LogicException
    */
-  public constructor(root: string, writeFlags = 'w', linkHandling: number, permissions: object) {
+  public constructor(root: string, writeFlags = 'w', linkHandling = 6, permissions?: object) {
     super();
     root = isSymbolicLinkSync(root) ? realpathSync(root) : root;
     this.permissionMap = merge({}, Local.permissions, permissions);
@@ -207,7 +180,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   /**
    * @inheritdoc
    */
-  public async write(path: string, contents: string, config?: writeConfig) {
+  public async write(path: string, contents: string, config?: WriteConfig) {
     const location = this.applyPathPrefix(path);
     await this.ensureDirectory(dirname(location));
 
@@ -275,7 +248,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   /**
    * @inheritdoc
    */
-  public readStream(path: string): readStreamResult {
+  public readStream(path: string): ReadStreamResult {
     const location = this.applyPathPrefix(path);
     const stream = createReadStream(location);
 
@@ -296,7 +269,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   /**
    * @inheritdoc
    */
-  public async update(path: string, contents: string, config: any): Promise<updateFileResult | false> {
+  public async update(path: string, contents: string, config: any): Promise<UpdateFileResult | false> {
     const location = this.applyPathPrefix(path);
 
     try {
@@ -320,7 +293,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   /**
    * @inheritdoc
    */
-  public async read(path: string): Promise<readFileResult | false> {
+  public async read(path: string): Promise<ReadFileResult | false> {
     const location = this.applyPathPrefix(path);
 
     let contents;
@@ -387,8 +360,8 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   /**
    * @inheritdoc
    */
-  public async listContents(directory = '', recursive = false): Promise<listContentInfo[]> {
-    const result: listContentInfo[] = [];
+  public async listContents(directory = '', recursive = false): Promise<ListContentInfo[]> {
+    const result: ListContentInfo[] = [];
     const location = this.applyPathPrefix(directory);
 
     if (!(await isDir(location))) {
@@ -405,7 +378,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
       }
 
       const fileInfo = this.normalizeFileInfo(file);
-      result.push(fileInfo as listContentInfo);
+      result.push(fileInfo as ListContentInfo);
     }
 
     return filter(result);
@@ -414,7 +387,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   /**
    * @inheritdoc
    */
-  public async getMetadata(path: string): Promise<listContentInfo | undefined> {
+  public async getMetadata(path: string): Promise<ListContentInfo | undefined> {
     const location = this.applyPathPrefix(path);
     const stats = await statPromisify(path);
 
@@ -429,7 +402,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
    */
   public async getSize(path: string): Promise<number> {
     const meta = await this.getMetadata(path);
-    return (meta as listContentInfo).size;
+    return (meta as ListContentInfo).size;
   }
 
   /**
@@ -501,7 +474,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   /**
    * @inheritdoc
    */
-  public async createDir(dirname: string, config: any) {
+  public async createDir(dirname: string, config?: any) {
     const location = this.applyPathPrefix(dirname);
 
     const mkdirResult = await mkDir(location);
@@ -510,10 +483,10 @@ export class Local extends AbstractAdapter implements AdapterInterface {
       return {
         type: 'dir',
         path: dirname,
-      };
+      } as DirType;
     }
 
-    return mkdirResult;
+    return false;
 
     /*$location = this.applyPathPrefix(dirname);
     $umask = umask(0);

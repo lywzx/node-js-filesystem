@@ -40,7 +40,7 @@ export function isReadableSync(dir: string): boolean {
  * @param mode
  * @param recursive
  */
-export function mkDirSync(dir: string, mode?: number, recursive = true) {
+export function mkDirSync(dir: string, mode?: number, recursive = true): string[] {
   if (mode === undefined) {
     mode = 0x1ff ^ process.umask();
   }

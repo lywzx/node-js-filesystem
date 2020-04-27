@@ -13,7 +13,8 @@ module.exports = {
     'plugin:prettier/recommended',  // Enables eslint-plugin-prettier and displays prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.
   ],
   parserOptions: {
-    'project': './tsconfig.json'
+    'project': 'tsconfig.json',
+    'sourceType': 'module',
   },
   rules: {
     'semi': 2,

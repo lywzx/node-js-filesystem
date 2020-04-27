@@ -1,3 +1,5 @@
+import { ReadStream } from 'fs';
+import { DirType } from '../types/local-adpater.types';
 import { ReadInterface } from './read.interface';
 import { Stream } from 'stream';
 import { FileVisible } from '../enum';
@@ -17,12 +19,12 @@ export interface AdapterInterface extends ReadInterface {
    * Write a new file using a stream.
    *
    * @param {string}   path
-   * @param {Stream}   resource
+   * @param {ReadStream} resource
    * @param {any}      config   Config object
    *
    * @return array|false false on failure file meta data on success
    */
-  writeStream(path: string, resource: Stream, config: any): Promise<object | false>;
+  writeStream(path: string, resource: ReadStream, config: any): Promise<any | false>;
 
   /**
    * Update a file.
@@ -44,7 +46,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @returns {object | false} false on failure file meta data on success
    */
-  updateStream(path: string, resource: Stream, config: any): Promise<object | false>;
+  updateStream(path: string, resource: Stream, config: any): Promise<any | false>;
 
   /**
    * Rename a file.
@@ -92,7 +94,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @returns {array|false}
    */
-  createDir(dirname: string, config: any): Promise<boolean>;
+  createDir(dirname: string, config: any): Promise<DirType | false>;
 
   /**
    * Set the visibility for a file.
