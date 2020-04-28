@@ -5,3 +5,4 @@ export * from './file-system.exception';
 export * from './file-system-not-found.exception';
 export * from './invalid-root.exception';
 export * from './un-readable-file.exception';
+export * from './not-supported.exception';

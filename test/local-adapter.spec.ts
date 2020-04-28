@@ -2,6 +2,7 @@ import { Local } from '../src/adapters/local';
 import { join } from 'path';
 import { expect } from 'chai';
 import { uniqueId } from 'lodash';
+import { NotSupportedException } from '../src/exceptions/not-supported.exception';
 import { ReadFileResult } from '../src/types/local-adpater.types';
 import { isDir } from '../src/util';
 import { ReadStream } from 'fs';
@@ -21,9 +22,10 @@ describe('local adapter test', function (): void {
 
   describe('local adapter methods', function () {
     let adapter: Local;
+    let root: string;
 
     beforeEach(function () {
-      const root = join(__dirname, 'files/');
+      root = join(__dirname, 'files/');
       adapter = new Local(root);
     });
 
@@ -170,7 +172,9 @@ describe('local adapter test', function (): void {
           return this.skip();
         }
 
-        expect(await adapter.listContents()).to.length(1);
+        const adp = new Local(`file://${root}`);
+
+        expect(await adp.listContents()).to.length(1);
       });
 
       it('test listing none existing directory', async function () {
@@ -185,6 +189,8 @@ describe('local adapter test', function (): void {
         const content = await adapter.listContents('dirname', false);
 
         expect(content).lengthOf(1);
+
+        expect(content[0]).haveOwnProperty('type');
 
         await adapter.deleteDir('dirname');
       });
@@ -201,24 +207,59 @@ describe('local adapter test', function (): void {
       });
 
       it('test link caused Unsupported Exception', async function () {
-        const origin = adapter.applyPathPrefix('original.txt');
-        const link = adapter.applyPathPrefix('link.txt');
+        const origin = adapter.applyPathPrefix('link_test/original.txt');
+        const link = adapter.applyPathPrefix('link_test/link.txt');
 
-        await adapter.write('original.txt', 'something');
+        await adapter.write('link_test/original.txt', 'something');
 
         await symlinkPromisify(origin, link, 'file');
 
-        await adapter.listContents('');
+        try {
+          await adapter.listContents('link_test');
+          throw new Error('any error msg');
+        } catch (e) {
+          expect(e.name).to.be.eq(NotSupportedException.name);
+        }
 
-        await adapter.delete('link.txt');
+        await adapter.deleteDir('link_test');
+      });
 
-        await adapter.delete('original.txt');
+      it('test link is skipped', async function () {
+        const origin = adapter.applyPathPrefix('link_test_1/original.txt');
+        const link = adapter.applyPathPrefix('link_test_1/link.txt');
+
+        await adapter.write('link_test_1/original.txt', 'something');
+
+        await symlinkPromisify(origin, link, 'file');
+
+        const adp = new Local(root, 'w', Local.SKIP_LINKS);
+
+        const contents = await adp.listContents('link_test_1');
+
+        expect(contents).lengthOf(1);
+
+        await adp.deleteDir('link_test_1');
       });
     });
 
-    describe('#getMetadata', function () {});
+    // describe('#getMetadata', function () {});
 
-    describe('#getSize', function () {});
+    describe('#getSize', function () {
+      it('test get size', async function () {
+        const fileName = generateTestFile('get_size_test/');
+        await adapter.write(fileName, '1234');
+
+        const result = await adapter.getSize(fileName);
+
+        expect(result).to.be.instanceOf(Object);
+
+        expect(result).haveOwnProperty('size');
+
+        expect(result.size).to.be.eq(4);
+
+        await adapter.deleteDir('get_size_test');
+      });
+    });
 
     describe('#getMimetype', function () {});
 

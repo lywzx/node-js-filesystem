@@ -47,7 +47,7 @@ export interface ReadInterface {
    *
    * @returns {Array| false}
    */
-  getSize(path: string): Promise<number>;
+  getSize(path: string): Promise<ListContentInfo>;
 
   /**
    * Get the mimetype of a file.

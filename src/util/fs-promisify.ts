@@ -12,6 +12,7 @@ import {
   mkdir,
   rmdir,
   symlink,
+  lstat,
 } from 'fs';
 import { promisify } from 'util';
 
@@ -19,6 +20,10 @@ import { promisify } from 'util';
  * stat promise
  */
 export const statPromisify = promisify(stat);
+/**
+ * lstat promise
+ */
+export const lstatPromisify = promisify(lstat);
 /**
  * access promise
  */

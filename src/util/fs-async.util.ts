@@ -3,6 +3,7 @@ import { dirname, join } from 'path';
 import { PathStatsInterface } from '../interfaces';
 import {
   accessPromisify,
+  lstatPromisify,
   mkdirPromisify,
   readDirPromisify,
   rmdirPromisify,
@@ -96,7 +97,7 @@ export async function getRecursiveDirectoryIterator(path: string): Promise<PathS
   const result = await Promise.all(
     files.map((file) => {
       const filePath = join(path, file);
-      return statPromisify(filePath).then((stats: Stats) => {
+      return lstatPromisify(filePath).then((stats: Stats) => {
         return {
           stats,
           path: filePath,
@@ -123,7 +124,7 @@ export async function getDirectoryIterator(path: string): Promise<PathStatsInter
   return Promise.all(
     files.map((file) => {
       const filePath = join(path, file);
-      return statPromisify(filePath).then((stats: Stats) => {
+      return lstatPromisify(filePath).then((stats: Stats) => {
         return {
           stats,
           path: filePath,

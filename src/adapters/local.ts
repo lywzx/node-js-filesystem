@@ -1,8 +1,7 @@
 import { createReadStream, createWriteStream, ReadStream, realpathSync, writeFileSync } from 'fs';
 import { format } from 'util';
 import { FileVisible } from '../enum';
-import { UnReadableFileException } from '../exceptions';
-import { NotSupportedException } from '../exceptions/not-supported.exception';
+import { UnReadableFileException, NotSupportedException } from '../exceptions';
 import {
   AdapterInterface,
   FileWithMimetypeInterface,
@@ -41,7 +40,7 @@ import {
   writeFilePromisify,
 } from '../util/fs-promisify';
 import { defer } from '../util/promise-defer.util';
-import { FileType, getType, guessFileMimetype } from '../util/util';
+import { getType, guessFileMimetype } from '../util/util';
 import { AbstractAdapter } from './abstract-adapter';
 import { merge, filter } from 'lodash';
 import { dirname, sep } from 'path';
@@ -103,7 +102,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
    *
    * @throws LogicException
    */
-  public constructor(root: string, writeFlags = 'w', linkHandling = 6, permissions?: object) {
+  public constructor(root: string, writeFlags = 'w', linkHandling = Local.DISALLOW_LINKS, permissions?: object) {
     super();
     root = isSymbolicLinkSync(root) ? realpathSync(root) : root;
     this.permissionMap = merge({}, Local.permissions, permissions);
@@ -402,9 +401,8 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   /**
    * @inheritdoc
    */
-  public async getSize(path: string): Promise<number> {
-    const meta = await this.getMetadata(path);
-    return (meta as ListContentInfo).size;
+  public async getSize(path: string): Promise<ListContentInfo> {
+    return this.getMetadata(path) as any;
   }
 
   /**
