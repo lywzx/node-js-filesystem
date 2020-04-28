@@ -7,6 +7,7 @@ os:
 
 node_js:
   - 'node'
+  - '13'
   - '12'
   - '11'
   - '10'
@@ -19,4 +20,5 @@ install:
 script:
   - npm install codecov -g
   - npm test
-  - codecov -f coverage/*.json
+  - codecov
+
