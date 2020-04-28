@@ -20,5 +20,5 @@ install:
 script:
   - npm install codecov -g
   - npm test
-  - codecov
+  - codecov -f coverage/*.json
 
