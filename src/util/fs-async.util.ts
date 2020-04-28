@@ -93,16 +93,25 @@ export async function mkDir(dir: string, mode?: number): Promise<string[]> {
  */
 export async function getRecursiveDirectoryIterator(path: string): Promise<PathStatsInterface[]> {
   const files = await readDirPromisify(path);
-  return Promise.all(
-    files.map((file) =>
-      statPromisify(file).then((stats: Stats) => {
+  const result = await Promise.all(
+    files.map((file) => {
+      const filePath = join(path, file);
+      return statPromisify(filePath).then((stats: Stats) => {
         return {
           stats,
-          path: file,
+          path: filePath,
         };
-      })
-    )
+      });
+    })
   );
+
+  for (const item of result) {
+    if (item.stats.isDirectory()) {
+      result.push(...(await getRecursiveDirectoryIterator(item.path)));
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -112,14 +121,15 @@ export async function getRecursiveDirectoryIterator(path: string): Promise<PathS
 export async function getDirectoryIterator(path: string): Promise<PathStatsInterface[]> {
   const files = await readDirPromisify(path);
   return Promise.all(
-    files.map((file) =>
-      statPromisify(file).then((stats: Stats) => {
+    files.map((file) => {
+      const filePath = join(path, file);
+      return statPromisify(filePath).then((stats: Stats) => {
         return {
           stats,
-          path: file,
+          path: filePath,
         };
-      })
-    )
+      });
+    })
   );
 }
 

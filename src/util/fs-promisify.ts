@@ -1,4 +1,18 @@
-import { access, stat, exists, chmod, writeFile, readFile, rename, copyFile, unlink, readdir, mkdir, rmdir } from 'fs';
+import {
+  access,
+  stat,
+  exists,
+  chmod,
+  writeFile,
+  readFile,
+  rename,
+  copyFile,
+  unlink,
+  readdir,
+  mkdir,
+  rmdir,
+  symlink,
+} from 'fs';
 import { promisify } from 'util';
 
 /**
@@ -59,3 +73,8 @@ export const mkdirPromisify = promisify(mkdir);
  * remove dir
  */
 export const rmdirPromisify = promisify(rmdir);
+
+/**
+ * create sym link
+ */
+export const symlinkPromisify = promisify(symlink);

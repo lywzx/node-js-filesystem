@@ -5,6 +5,8 @@ import { uniqueId } from 'lodash';
 import { ReadFileResult } from '../src/types/local-adpater.types';
 import { isDir } from '../src/util';
 import { ReadStream } from 'fs';
+import { platform } from 'os';
+import { symlinkPromisify } from '../src/util/fs-promisify';
 
 function generateTestFile(prefix = '') {
   return `${prefix}file_${uniqueId()}.txt`;
@@ -109,17 +111,110 @@ describe('local adapter test', function (): void {
       });
     });
 
-    describe('#update', function () {});
+    /*describe('#update', function () {
+      it('test update method', function () {
 
-    describe('#read', function () {});
+      });
+    });*/
 
-    describe('#rename', function () {});
+    /*describe('#read', function () {
 
-    describe('#copy', function () {});
+    });*/
 
-    describe('#delete', function () {});
+    describe('#rename', function () {
+      it('test rename to none existing directory', async function () {
+        const fileName = generateTestFile();
+        const dir = `${uniqueId()}`;
+        const targetFileName = generateTestFile(dir + '/');
+        await adapter.write(fileName, 'contents');
 
-    describe('#listContents', function () {});
+        expect(await isDir(adapter.applyPathPrefix(dir))).to.be.eq(false);
+
+        expect(await adapter.rename(fileName, targetFileName)).to.be.eq(true);
+
+        await adapter.deleteDir(dir);
+      });
+    });
+
+    describe('#copy', function () {
+      it('test copy', async function () {
+        await adapter.write('file.ext', 'content');
+
+        expect(await adapter.copy('file.ext', 'new.ext'));
+
+        expect(await adapter.has('new.ext'));
+
+        await adapter.delete('new.ext');
+
+        await adapter.delete('file.ext');
+      });
+    });
+
+    describe('#delete', function () {
+      it('should delete exists file return true', async function () {
+        const fileName = generateTestFile();
+
+        await adapter.write(fileName, 'contents');
+
+        expect(await adapter.delete(fileName)).to.be.eq(true);
+      });
+
+      it('should delete not exitst file return false', async function () {
+        expect(await adapter.delete('missing.txt')).to.be.eq(false);
+      });
+    });
+
+    describe('#listContents', function () {
+      it('test stream wrappers are supported', async function () {
+        if (platform() === 'win32') {
+          return this.skip();
+        }
+
+        expect(await adapter.listContents()).to.length(1);
+      });
+
+      it('test listing none existing directory', async function () {
+        expect(await adapter.listContents('nonexisting/directory')).to.eql([]);
+      });
+
+      it('test list content one file', async function () {
+        const fileName = generateTestFile('dirname/');
+
+        await adapter.write(fileName, 'contents');
+
+        const content = await adapter.listContents('dirname', false);
+
+        expect(content).lengthOf(1);
+
+        await adapter.deleteDir('dirname');
+      });
+
+      it('test list contents recursive', async function () {
+        await adapter.write('dirname1/dirname/file.txt', 'contents');
+        await adapter.write('dirname1/dirname/others.txt', 'contents');
+
+        const contents = await adapter.listContents('dirname1', true);
+
+        expect(contents).lengthOf(3);
+
+        await adapter.deleteDir('dirname1');
+      });
+
+      it('test link caused Unsupported Exception', async function () {
+        const origin = adapter.applyPathPrefix('original.txt');
+        const link = adapter.applyPathPrefix('link.txt');
+
+        await adapter.write('original.txt', 'something');
+
+        await symlinkPromisify(origin, link, 'file');
+
+        await adapter.listContents('');
+
+        await adapter.delete('link.txt');
+
+        await adapter.delete('original.txt');
+      });
+    });
 
     describe('#getMetadata', function () {});
 
