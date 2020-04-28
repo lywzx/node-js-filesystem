@@ -4,6 +4,11 @@ import { expect } from 'chai';
 import { uniqueId } from 'lodash';
 import { ReadFileResult } from '../src/types/local-adpater.types';
 import { isDir } from '../src/util';
+import { ReadStream } from 'fs';
+
+function generateTestFile(prefix = '') {
+  return `${prefix}file_${uniqueId()}.txt`;
+}
 
 describe('local adapter test', function (): void {
   this.timeout(5000);
@@ -34,7 +39,7 @@ describe('local adapter test', function (): void {
       });
 
       it('test has with file', async function () {
-        const testFile = 'file.txt';
+        const testFile = generateTestFile();
 
         await adapter.write(testFile, 'content');
 
@@ -48,10 +53,10 @@ describe('local adapter test', function (): void {
 
     describe('#writeStream', function () {
       it('test write stream', async function () {
-        const temp = `dir/${uniqueId('file_')}.txt`;
+        const temp = generateTestFile('dir/');
         await adapter.write(temp, 'dummy');
         const readStream = adapter.readStream(temp);
-        const target = 'dir/file.txt';
+        const target = generateTestFile('dir/');
         await adapter.writeStream(target, readStream.stream);
 
         expect(await adapter.has(target)).to.be.eq(true);
@@ -64,9 +69,45 @@ describe('local adapter test', function (): void {
       });
     });
 
-    describe('#readStream', function () {});
+    describe('#readStream', function () {
+      it('test read stream', async function () {
+        const fileName = generateTestFile();
 
-    describe('#updateStream', function () {});
+        await adapter.write(fileName, 'contents');
+
+        const result = adapter.readStream(fileName);
+
+        expect(result).to.be.an('object').to.haveOwnProperty('type', 'file');
+
+        expect(result).to.haveOwnProperty('path');
+
+        expect(result).to.haveOwnProperty('stream');
+
+        expect(result.stream).to.be.instanceOf(ReadStream);
+
+        await adapter.delete(fileName);
+      });
+    });
+
+    describe('#updateStream', function () {
+      it('test update stream', async function () {
+        const fileName = generateTestFile();
+        const tmpFile = generateTestFile();
+
+        await adapter.write(fileName, 'initial');
+
+        await adapter.write(tmpFile, 'dummy');
+
+        const readStream = adapter.readStream(tmpFile);
+        await adapter.updateStream(fileName, readStream.stream);
+
+        expect(await adapter.has(fileName)).to.be.eq(true);
+
+        await adapter.delete(tmpFile);
+
+        await adapter.delete(fileName);
+      });
+    });
 
     describe('#update', function () {});
 

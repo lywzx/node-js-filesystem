@@ -264,7 +264,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   /**
    * @inheritdoc
    */
-  public updateStream(path: string, resource: ReadStream, config: any) {
+  public updateStream(path: string, resource: ReadStream, config?: any) {
     return this.writeStream(path, resource, config);
   }
 
