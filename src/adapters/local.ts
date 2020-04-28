@@ -210,7 +210,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   /**
    * @inheritdoc
    */
-  public async writeStream(path: string, resource: ReadStream, config: any) {
+  public async writeStream(path: string, resource: ReadStream, config?: any) {
     const location = this.applyPathPrefix(path);
     await this.ensureDirectory(dirname(location));
 
@@ -224,7 +224,9 @@ export class Local extends AbstractAdapter implements AdapterInterface {
       df.resolve();
     });
 
-    writeStream.once('error', df.reject);
+    writeStream.once('error', (err) => {
+      df.reject(err);
+    });
 
     /*$stream = fopen(location, 'w+b');
 
@@ -389,7 +391,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
    */
   public async getMetadata(path: string): Promise<ListContentInfo | undefined> {
     const location = this.applyPathPrefix(path);
-    const stats = await statPromisify(path);
+    const stats = await statPromisify(location);
 
     return this.normalizeFileInfo({
       path: location,

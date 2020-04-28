@@ -7,7 +7,6 @@ describe('unit test', function (): void {
       this.timeout(2000);
 
       await mkDir(join(__dirname, 'aaaa'));
-
     });
   });
 });

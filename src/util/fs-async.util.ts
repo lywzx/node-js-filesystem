@@ -1,5 +1,5 @@
 import { constants, Stats } from 'fs';
-import { dirname } from 'path';
+import { dirname, join } from 'path';
 import { PathStatsInterface } from '../interfaces';
 import {
   accessPromisify,
@@ -25,8 +25,12 @@ export async function isSymbolicLink(dir: string): Promise<boolean> {
  * @param {string} dir
  */
 export async function isDir(dir: string): Promise<boolean> {
-  const dirStat = await statPromisify(dir);
-  return dirStat.isDirectory();
+  try {
+    const dirStat = await statPromisify(dir);
+    return dirStat.isDirectory();
+  } catch (e) {}
+
+  return false;
 }
 
 /**
@@ -128,12 +132,13 @@ export async function rmDir(dir: string): Promise<boolean> {
 
   try {
     for (const file of files) {
-      const stats = await statPromisify(file);
+      const realPath = join(dir, file);
+      const stats = await statPromisify(realPath);
 
       if (stats.isDirectory()) {
-        await rmDir(file);
+        await rmDir(realPath);
       } else {
-        await unlinkPromisify(file);
+        await unlinkPromisify(realPath);
       }
     }
 

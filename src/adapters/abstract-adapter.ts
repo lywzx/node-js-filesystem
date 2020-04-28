@@ -1,4 +1,4 @@
-import { sep } from 'path';
+import { sep, normalize } from 'path';
 
 export abstract class AbstractAdapter {
   /**
@@ -19,15 +19,14 @@ export abstract class AbstractAdapter {
    * @return void
    */
   public setPathPrefix(prefix: string) {
-    prefix = prefix.toString();
+    prefix = normalize(prefix.toString());
 
     if (prefix === '') {
       this.pathPrefix = undefined;
 
       return;
     }
-
-    this.pathPrefix = prefix.replace(/\/$/, '') + this.pathSeparator;
+    this.pathPrefix = prefix.replace(new RegExp(`(\\${this.pathSeparator}+)$`), '') + this.pathSeparator;
   }
 
   /**

@@ -1,6 +1,9 @@
 import { Local } from '../src/adapters/local';
 import { join } from 'path';
 import { expect } from 'chai';
+import { uniqueId } from 'lodash';
+import { ReadFileResult } from '../src/types/local-adpater.types';
+import { isDir } from '../src/util';
 
 describe('local adapter test', function (): void {
   this.timeout(5000);
@@ -41,9 +44,25 @@ describe('local adapter test', function (): void {
       });
     });
 
-    describe('#write()', function () {});
+    //describe('#write()', function () {});
 
-    describe('#writeStream', function () {});
+    describe('#writeStream', function () {
+      it('test write stream', async function () {
+        const temp = `dir/${uniqueId('file_')}.txt`;
+        await adapter.write(temp, 'dummy');
+        const readStream = adapter.readStream(temp);
+        const target = 'dir/file.txt';
+        await adapter.writeStream(target, readStream.stream);
+
+        expect(await adapter.has(target)).to.be.eq(true);
+
+        const result = (await adapter.read(target)) as ReadFileResult;
+
+        expect(result.contents.toString()).to.be.eq('dummy');
+
+        await adapter.deleteDir('dir');
+      });
+    });
 
     describe('#readStream', function () {});
 
@@ -75,6 +94,18 @@ describe('local adapter test', function (): void {
 
     describe('#createDir', function () {});
 
-    describe('#deleteDir', function () {});
+    describe('#deleteDir', function () {
+      it('test adapter delete dir ', async function () {
+        await adapter.write('nested/dir/path.txt', 'contents');
+
+        expect(await isDir(join(__dirname, 'files/nested/dir'))).to.be.eq(true);
+
+        await adapter.deleteDir('nested');
+
+        expect(await adapter.has('nested/dir/path.txt')).to.be.eq(false);
+
+        expect(await isDir(join(__dirname, 'files/nested/dir'))).to.be.eq(false);
+      });
+    });
   });
 });
