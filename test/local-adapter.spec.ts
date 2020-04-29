@@ -3,7 +3,7 @@ import { join } from 'path';
 import { expect } from 'chai';
 import { uniqueId } from 'lodash';
 import { NotSupportedException } from '../src/exceptions/not-supported.exception';
-import { ReadFileResult } from '../src/types/local-adpater.types';
+import { ListContentInfo, ReadFileResult } from '../src/types/local-adpater.types';
 import { isDir } from '../src/util';
 import { ReadStream } from 'fs';
 import { platform } from 'os';
@@ -172,7 +172,8 @@ describe('local adapter test', function (): void {
           return this.skip();
         }
 
-        const adp = new Local(`file://${root}`);
+        const adp = adapter;
+        //const adp = new Local(`file://${root}`);
 
         expect(await adp.listContents()).to.length(1);
       });
@@ -263,13 +264,43 @@ describe('local adapter test', function (): void {
 
     describe('#getMimetype', function () {});
 
-    describe('#getTimestamp', function () {});
+    describe('#getTimestamp', function () {
+      it('test get timestamp', async function () {
+        const fileName = generateTestFile();
+
+        await adapter.write(fileName, '1234');
+
+        const result = await adapter.getTimestamp(fileName);
+
+        expect(result).to.be.instanceOf(Object);
+
+        expect(result).haveOwnProperty('timestamp');
+
+        expect((result as ListContentInfo).timestamp).to.be.an('number');
+
+        await adapter.delete(fileName);
+      });
+    });
 
     describe('#getVisibility', function () {});
 
     describe('#setVisibility', function () {});
 
-    describe('#createDir', function () {});
+    describe('#createDir', function () {
+      it('test create zero dir', async function () {
+        await adapter.createDir('0');
+
+        expect(await isDir(adapter.applyPathPrefix('0'))).to.be.eq(true);
+
+        await adapter.deleteDir('0');
+      });
+
+      it('test create dir failed', async function () {
+        const dirname = '\\ss\\//!@?S%^@\\ssfail.plz';
+
+        expect(await adapter.createDir(dirname)).to.be.eq(false);
+      });
+    });
 
     describe('#deleteDir', function () {
       it('test adapter delete dir ', async function () {
