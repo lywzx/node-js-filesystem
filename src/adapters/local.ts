@@ -40,10 +40,11 @@ import {
   writeFilePromisify,
 } from '../util/fs-promisify';
 import { defer } from '../util/promise-defer.util';
-import { getType, guessFileMimetype } from '../util/util';
+import { getType } from '../util/util';
 import { AbstractAdapter } from './abstract-adapter';
 import { merge, filter } from 'lodash';
 import { dirname, sep } from 'path';
+import { fromFile } from 'file-type';
 
 export class Local extends AbstractAdapter implements AdapterInterface {
   /**
@@ -410,12 +411,13 @@ export class Local extends AbstractAdapter implements AdapterInterface {
    */
   public async getMimetype(path: string): Promise<FileWithMimetypeInterface> {
     const location = this.applyPathPrefix(path);
-    const mimetype = await guessFileMimetype(location);
+
+    const mimetype = await fromFile(location);
 
     return {
       path,
       type: 'file',
-      mimetype,
+      mimetype: mimetype?.mime || '',
     };
   }
 

@@ -1,34 +1,66 @@
 import { Local } from '../src/adapters/local';
-import { join } from 'path';
+import { join, sep } from 'path';
 import { expect } from 'chai';
 import { uniqueId } from 'lodash';
-import { NotSupportedException } from '../src/exceptions/not-supported.exception';
+import { NotSupportedException } from '../src/exceptions';
 import { ListContentInfo, ReadFileResult } from '../src/types/local-adpater.types';
-import { isDir } from '../src/util';
+import { isDir, isSymbolicLink, mkDir } from '../src/util';
 import { ReadStream } from 'fs';
 import { platform } from 'os';
-import { symlinkPromisify } from '../src/util/fs-promisify';
+import { realpathPromisify, symlinkPromisify, unlinkPromisify, writeFilePromisify } from '../src/util/fs-promisify';
 
 function generateTestFile(prefix = '') {
   return `${prefix}file_${uniqueId()}.txt`;
 }
 
 describe('local adapter test', function (): void {
+  let adapter: Local;
+  let root: string;
+
+  beforeEach(function () {
+    root = join(__dirname, 'files/');
+    adapter = new Local(root);
+  });
+
   this.timeout(5000);
+
+  describe('test link', function () {
+    it('test constructor with link', async function () {
+      if (platform() === 'win32') {
+        // File permissions not supported on Windows.
+        return this.skip();
+      }
+
+      const target = join(__dirname, 'files/');
+      const link = __dirname + sep + 'link_to_files';
+      await symlinkPromisify(target, link);
+
+      const adp = new Local(link);
+      expect(target, adp.getPathPrefix());
+      await unlinkPromisify(link);
+    });
+
+    it('test links are deleted during delete dir', async function () {
+      await mkDir(root + 'subdir');
+      const original = root + 'original.txt';
+      const link = root + 'subdir/link.txt';
+      await writeFilePromisify(original, 'something');
+      await symlinkPromisify(original, link);
+      const adp = new Local(root, 'w', Local.SKIP_LINKS);
+
+      expect(await isSymbolicLink(link)).to.be.eq(true);
+
+      await adp.deleteDir('subdir');
+
+      expect(await isSymbolicLink(link)).to.be.eq(false);
+    });
+  });
 
   it('test relative roots are supported', function () {
     new Local(join(__dirname, 'files/../files'));
   });
 
   describe('local adapter methods', function () {
-    let adapter: Local;
-    let root: string;
-
-    beforeEach(function () {
-      root = join(__dirname, 'files/');
-      adapter = new Local(root);
-    });
-
     describe('#has()', function () {
       it('test has with dir', async function () {
         const testDir = '0';
@@ -262,7 +294,13 @@ describe('local adapter test', function (): void {
       });
     });
 
-    describe('#getMimetype', function () {});
+    describe('#getMimetype', function () {
+      it('test mimetype fallback on extension', async function () {
+        const mimetype = ((await adapter.getMimetype('test-image.png')) as any)['mimetype'];
+
+        expect('image/png').eq(mimetype);
+      });
+    });
 
     describe('#getTimestamp', function () {
       it('test get timestamp', async function () {
@@ -313,6 +351,45 @@ describe('local adapter test', function (): void {
         expect(await adapter.has('nested/dir/path.txt')).to.be.eq(false);
 
         expect(await isDir(join(__dirname, 'files/nested/dir'))).to.be.eq(false);
+      });
+    });
+
+    describe('#prefix', function () {
+      it('test null prefix', async function () {
+        const loc = new Local(join(__dirname, 'files'));
+        loc.setPathPrefix('');
+
+        const path = join('some', 'path.ext');
+
+        expect(loc.applyPathPrefix(path)).to.be.eq(path);
+
+        expect(loc.removePathPrefix(path)).to.be.eq(path);
+      });
+
+      it('test windows prefix', async function () {
+        const path = `some${sep}path.ext`;
+        let expected = `c:${sep}${path}`;
+
+        const adp = new Local(root);
+
+        adp.setPathPrefix('c:/');
+
+        let prefixed = adp.applyPathPrefix(path);
+
+        expect(expected).to.be.eq(prefixed);
+
+        expect(path, adp.removePathPrefix(prefixed));
+
+        expected = 'c:\\\\some\\dir' + sep + path;
+        adp.setPathPrefix('c:\\\\some\\dir\\');
+
+        prefixed = adp.applyPathPrefix(path);
+        expect(expected).to.be.eq(prefixed);
+        expect(path, adp.removePathPrefix(prefixed));
+      });
+
+      it('test get path prefix', async function () {
+        expect(await realpathPromisify(root)).to.be.eq(await realpathPromisify(adapter.getPathPrefix() as string));
       });
     });
   });

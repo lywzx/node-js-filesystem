@@ -13,6 +13,7 @@ import {
   rmdir,
   symlink,
   lstat,
+  realpath,
 } from 'fs';
 import { promisify } from 'util';
 
@@ -83,3 +84,8 @@ export const rmdirPromisify = promisify(rmdir);
  * create sym link
  */
 export const symlinkPromisify = promisify(symlink);
+
+/**
+ * get real path
+ */
+export const realpathPromisify = promisify(realpath);

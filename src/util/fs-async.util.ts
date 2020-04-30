@@ -17,8 +17,12 @@ import {
  */
 
 export async function isSymbolicLink(dir: string): Promise<boolean> {
-  const dirStat = await statPromisify(dir);
-  return dirStat.isSymbolicLink();
+  try {
+    const dirStat = await lstatPromisify(dir);
+    return dirStat.isSymbolicLink();
+  } catch (e) {
+    return false;
+  }
 }
 
 /**
@@ -27,7 +31,7 @@ export async function isSymbolicLink(dir: string): Promise<boolean> {
  */
 export async function isDir(dir: string): Promise<boolean> {
   try {
-    const dirStat = await statPromisify(dir);
+    const dirStat = await lstatPromisify(dir);
     return dirStat.isDirectory();
   } catch (e) {}
 
