@@ -475,7 +475,7 @@ describe('local adapter test', function (): void {
         // override a permission mapping
         const permissions = {
           dir: {
-            private: 0o777, // private to me and the gang
+            yolo: 0o777, // private to me and the gang
           },
         };
 
