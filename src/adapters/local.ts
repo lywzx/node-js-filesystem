@@ -1,7 +1,10 @@
-import { createReadStream, createWriteStream, ReadStream, realpathSync, writeFileSync } from 'fs';
+import { createReadStream, createWriteStream, ReadStream, realpathSync } from 'fs';
+import { chmod, copyFile, lstat, pathExists, readFile, rename, stat, unlink, writeFile } from 'fs-extra';
+import { filter, isBuffer, merge, toPairs } from 'lodash';
+import { dirname, sep } from 'path';
 import { format } from 'util';
 import { FileVisible } from '../enum';
-import { UnReadableFileException, NotSupportedException } from '../exceptions';
+import { NotSupportedException, UnReadableFileException } from '../exceptions';
 import {
   AdapterInterface,
   FileWithMimetypeInterface,
@@ -13,8 +16,11 @@ import {
   ListContentInfo,
   ReadFileResult,
   ReadStreamResult,
+  UpdateConfig,
   UpdateFileResult,
+  VisibilityConfig,
   WriteConfig,
+  WriteStreamConfig,
 } from '../types/local-adpater.types';
 import {
   getDirectoryIterator,
@@ -29,22 +35,9 @@ import {
   normalizeDirname,
   rmDir,
 } from '../util';
-import {
-  chmodPromisify,
-  copyFilePromisify,
-  existsPromisify,
-  readFilePromisify,
-  renamePromisify,
-  statPromisify,
-  unlinkPromisify,
-  writeFilePromisify,
-} from '../util/fs-promisify';
 import { defer } from '../util/promise-defer.util';
-import { getType } from '../util/util';
+import { getType, guessMimeType } from '../util/util';
 import { AbstractAdapter } from './abstract-adapter';
-import { merge, filter } from 'lodash';
-import { dirname, sep } from 'path';
-import { fromFile } from 'file-type';
 
 export class Local extends AbstractAdapter implements AdapterInterface {
   /**
@@ -64,12 +57,12 @@ export class Local extends AbstractAdapter implements AdapterInterface {
    */
   protected static permissions = {
     file: {
-      [FileVisible.VISIBILITY_PUBLIC]: '0644',
-      [FileVisible.VISIBILITY_PRIVATE]: '0600',
+      [FileVisible.VISIBILITY_PUBLIC]: 0o644,
+      [FileVisible.VISIBILITY_PRIVATE]: 0o600,
     },
     dir: {
-      [FileVisible.VISIBILITY_PUBLIC]: '0755',
-      [FileVisible.VISIBILITY_PRIVATE]: '0700',
+      [FileVisible.VISIBILITY_PUBLIC]: 0o755,
+      [FileVisible.VISIBILITY_PRIVATE]: 0o700,
     },
   };
 
@@ -174,19 +167,31 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   public async has(path: string) {
     const location = this.applyPathPrefix(path);
 
-    return existsPromisify(location);
+    return pathExists(location);
   }
 
   /**
    * @inheritdoc
    */
-  public async write(path: string, contents: string, config?: WriteConfig) {
+  public async write(
+    path: string,
+    contents: string | Buffer,
+    config: WriteConfig | undefined = { visibility: FileVisible.VISIBILITY_PUBLIC }
+  ) {
     const location = this.applyPathPrefix(path);
     await this.ensureDirectory(dirname(location));
+    const visibility = config?.visibility || FileVisible.VISIBILITY_PUBLIC;
 
-    await writeFilePromisify(location, contents, {
-      flag: this.writeFlags,
-    });
+    const options: any = {
+      flag: config?.flag || this.writeFlags,
+      mode: this.permissionMap['file'][visibility],
+    };
+
+    if (config?.encoding) {
+      options.encoding = config.encoding;
+    }
+
+    await writeFile(location, contents, options);
 
     const type = 'file';
 
@@ -194,15 +199,10 @@ export class Local extends AbstractAdapter implements AdapterInterface {
     const result: any = {
       contents,
       type,
-      size: 1999,
+      size: Buffer.byteLength(contents),
       path,
-      visibility: undefined,
+      visibility: visibility,
     };
-    const visibility = config?.visibility;
-    if (visibility) {
-      result.visibility = visibility;
-      await this.setVisibility(path, visibility);
-    }
 
     return result;
   }
@@ -210,11 +210,25 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   /**
    * @inheritdoc
    */
-  public async writeStream(path: string, resource: ReadStream, config?: any) {
+  public async writeStream(
+    path: string,
+    resource: ReadStream,
+    config: WriteStreamConfig | null = { visibility: FileVisible.VISIBILITY_PUBLIC }
+  ) {
     const location = this.applyPathPrefix(path);
     await this.ensureDirectory(dirname(location));
+    const visibility = config?.visibility || FileVisible.VISIBILITY_PUBLIC;
 
-    const writeStream = createWriteStream(location);
+    const option: any = {
+      flags: config?.flags || this.writeFlags,
+      mode: this.permissionMap['file'][visibility],
+    };
+
+    if (config?.encoding) {
+      option.encoding = config.encoding;
+    }
+
+    const writeStream = createWriteStream(location, option);
 
     resource.pipe(writeStream);
 
@@ -228,23 +242,11 @@ export class Local extends AbstractAdapter implements AdapterInterface {
       df.reject(err);
     });
 
-    /*$stream = fopen(location, 'w+b');
-
-    if ( ! $stream || stream_copy_to_stream($resource, $stream) === false || ! fclose($stream)) {
-      return false;
-    }
-
-    $type = 'file';
-    $result = compact('type', 'path');
-
-    if ($visibility = $config.get('visibility')) {
-      this.setVisibility(path, $visibility);
-      $result['visibility'] = $visibility;
-    }
-
-    return $result;*/
-
-    return df.promise.then(() => this.getMetadata(path));
+    return df.promise.then(() => ({
+      type: 'file',
+      path,
+      visibility,
+    }));
   }
 
   /**
@@ -264,32 +266,51 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   /**
    * @inheritdoc
    */
-  public updateStream(path: string, resource: ReadStream, config?: any) {
+  public updateStream(
+    path: string,
+    resource: ReadStream,
+    config: WriteStreamConfig | null = { visibility: FileVisible.VISIBILITY_PUBLIC }
+  ) {
     return this.writeStream(path, resource, config);
   }
 
   /**
    * @inheritdoc
    */
-  public async update(path: string, contents: string, config: any): Promise<UpdateFileResult | false> {
+  public async update(
+    path: string,
+    contents: string | Buffer,
+    config: UpdateConfig | null = { visibility: FileVisible.VISIBILITY_PUBLIC }
+  ): Promise<UpdateFileResult | false> {
     const location = this.applyPathPrefix(path);
+    const visibility = config?.visibility || FileVisible.VISIBILITY_PUBLIC;
 
+    const options: any = {
+      flag: config?.flag || this.writeFlags,
+      mode: this.permissionMap['file'][visibility],
+    };
+
+    if (config?.encoding) {
+      options.encoding = config.encoding;
+    }
     try {
-      await writeFilePromisify(location, contents, this.writeFlags);
+      await writeFile(location, contents, options);
     } catch (e) {
       return false;
     }
 
-    const type = 'file';
-
-    // TODO 添加size的内容
-    return {
-      type,
+    const result: UpdateFileResult = {
+      type: 'file',
       path,
       contents,
-      size: 1,
-      mimetype: '',
+      size: Buffer.byteLength(contents),
     };
+
+    if (config?.mimetype) {
+      result.mimetype = await guessMimeType(path, isBuffer(contents) ? (contents as Buffer) : undefined);
+    }
+
+    return result;
   }
 
   /**
@@ -300,7 +321,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
 
     let contents;
     try {
-      contents = await readFilePromisify(location);
+      contents = await readFile(location);
     } catch (e) {
       return false;
     }
@@ -322,7 +343,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
     await this.ensureDirectory(parentDirectory);
 
     try {
-      await renamePromisify(location, destination);
+      await rename(location, destination);
       return true;
     } catch (e) {
       return false;
@@ -338,7 +359,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
     await this.ensureDirectory(dirname(destination));
 
     try {
-      await copyFilePromisify(location, destination);
+      await copyFile(location, destination);
       return true;
     } catch (e) {
       return false;
@@ -352,7 +373,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
     const location = this.applyPathPrefix(path);
 
     try {
-      await unlinkPromisify(location);
+      await unlink(location);
       return true;
     } catch (e) {
       return false;
@@ -391,7 +412,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
    */
   public async getMetadata(path: string): Promise<ListContentInfo | undefined> {
     const location = this.applyPathPrefix(path);
-    const stats = await statPromisify(location);
+    const stats = await stat(location);
 
     return this.normalizeFileInfo({
       path: location,
@@ -412,12 +433,12 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   public async getMimetype(path: string): Promise<FileWithMimetypeInterface> {
     const location = this.applyPathPrefix(path);
 
-    const mimetype = await fromFile(location);
+    const mimetype = await guessMimeType(location);
 
     return {
       path,
       type: 'file',
-      mimetype: mimetype?.mime || '',
+      mimetype,
     };
   }
 
@@ -433,21 +454,22 @@ export class Local extends AbstractAdapter implements AdapterInterface {
    */
   public async getVisibility(path: string): Promise<FileWithVisibilityInterface> {
     const location = this.applyPathPrefix(path);
-    const stats = await statPromisify(location);
-    const visibility = FileVisible.VISIBILITY_PRIVATE;
-    // TODO need add some code
-    /*$permissions = octdec(substr(sprintf('%o', fileperms(location)), -4));
-    const type = await isDir(location) ? 'dir' : 'file';
+    const stats = await lstat(location);
+    const mode = stats.mode;
+    const vb = mode & 0o777;
+    const visibility = '0' + vb.toString(8);
 
-    foreach (this.permissionMap[type] as $visibility => $visibilityPermissions) {
-    if ($visibilityPermissions == $permissions) {
-        return compact('path', 'visibility');
+    const permissions = toPairs(this.permissionMap[stats.isDirectory() ? 'dir' : 'file']);
+
+    for (const [key, permission] of permissions) {
+      if (permission === vb) {
+        return {
+          path,
+          visibility: key,
+        };
       }
     }
 
-    $visibility = substr(sprintf('%o', fileperms(location)), -4);
-
-    return compact('path', 'visibility');*/
     return {
       path,
       visibility,
@@ -457,12 +479,12 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   /**
    * @inheritdoc
    */
-  public async setVisibility(path: string, visibility: FileVisible) {
+  public async setVisibility(path: string, visibility: FileVisible | string) {
     const location = this.applyPathPrefix(path);
-    const type = isDir(location) ? 'dir' : 'file';
+    const type = (await isDir(location)) ? 'dir' : 'file';
 
     try {
-      await chmodPromisify(location, this.permissionMap[type][visibility]);
+      await chmod(location, this.permissionMap[type][visibility]);
     } catch (e) {
       return false;
     }
@@ -476,10 +498,19 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   /**
    * @inheritdoc
    */
-  public async createDir(dirname: string, config?: any) {
+  public async createDir(
+    dirname: string,
+    config: VisibilityConfig | null = { visibility: FileVisible.VISIBILITY_PUBLIC }
+  ) {
     const location = this.applyPathPrefix(dirname);
+    const mode = this.permissionMap['dir'][config?.visibility || FileVisible.VISIBILITY_PUBLIC];
 
-    const mkdirResult = await mkDir(location);
+    let mkdirResult;
+    try {
+      mkdirResult = await mkDir(location, mode);
+    } catch (e) {
+      return false;
+    }
 
     if (mkdirResult) {
       return {
@@ -489,22 +520,6 @@ export class Local extends AbstractAdapter implements AdapterInterface {
     }
 
     return false;
-
-    /*$location = this.applyPathPrefix(dirname);
-    $umask = umask(0);
-    $visibility = $config.get('visibility', 'public');
-    $return = ['path' : $dirname, 'type' : 'dir'];
-
-    if ( ! is_dir($location)) {
-      if (false === @mkdir($location, this.permissionMap['dir'][$visibility], true)
-        || false === is_dir($location)) {
-        $return = false;
-      }
-    }
-
-    umask($umask);
-
-    return $return;*/
   }
 
   /**

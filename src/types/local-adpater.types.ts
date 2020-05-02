@@ -8,16 +8,29 @@ export type ReadStreamResult = {
   stream: ReadStream;
 };
 
-export type WriteConfig = {
-  visibility?: FileVisible;
+export type VisibilityConfig = {
+  visibility?: FileVisible | string;
 };
+export type WriteStreamConfig = {
+  encoding?: string;
+  flags?: string;
+} & VisibilityConfig;
+
+export type UpdateConfig = {
+  mimetype?: boolean;
+} & WriteConfig;
+
+export type WriteConfig = {
+  encoding?: string;
+  flag?: string;
+} & VisibilityConfig;
 
 export type UpdateFileResult = {
   type: string;
   path: string;
   size: number;
-  contents: string;
-  mimetype: string;
+  contents: string | Buffer;
+  mimetype?: string;
 };
 export type ReadFileResult = {
   type: string;

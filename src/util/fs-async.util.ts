@@ -1,15 +1,7 @@
 import { constants, Stats } from 'fs';
 import { dirname, join } from 'path';
 import { PathStatsInterface } from '../interfaces';
-import {
-  accessPromisify,
-  lstatPromisify,
-  mkdirPromisify,
-  readDirPromisify,
-  rmdirPromisify,
-  statPromisify,
-  unlinkPromisify,
-} from './fs-promisify';
+import { access, lstat, mkdir, readdir, rmdir, stat, unlink } from 'fs-extra';
 
 /**
  * check director is symbolic link
@@ -18,7 +10,7 @@ import {
 
 export async function isSymbolicLink(dir: string): Promise<boolean> {
   try {
-    const dirStat = await lstatPromisify(dir);
+    const dirStat = await lstat(dir);
     return dirStat.isSymbolicLink();
   } catch (e) {
     return false;
@@ -31,7 +23,7 @@ export async function isSymbolicLink(dir: string): Promise<boolean> {
  */
 export async function isDir(dir: string): Promise<boolean> {
   try {
-    const dirStat = await lstatPromisify(dir);
+    const dirStat = await lstat(dir);
     return dirStat.isDirectory();
   } catch (e) {}
 
@@ -45,7 +37,7 @@ export async function isDir(dir: string): Promise<boolean> {
  */
 export async function isReadable(dir: string): Promise<boolean> {
   try {
-    await accessPromisify(dir, constants.R_OK);
+    await access(dir, constants.R_OK);
     return true;
   } catch (e) {
     return false;
@@ -56,7 +48,7 @@ export async function isReadable(dir: string): Promise<boolean> {
  *
  * @param dir
  */
-export async function mkDir(dir: string, mode?: number): Promise<string[]> {
+export async function mkDir(dir: string, mode?: number | string): Promise<string[]> {
   if (mode === undefined) {
     mode = 0x1ff ^ process.umask();
   }
@@ -66,7 +58,7 @@ export async function mkDir(dir: string, mode?: number): Promise<string[]> {
   let cDir = dir;
   while (true) {
     try {
-      const stats = await statPromisify(cDir);
+      const stats = await stat(cDir);
 
       if (stats.isDirectory()) {
         break;
@@ -85,7 +77,7 @@ export async function mkDir(dir: string, mode?: number): Promise<string[]> {
 
   for (let i = pathsFound.length - 1; i > -1; i--) {
     const currentFound = pathsFound[i];
-    await mkdirPromisify(currentFound, mode);
+    await mkdir(currentFound, mode as any);
     pathsCreated.push(currentFound);
   }
 
@@ -97,11 +89,11 @@ export async function mkDir(dir: string, mode?: number): Promise<string[]> {
  * @param path
  */
 export async function getRecursiveDirectoryIterator(path: string): Promise<PathStatsInterface[]> {
-  const files = await readDirPromisify(path);
+  const files = await readdir(path);
   const result = await Promise.all(
     files.map((file) => {
       const filePath = join(path, file);
-      return lstatPromisify(filePath).then((stats: Stats) => {
+      return lstat(filePath).then((stats: Stats) => {
         return {
           stats,
           path: filePath,
@@ -124,11 +116,11 @@ export async function getRecursiveDirectoryIterator(path: string): Promise<PathS
  * @param path
  */
 export async function getDirectoryIterator(path: string): Promise<PathStatsInterface[]> {
-  const files = await readDirPromisify(path);
+  const files = await readdir(path);
   return Promise.all(
     files.map((file) => {
       const filePath = join(path, file);
-      return lstatPromisify(filePath).then((stats: Stats) => {
+      return lstat(filePath).then((stats: Stats) => {
         return {
           stats,
           path: filePath,
@@ -143,21 +135,21 @@ export async function getDirectoryIterator(path: string): Promise<PathStatsInter
  * @param dir
  */
 export async function rmDir(dir: string): Promise<boolean> {
-  const files = await readDirPromisify(dir);
+  const files = await readdir(dir);
 
   try {
     for (const file of files) {
       const realPath = join(dir, file);
-      const stats = await statPromisify(realPath);
+      const stats = await stat(realPath);
 
       if (stats.isDirectory()) {
         await rmDir(realPath);
       } else {
-        await unlinkPromisify(realPath);
+        await unlink(realPath);
       }
     }
 
-    await rmdirPromisify(dir);
+    await rmdir(dir);
     return true;
   } catch (e) {
     return false;

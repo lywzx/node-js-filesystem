@@ -9,10 +9,10 @@ export interface PathStatsInterface {
 export interface FileWithMimetypeInterface {
   path: string;
   type: 'file';
-  mimetype: string;
+  mimetype?: string;
 }
 
 export interface FileWithVisibilityInterface {
   path: string;
-  visibility: FileVisible;
+  visibility: FileVisible | string;
 }

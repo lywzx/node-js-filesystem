@@ -1,13 +1,14 @@
-import { Local } from '../src/adapters/local';
-import { join, sep } from 'path';
 import { expect } from 'chai';
+import { ReadStream } from 'fs';
+import { mkdir, realpath, stat, symlink, unlink, writeFile } from 'fs-extra';
 import { uniqueId } from 'lodash';
+import { platform } from 'os';
+import { join, sep } from 'path';
+import { Local } from '../src/adapters/local';
+import { FileVisible } from '../src/enum';
 import { NotSupportedException } from '../src/exceptions';
 import { ListContentInfo, ReadFileResult } from '../src/types/local-adpater.types';
 import { isDir, isSymbolicLink, mkDir } from '../src/util';
-import { ReadStream } from 'fs';
-import { platform } from 'os';
-import { realpathPromisify, symlinkPromisify, unlinkPromisify, writeFilePromisify } from '../src/util/fs-promisify';
 
 function generateTestFile(prefix = '') {
   return `${prefix}file_${uniqueId()}.txt`;
@@ -33,19 +34,19 @@ describe('local adapter test', function (): void {
 
       const target = join(__dirname, 'files/');
       const link = __dirname + sep + 'link_to_files';
-      await symlinkPromisify(target, link);
+      await symlink(target, link);
 
       const adp = new Local(link);
       expect(target, adp.getPathPrefix());
-      await unlinkPromisify(link);
+      await unlink(link);
     });
 
     it('test links are deleted during delete dir', async function () {
       await mkDir(root + 'subdir');
       const original = root + 'original.txt';
       const link = root + 'subdir/link.txt';
-      await writeFilePromisify(original, 'something');
-      await symlinkPromisify(original, link);
+      await writeFile(original, 'something');
+      await symlink(original, link);
       const adp = new Local(root, 'w', Local.SKIP_LINKS);
 
       expect(await isSymbolicLink(link)).to.be.eq(true);
@@ -53,6 +54,8 @@ describe('local adapter test', function (): void {
       await adp.deleteDir('subdir');
 
       expect(await isSymbolicLink(link)).to.be.eq(false);
+
+      await adapter.delete('original.txt');
     });
   });
 
@@ -199,17 +202,6 @@ describe('local adapter test', function (): void {
     });
 
     describe('#listContents', function () {
-      it('test stream wrappers are supported', async function () {
-        if (platform() === 'win32') {
-          return this.skip();
-        }
-
-        const adp = adapter;
-        //const adp = new Local(`file://${root}`);
-
-        expect(await adp.listContents()).to.length(1);
-      });
-
       it('test listing none existing directory', async function () {
         expect(await adapter.listContents('nonexisting/directory')).to.eql([]);
       });
@@ -245,7 +237,7 @@ describe('local adapter test', function (): void {
 
         await adapter.write('link_test/original.txt', 'something');
 
-        await symlinkPromisify(origin, link, 'file');
+        await symlink(origin, link, 'file');
 
         try {
           await adapter.listContents('link_test');
@@ -263,7 +255,7 @@ describe('local adapter test', function (): void {
 
         await adapter.write('link_test_1/original.txt', 'something');
 
-        await symlinkPromisify(origin, link, 'file');
+        await symlink(origin, link, 'file');
 
         const adp = new Local(root, 'w', Local.SKIP_LINKS);
 
@@ -320,9 +312,214 @@ describe('local adapter test', function (): void {
       });
     });
 
-    describe('#getVisibility', function () {});
+    describe('test visibility', function () {
+      it('test visibility private file', async function () {
+        if (platform() === 'win32') {
+          this.skip();
+          // Visibility not supported on Windows.
+        }
 
-    describe('#setVisibility', function () {});
+        const fileName = 'private/path.txt';
+        await adapter.write(fileName, 'content', { visibility: FileVisible.VISIBILITY_PUBLIC });
+        let output = await adapter.getVisibility(fileName);
+
+        expect(output).to.be.an('object');
+        expect(output).haveOwnProperty('visibility');
+        expect(output.visibility).to.be.eq(FileVisible.VISIBILITY_PUBLIC);
+
+        await adapter.setVisibility(fileName, FileVisible.VISIBILITY_PRIVATE);
+
+        output = await adapter.getVisibility(fileName);
+        expect(output).to.be.an('object');
+        expect(output).haveOwnProperty('visibility');
+        expect(output.visibility).to.be.eq(FileVisible.VISIBILITY_PRIVATE);
+
+        const stats = await stat(adapter.applyPathPrefix(fileName));
+        expect(stats.mode & 0o777).to.be.eq(0o600);
+      });
+
+      it('test visibility public file', async function () {
+        if (platform() === 'win32') {
+          // Visibility not supported on Windows.
+          return this.skip();
+        }
+        const path = 'test_visibility/path.txt';
+        await adapter.write(path, 'content', {
+          visibility: FileVisible.VISIBILITY_PRIVATE,
+        });
+        let output = await adapter.getVisibility(path);
+
+        expect(output).to.be.an('object');
+        expect(output).haveOwnProperty('visibility');
+        expect(output.visibility).to.be.eq(FileVisible.VISIBILITY_PRIVATE);
+
+        await adapter.setVisibility(path, FileVisible.VISIBILITY_PUBLIC);
+        output = await adapter.getVisibility(path);
+
+        expect(output).to.be.an('object');
+        expect(output).haveOwnProperty('visibility');
+        expect(output.visibility).to.be.eq(FileVisible.VISIBILITY_PUBLIC);
+
+        const stats = await stat(adapter.applyPathPrefix(path));
+        expect(stats.mode & 0o777).to.be.eq(0o644);
+      });
+
+      it('test create dir default visibility', async function () {
+        if (platform() === 'win32') {
+          // window not support
+          return this.skip();
+        }
+
+        await adapter.createDir('test-dir');
+
+        const output = await adapter.getVisibility('test-dir');
+
+        expect(output).to.be.an('object');
+
+        expect(output).haveOwnProperty('visibility');
+
+        expect(output.visibility).to.be.eq(FileVisible.VISIBILITY_PUBLIC);
+      });
+
+      it('test visibility public dir', async function () {
+        if (platform() === 'win32') {
+          // Visibility not supported on Windows.
+          this.skip();
+        }
+        const dir = 'public-dir';
+        await adapter.createDir(dir, { visibility: FileVisible.VISIBILITY_PRIVATE });
+        let output = await adapter.getVisibility(dir);
+        expect(output).to.be.an('object');
+        expect(output).haveOwnProperty('visibility');
+        expect(output.visibility).to.be.eq(FileVisible.VISIBILITY_PRIVATE);
+
+        await adapter.setVisibility('public-dir', FileVisible.VISIBILITY_PUBLIC);
+        output = await adapter.getVisibility('public-dir');
+        expect(output).to.be.an('object');
+        expect(output).haveOwnProperty('visibility');
+        expect(output.visibility).to.be.eq(FileVisible.VISIBILITY_PUBLIC);
+      });
+
+      it('test visibility private dir', async function () {
+        if (platform() === 'win32') {
+          // Visibility not supported on Windows.
+          return this.skip();
+        }
+        const dir = 'private-dir';
+        await adapter.createDir('private-dir', { visibility: FileVisible.VISIBILITY_PUBLIC });
+        let output = await adapter.getVisibility(dir);
+        expect(output).to.be.an('object');
+        expect(output).haveOwnProperty('visibility');
+        expect(output.visibility).to.be.eq(FileVisible.VISIBILITY_PUBLIC);
+
+        await adapter.setVisibility(dir, FileVisible.VISIBILITY_PRIVATE);
+        output = await adapter.getVisibility(dir);
+
+        expect(output).to.be.an('object');
+        expect(output).haveOwnProperty('visibility');
+        expect(output.visibility).to.be.eq(FileVisible.VISIBILITY_PRIVATE);
+      });
+
+      it('test visibility fail', async function () {
+        expect(await adapter.setVisibility('chmod.fail', FileVisible.VISIBILITY_PRIVATE)).to.be.eq(false);
+      });
+
+      it('test unknown visibility', async function () {
+        if (platform() === 'win32') {
+          // Visibility not supported on Windows.
+          return this.skip();
+        }
+
+        const dir = adapter.applyPathPrefix('subdir');
+
+        await mkdir(dir, 0o750 as any);
+        const output = await adapter.getVisibility('subdir');
+
+        expect(output).to.be.an('object');
+        expect(output).haveOwnProperty('visibility');
+        expect(output.visibility).to.be.eq('0750');
+      });
+
+      it('test customized visibility', async function () {
+        if (platform() === 'win32') {
+          // Visibility not supported on Windows.
+          return this.skip();
+        }
+
+        // override a permission mapping
+        const permissions = {
+          dir: {
+            private: 0o770, // private to me and the gang
+          },
+        };
+
+        const newAdp = new Local(join(root, 'temp'), 'w', Local.DISALLOW_LINKS, permissions);
+
+        await newAdp.createDir('private-dir');
+        await newAdp.setVisibility('private-dir', FileVisible.VISIBILITY_PRIVATE);
+
+        const output = await newAdp.getVisibility('private-dir');
+
+        expect(output.visibility).to.be.eq(FileVisible.VISIBILITY_PRIVATE);
+
+        const stats = await stat(newAdp.applyPathPrefix('private-dir'));
+        expect(stats.mode & 0o777).to.be.eq(0o770);
+      });
+
+      it('test custom visibility', async function () {
+        if (platform() === 'win32') {
+          // Visibility not supported on Windows.
+          return this.skip();
+        }
+
+        // override a permission mapping
+        const permissions = {
+          dir: {
+            private: 0o777, // private to me and the gang
+          },
+        };
+
+        const newAdp = new Local(join(root, 'temp_custom'), 'w', Local.DISALLOW_LINKS, permissions);
+
+        await newAdp.createDir('yolo-dir');
+        await newAdp.setVisibility('yolo-dir', 'yolo' as any);
+
+        const output = await newAdp.getVisibility('yolo-dir');
+        expect(output.visibility).to.be.eq('yolo');
+        const stats = await stat(newAdp.applyPathPrefix('private-dir'));
+        expect(stats.mode & 0o777).to.be.eq(0o777);
+      });
+
+      it('test first visibility octet', async function () {
+        if (platform() === 'win32') {
+          return this.skip();
+        }
+        const permissions = {
+          file: {
+            public: 0o644,
+            private: 0o600,
+          },
+          dir: {
+            sticky: 0o1777,
+            public: 0o755,
+            private: 0o700,
+          },
+        };
+
+        const newAdp = new Local(join(root, 'first_visibility_octet'), 'w', Local.DISALLOW_LINKS, permissions);
+
+        await newAdp.createDir('sticky-dir');
+        await newAdp.setVisibility('sticky-dir', 'sticky');
+
+        const output = await adapter.getVisibility('sticky-dir');
+        expect(output.visibility).to.be.eq('sticky');
+
+        const stats = await stat(newAdp.applyPathPrefix('sticky-dir'));
+        expect(stats.mode & 0o777).to.be.eq(0o1777);
+      });
+    });
+
+    // describe('#setVisibility', function () {});
 
     describe('#createDir', function () {
       it('test create zero dir', async function () {
@@ -334,9 +531,13 @@ describe('local adapter test', function (): void {
       });
 
       it('test create dir failed', async function () {
-        const dirname = '\\ss\\//!@?S%^@\\ssfail.plz';
+        const origin = 'exits_file';
 
-        expect(await adapter.createDir(dirname)).to.be.eq(false);
+        await adapter.write(origin, '');
+
+        expect(await adapter.createDir(origin)).to.be.eq(false);
+
+        await adapter.delete(origin);
       });
     });
 
@@ -389,7 +590,14 @@ describe('local adapter test', function (): void {
       });
 
       it('test get path prefix', async function () {
-        expect(await realpathPromisify(root)).to.be.eq(await realpathPromisify(adapter.getPathPrefix() as string));
+        expect(await realpath(root)).to.be.eq(await realpath(adapter.getPathPrefix() as string));
+      });
+
+      it('test apply path prefix', function () {
+        const newAdp = new Local(root);
+        newAdp.setPathPrefix('');
+
+        expect(newAdp.applyPathPrefix('')).to.be.eq('');
       });
     });
   });

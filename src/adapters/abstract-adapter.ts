@@ -1,3 +1,5 @@
+import { sep } from 'path';
+
 export abstract class AbstractAdapter {
   /**
    * @var string|undefined path prefix
@@ -7,7 +9,7 @@ export abstract class AbstractAdapter {
   /**
    * @var string
    */
-  protected pathSeparator = '/';
+  protected pathSeparator = sep;
 
   /**
    * Set the path prefix.
