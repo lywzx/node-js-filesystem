@@ -1,6 +1,6 @@
 import { createReadStream, createWriteStream, ReadStream, realpathSync } from 'fs';
 import { chmod, copyFile, lstat, pathExists, readFile, rename, stat, unlink, writeFile } from 'fs-extra';
-import { filter, isBuffer, merge, toPairs } from 'lodash';
+import { filter, isBuffer, merge, toPairs, padStart } from 'lodash';
 import { dirname, sep } from 'path';
 import { format } from 'util';
 import { FileVisible } from '../enum';
@@ -98,7 +98,9 @@ export class Local extends AbstractAdapter implements AdapterInterface {
    */
   public constructor(root: string, writeFlags = 'w', linkHandling = Local.DISALLOW_LINKS, permissions?: object) {
     super();
-    root = isSymbolicLinkSync(root) ? realpathSync(root) : root;
+    try {
+      root = isSymbolicLinkSync(root) ? realpathSync(root) : root;
+    } catch (e) {}
     this.permissionMap = merge({}, Local.permissions, permissions);
     this.ensureDirectorySync(root);
 
@@ -456,8 +458,8 @@ export class Local extends AbstractAdapter implements AdapterInterface {
     const location = this.applyPathPrefix(path);
     const stats = await lstat(location);
     const mode = stats.mode;
-    const vb = mode & 0o777;
-    const visibility = '0' + vb.toString(8);
+    const vb = mode & 0o1777;
+    const visibility = padStart(vb.toString(8), 4, '0');
 
     const permissions = toPairs(this.permissionMap[stats.isDirectory() ? 'dir' : 'file']);
 

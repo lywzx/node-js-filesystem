@@ -16,8 +16,12 @@ export function isSymbolicLinkSync(dir: string): boolean {
  * @param {string} dir
  */
 export function isDirSync(dir: string): boolean {
-  const dirStat = statSync(dir);
-  return dirStat.isDirectory();
+  try {
+    const dirStat = statSync(dir);
+    return dirStat.isDirectory();
+  } catch (e) {
+    return false;
+  }
 }
 
 /**
