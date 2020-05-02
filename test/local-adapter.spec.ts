@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { ReadStream } from 'fs';
-import { mkdir, realpath, stat, symlink, unlink, writeFile } from 'fs-extra';
+import { lstat, mkdir, realpath, stat, symlink, unlink, writeFile } from 'fs-extra';
 import { uniqueId } from 'lodash';
 import { platform } from 'os';
 import { join, sep } from 'path';
@@ -335,7 +335,9 @@ describe('local adapter test', function (): void {
         expect(output.visibility).to.be.eq(FileVisible.VISIBILITY_PRIVATE);
 
         const stats = await stat(adapter.applyPathPrefix(fileName));
-        expect(stats.mode & 0o777).to.be.eq(0o600);
+        expect(stats.mode & 0o1777).to.be.eq(0o600);
+
+        await adapter.deleteDir('private');
       });
 
       it('test visibility public file', async function () {
@@ -361,7 +363,9 @@ describe('local adapter test', function (): void {
         expect(output.visibility).to.be.eq(FileVisible.VISIBILITY_PUBLIC);
 
         const stats = await stat(adapter.applyPathPrefix(path));
-        expect(stats.mode & 0o777).to.be.eq(0o644);
+        expect(stats.mode & 0o1777).to.be.eq(0o644);
+
+        await adapter.deleteDir('test_visibility');
       });
 
       it('test create dir default visibility', async function () {
@@ -375,10 +379,10 @@ describe('local adapter test', function (): void {
         const output = await adapter.getVisibility('test-dir');
 
         expect(output).to.be.an('object');
-
         expect(output).haveOwnProperty('visibility');
-
         expect(output.visibility).to.be.eq(FileVisible.VISIBILITY_PUBLIC);
+
+        await adapter.deleteDir('test-dir');
       });
 
       it('test visibility public dir', async function () {
@@ -398,6 +402,8 @@ describe('local adapter test', function (): void {
         expect(output).to.be.an('object');
         expect(output).haveOwnProperty('visibility');
         expect(output.visibility).to.be.eq(FileVisible.VISIBILITY_PUBLIC);
+
+        await adapter.deleteDir('public-dir');
       });
 
       it('test visibility private dir', async function () {
@@ -418,6 +424,8 @@ describe('local adapter test', function (): void {
         expect(output).to.be.an('object');
         expect(output).haveOwnProperty('visibility');
         expect(output.visibility).to.be.eq(FileVisible.VISIBILITY_PRIVATE);
+
+        await adapter.deleteDir('private-dir');
       });
 
       it('test visibility fail', async function () {
@@ -438,6 +446,8 @@ describe('local adapter test', function (): void {
         expect(output).to.be.an('object');
         expect(output).haveOwnProperty('visibility');
         expect(output.visibility).to.be.eq('0750');
+
+        await adapter.deleteDir('subdir');
       });
 
       it('test customized visibility', async function () {
@@ -463,7 +473,9 @@ describe('local adapter test', function (): void {
         expect(output.visibility).to.be.eq(FileVisible.VISIBILITY_PRIVATE);
 
         const stats = await stat(newAdp.applyPathPrefix('private-dir'));
-        expect(stats.mode & 0o777).to.be.eq(0o770);
+        expect(stats.mode & 0o1777).to.be.eq(0o770);
+
+        await adapter.deleteDir('temp');
       });
 
       it('test custom visibility', async function () {
@@ -482,12 +494,14 @@ describe('local adapter test', function (): void {
         const newAdp = new Local(join(root, 'temp_custom'), 'w', Local.DISALLOW_LINKS, permissions);
 
         await newAdp.createDir('yolo-dir');
-        await newAdp.setVisibility('yolo-dir', 'yolo' as any);
+        await newAdp.setVisibility('yolo-dir', 'yolo');
 
         const output = await newAdp.getVisibility('yolo-dir');
         expect(output.visibility).to.be.eq('yolo');
-        const stats = await stat(newAdp.applyPathPrefix('private-dir'));
-        expect(stats.mode & 0o777).to.be.eq(0o777);
+        const stats = await stat(newAdp.applyPathPrefix('yolo-dir'));
+        expect(stats.mode & 0o1777).to.be.eq(0o777);
+
+        await adapter.deleteDir('temp_custom');
       });
 
       it('test first visibility octet', async function () {
@@ -511,11 +525,13 @@ describe('local adapter test', function (): void {
         await newAdp.createDir('sticky-dir');
         await newAdp.setVisibility('sticky-dir', 'sticky');
 
-        const output = await adapter.getVisibility('sticky-dir');
+        const output = await newAdp.getVisibility('sticky-dir');
         expect(output.visibility).to.be.eq('sticky');
 
-        const stats = await stat(newAdp.applyPathPrefix('sticky-dir'));
-        expect(stats.mode & 0o777).to.be.eq(0o1777);
+        const stats = await lstat(newAdp.applyPathPrefix('sticky-dir'));
+        expect(stats.mode & 0o1777).to.be.eq(0o1777);
+
+        await adapter.deleteDir('first_visibility_octet');
       });
     });
 

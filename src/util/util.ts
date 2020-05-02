@@ -52,5 +52,5 @@ export async function guessMimeType(path: string, content?: Buffer): Promise<str
  * @param {number} mask 1、execute; 4、read; 2、write
  */
 export function fileHasPermission(stats: Stats, mask: number): boolean {
-  return !!(mask & parseInt((stats.mode & 0o777).toString(8)[0], 10));
+  return !!(mask & parseInt((stats.mode & 0o1777).toString(8)[0], 10));
 }
