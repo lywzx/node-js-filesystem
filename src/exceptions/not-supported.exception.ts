@@ -1,6 +1,6 @@
 export class NotSupportedException extends Error {
-  constructor(message?: string) {
-    super(message);
+  constructor(public path: string) {
+    super(`Links are not supported, encountered link at ${path}`);
     this.name = NotSupportedException.name;
   }
 }

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { ReadStream } from 'fs';
-import { lstat, mkdir, realpath, stat, symlink, unlink, writeFile } from 'fs-extra';
+import { lstat, mkdir, realpath, rmdir, stat, symlink, unlink, writeFile } from 'fs-extra';
 import { uniqueId } from 'lodash';
 import { platform } from 'os';
 import { join, sep } from 'path';
@@ -13,6 +13,8 @@ import { isDir, isSymbolicLink, mkDir } from '../src/util';
 function generateTestFile(prefix = '') {
   return `${prefix}file_${uniqueId()}.txt`;
 }
+
+const IS_WINDOWS = platform() === 'win32';
 
 describe('local adapter test', function (): void {
   let adapter: Local;
@@ -27,7 +29,7 @@ describe('local adapter test', function (): void {
 
   describe('test link', function () {
     it('test constructor with link', async function () {
-      if (platform() === 'win32') {
+      if (IS_WINDOWS) {
         // File permissions not supported on Windows.
         return this.skip();
       }
@@ -61,6 +63,21 @@ describe('local adapter test', function (): void {
 
   it('test relative roots are supported', function () {
     new Local(join(__dirname, 'files/../files'));
+  });
+
+  it('test not writable root', async function () {
+    if (IS_WINDOWS) {
+      // File permissions not supported on Windows.
+      this.skip();
+    }
+    const rootDir = join(root, 'not-writable');
+    try {
+      await mkDir(rootDir, 0o000);
+      new Local(rootDir);
+    } catch (e) {
+      await rmdir(rootDir);
+      expect(e.message).to.be.include('readable');
+    }
   });
 
   describe('local adapter methods', function () {
@@ -314,7 +331,7 @@ describe('local adapter test', function (): void {
 
     describe('test visibility', function () {
       it('test visibility private file', async function () {
-        if (platform() === 'win32') {
+        if (IS_WINDOWS) {
           this.skip();
           // Visibility not supported on Windows.
         }
@@ -341,7 +358,7 @@ describe('local adapter test', function (): void {
       });
 
       it('test visibility public file', async function () {
-        if (platform() === 'win32') {
+        if (IS_WINDOWS) {
           // Visibility not supported on Windows.
           return this.skip();
         }
@@ -369,7 +386,7 @@ describe('local adapter test', function (): void {
       });
 
       it('test create dir default visibility', async function () {
-        if (platform() === 'win32') {
+        if (IS_WINDOWS) {
           // window not support
           return this.skip();
         }
@@ -386,7 +403,7 @@ describe('local adapter test', function (): void {
       });
 
       it('test visibility public dir', async function () {
-        if (platform() === 'win32') {
+        if (IS_WINDOWS) {
           // Visibility not supported on Windows.
           this.skip();
         }
@@ -407,7 +424,7 @@ describe('local adapter test', function (): void {
       });
 
       it('test visibility private dir', async function () {
-        if (platform() === 'win32') {
+        if (IS_WINDOWS) {
           // Visibility not supported on Windows.
           return this.skip();
         }
@@ -433,7 +450,7 @@ describe('local adapter test', function (): void {
       });
 
       it('test unknown visibility', async function () {
-        if (platform() === 'win32') {
+        if (IS_WINDOWS) {
           // Visibility not supported on Windows.
           return this.skip();
         }
@@ -451,7 +468,7 @@ describe('local adapter test', function (): void {
       });
 
       it('test customized visibility', async function () {
-        if (platform() === 'win32') {
+        if (IS_WINDOWS) {
           // Visibility not supported on Windows.
           return this.skip();
         }
@@ -479,7 +496,7 @@ describe('local adapter test', function (): void {
       });
 
       it('test custom visibility', async function () {
-        if (platform() === 'win32') {
+        if (IS_WINDOWS) {
           // Visibility not supported on Windows.
           return this.skip();
         }
@@ -505,7 +522,7 @@ describe('local adapter test', function (): void {
       });
 
       it('test first visibility octet', async function () {
-        if (platform() === 'win32') {
+        if (IS_WINDOWS) {
           return this.skip();
         }
         const permissions = {

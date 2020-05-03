@@ -4,6 +4,19 @@ import { ReadInterface } from './read.interface';
 import { Stream } from 'stream';
 import { FileVisible } from '../enum';
 
+export type FileType = 'file' | 'dir' | 'link';
+
+/**
+ * write method response
+ */
+export type AdapterWriteResultType = {
+  path: string;
+  contents: string | Buffer;
+  type: FileType;
+  size: number;
+  visibility: FileVisible | string;
+};
+
 export interface AdapterInterface extends ReadInterface {
   /**
    * Write a new file.
@@ -14,7 +27,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @return array|false false on failure file meta data on success
    */
-  write(path: string, contents: string, config: any): Promise<Array<any> | false>;
+  write(path: string, contents: string | Buffer, config: any): Promise<AdapterWriteResultType | false>;
   /**
    * Write a new file using a stream.
    *
@@ -35,7 +48,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @return array|false false on failure file meta data on success
    */
-  update(path: string, contents: string, config: any): Promise<object | false>;
+  update(path: string, contents: string | Buffer, config: any): Promise<object | false>;
 
   /**
    * Update a file using a stream.
@@ -104,5 +117,5 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @return array|false file meta data
    */
-  setVisibility(path: string, visibility: FileVisible): Promise<object | false>;
+  setVisibility(path: string, visibility: FileVisible | string): Promise<object | false>;
 }

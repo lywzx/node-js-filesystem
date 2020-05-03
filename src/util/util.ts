@@ -1,9 +1,10 @@
-import { Stats } from 'fs';
+import { ReadStream, Stats } from 'fs';
 import { fromFile, fromBuffer } from 'file-type';
 import { getType as getMimeType } from 'mime';
 import { extname } from 'path';
+import { Stream } from 'stream';
+import { FileType } from '../interfaces';
 
-export type FileType = 'file' | 'dir' | 'link';
 /**
  * read file type
  * @param stats
@@ -53,4 +54,29 @@ export async function guessMimeType(path: string, content?: Buffer): Promise<str
  */
 export function fileHasPermission(stats: Stats, mask: number): boolean {
   return !!(mask & parseInt((stats.mode & 0o1777).toString(8)[0], 10));
+}
+
+/**
+ * Normalize relative directories in a path.
+ *
+ * @param {string} path
+ *
+ * @throws LogicException
+ *
+ * @return string
+ */
+export function normalizeRelativePath(path: string): string {
+  return '';
+}
+
+/**
+ * js check variable is stream
+ * @param stream
+ */
+export function isReadableStream(stream: ReadStream) {
+  return (
+    stream instanceof Stream &&
+    typeof ((stream as any)._read === 'function') &&
+    typeof ((stream as any)._readableState === 'object')
+  );
 }

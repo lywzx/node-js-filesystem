@@ -1,6 +1,7 @@
 import { Stream } from 'stream';
 import { FileVisible } from '../enum';
 import { Handler } from '../handler';
+import { AdapterWriteResultType } from './adapter.interface';
 import { PluginInterface } from './plugin.interface';
 
 export abstract class FilesystemAbstract {
@@ -22,7 +23,7 @@ export abstract class FilesystemAbstract {
    *
    * @return {string|false} The file contents or false on failure.
    */
-  public abstract async read(path: string): Promise<string | false>;
+  public abstract async read(path: string): Promise<false | string | Buffer>;
 
   /**
    * Retrieves a read-stream for a path.
@@ -104,14 +105,14 @@ export abstract class FilesystemAbstract {
    * Write a new file.
    *
    * @param {string} path     The path of the new file.
-   * @param {string} contents The file contents.
+   * @param {string | Buffer} contents The file contents.
    * @param {array}  config   An optional configuration array.
    *
    * @throws FileExistsException
    *
    * @return {Promise<boolean>} True on success, false on failure.
    */
-  public abstract write(path: string, contents: string, config: any): Promise<boolean>;
+  public abstract write(path: string, contents: string | Buffer, config: any): Promise<false | AdapterWriteResultType>;
 
   /**
    * Write a new file using a stream.
@@ -216,13 +217,13 @@ export abstract class FilesystemAbstract {
    * Set the visibility for a file.
    *
    * @param {string} path       The path to the file.
-   * @param {FileVisible} visibility One of 'public' or 'private'.
+   * @param {FileVisible|string} visibility One of 'public' or 'private'.
    *
    * @throws FileNotFoundException
    *
    * @return {boolean} True on success, false on failure.
    */
-  public abstract async setVisibility(path: string, visibility: FileVisible): Promise<boolean>;
+  public abstract async setVisibility(path: string, visibility: FileVisible | string): Promise<boolean>;
 
   /**
    * Create a file or update if exists.
@@ -257,7 +258,7 @@ export abstract class FilesystemAbstract {
    *
    * @return {string|false} The file contents, or false on failure.
    */
-  public abstract async readAndDelete(path: string): Promise<string | false>;
+  public abstract async readAndDelete(path: string): Promise<false | string | Buffer>;
 
   /**
    * Get a file/directory handler.

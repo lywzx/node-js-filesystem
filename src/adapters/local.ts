@@ -534,13 +534,21 @@ export class Local extends AbstractAdapter implements AdapterInterface {
       return false;
     }
 
+    const contents = await getRecursiveDirectoryIterator(location);
+
+    for (const file of contents) {
+      await this.guardAgainstUnreadableFileInfo(file);
+      // in js not need this code
+      // await this.deleteFileInfoObject(file);
+    }
+
     return rmDir(location);
   }
 
   /**
    * @param {PathStatsInterface} file
    */
-  protected async deleteFileInfoObject(file: PathStatsInterface) {
+  /*protected async deleteFileInfoObject(file: PathStatsInterface) {
     switch (getType(file.stats)) {
       case 'dir': {
         await this.deleteDir(file.path);
@@ -552,7 +560,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
         break;
       }
     }
-  }
+  }*/
 
   /**
    * Normalize the file info.
@@ -569,7 +577,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
     }
 
     if (this.linkHandling & Local.DISALLOW_LINKS) {
-      throw new NotSupportedException('not support for link');
+      throw new NotSupportedException(file.path);
     }
   }
 
@@ -608,7 +616,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
    */
   protected async guardAgainstUnreadableFileInfo(file: PathStatsInterface) {
     if (!(await isReadable(file.path))) {
-      throw new UnReadableFileException(`file ${file.path} unreadable`);
+      throw new UnReadableFileException(file.path);
     }
   }
 }

@@ -1,6 +1,6 @@
 export class UnReadableFileException extends Error {
-  constructor(message?: string) {
-    super(message);
+  constructor(public path: string) {
+    super(`Unreadable file encountered: ${path}`);
     this.name = UnReadableFileException.name;
   }
 }

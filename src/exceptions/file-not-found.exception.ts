@@ -1,6 +1,6 @@
 export class FileNotFoundException extends Error {
-  constructor(message?: string) {
-    super(message);
+  constructor(path: string) {
+    super(`File not found at path: ${path}`);
     this.name = FileNotFoundException.name;
   }
 }
