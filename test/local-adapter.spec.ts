@@ -4,7 +4,7 @@ import { lstat, mkdir, realpath, rmdir, stat, symlink, unlink, writeFile } from 
 import { uniqueId } from 'lodash';
 import { platform } from 'os';
 import { join, sep } from 'path';
-import { Local } from '../src/adapters/local';
+import { Local } from '../src/adapters';
 import { FileVisible } from '../src/enum';
 import { NotSupportedException } from '../src/exceptions';
 import { ListContentInfo, ReadFileResult } from '../src/types/local-adpater.types';
@@ -20,7 +20,7 @@ describe('local adapter test', function (): void {
   let adapter: Local;
   let root: string;
 
-  beforeEach(function () {
+  before(function () {
     root = join(__dirname, 'files/');
     adapter = new Local(root);
   });

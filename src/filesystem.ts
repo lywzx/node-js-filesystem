@@ -1,6 +1,4 @@
-import { stream } from 'file-type';
 import { ReadStream } from 'fs';
-import { createDeflateRaw } from 'zlib';
 import { CanOverwriteFiles } from './adapters/can-overwrite-files';
 import { FileVisible } from './enum';
 import {
@@ -9,22 +7,23 @@ import {
   InvalidArgumentException,
   RootViolationException,
 } from './exceptions';
-import { Handler } from './handler';
-import { AdapterInterface, FilesystemAbstract, FileWithMimetypeInterface, PluginInterface } from './interfaces';
+import { AdapterInterface, FilesystemAbstract, FileWithMimetypeInterface } from './interfaces';
 import { FilesystemConfigInterface } from './interfaces';
 import { ReadFileResult } from './types/local-adpater.types';
 import { isReadableStream, normalizeRelativePath } from './util/util';
 import { get } from 'lodash';
 
-export class Filesystem implements FilesystemAbstract {
-  public constructor(protected adapter: AdapterInterface, protected config: FilesystemConfigInterface | null = null) {}
+export class Filesystem extends FilesystemAbstract {
+  public constructor(protected adapter: AdapterInterface, protected config: FilesystemConfigInterface | null = null) {
+    super();
+  }
 
   /**
    * get default config
    * @param key
    * @param defaultValue
    */
-  protected getConfig(key: string, defaultValue?: any) {
+  protected getConfig(key: keyof FilesystemConfigInterface, defaultValue?: any) {
     return get(this.config, key, defaultValue);
   }
 
@@ -246,9 +245,8 @@ export class Filesystem implements FilesystemAbstract {
   public async listContents(directory = '', recursive = false) {
     directory = normalizeRelativePath(directory);
 
-    const contents = await this.getAdapter().listContents(directory, recursive);
+    return this.getAdapter().listContents(directory, recursive);
 
-    // todo complete
     /*$directory = Util::normalizePath($directory);
   $contents = this.getAdapter()->listContents($directory, $recursive);
 
@@ -347,10 +345,10 @@ export class Filesystem implements FilesystemAbstract {
   /**
    * @inheritdoc
    */
-  public get(path: string, $handler = null) {
+  /*public get(path: string, $handler = null) {
     path = normalizeRelativePath(path);
 
-    /*$path = Util::normalizePath($path);
+    $path = Util::normalizePath($path);
 
   if ( ! $handler) {
     $metadata = this.getMetadata($path);
@@ -360,8 +358,8 @@ export class Filesystem implements FilesystemAbstract {
   $handler->setPath($path);
   $handler->setFilesystem($this);
 
-  return $handler;*/
-  }
+  return $handler;
+  }*/
 
   /**
    * Assert a file is present.

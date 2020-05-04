@@ -8,3 +8,4 @@ export * from './un-readable-file.exception';
 export * from './not-supported.exception';
 export * from './invalid-argument.exception';
 export * from './root-violation.exception';
+export * from './plugin-not-found.exception';

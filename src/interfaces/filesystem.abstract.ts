@@ -1,10 +1,17 @@
 import { Stream } from 'stream';
 import { FileVisible } from '../enum';
+import { PluginNotFoundException } from '../exceptions';
 import { Handler } from '../handler';
+import { ListContentInfo } from '../types/local-adpater.types';
 import { AdapterWriteResultType } from './adapter.interface';
 import { PluginInterface } from './plugin.interface';
 
 export abstract class FilesystemAbstract {
+  /**
+   * @var array
+   */
+  protected plugins: any = {};
+
   /**
    * Check whether a file exists.
    *
@@ -44,7 +51,7 @@ export abstract class FilesystemAbstract {
    *
    * @return array A list of file metadata.
    */
-  public abstract async listContents(directory: string, recursive: boolean): Promise<any[]>;
+  public abstract async listContents(directory: string, recursive: boolean): Promise<ListContentInfo[]>;
 
   /**
    * Get a file's metadata.
@@ -53,9 +60,9 @@ export abstract class FilesystemAbstract {
    *
    * @throws {FileNotFoundException}
    *
-   * @return {Promise<array|false>} The file metadata or false on failure.
+   * @return {Promise<array|undefined>} The file metadata or false on failure.
    */
-  public abstract async getMetadata(path: string): Promise<object | false>;
+  public abstract async getMetadata(path: string): Promise<ListContentInfo | undefined>;
 
   /**
    * Get a file's size.
@@ -270,7 +277,7 @@ export abstract class FilesystemAbstract {
    *
    * @return Handler Either a file or directory handler.
    */
-  public abstract async get(path: string, handler: Handler): Promise<Handler>;
+  // public abstract async get(path: string, handler: Handler): Promise<Handler>;
 
   /**
    * Register a plugin.
@@ -279,5 +286,23 @@ export abstract class FilesystemAbstract {
    *
    * @return $this
    */
-  public abstract addPlugin(plugin: PluginInterface): FilesystemAbstract;
+  public addPlugin(plugin: PluginInterface): FilesystemAbstract {
+    return this;
+  }
+
+  /**
+   * Find a specific plugin.
+   *
+   * @param {string} method
+   *
+   * @throws PluginNotFoundException
+   *
+   * @return PluginInterface
+   */
+  protected findPlugin(method: string) {
+    if (!(method in this.plugins)) {
+      throw new PluginNotFoundException(method);
+    }
+    return this.plugins[method];
+  }
 }

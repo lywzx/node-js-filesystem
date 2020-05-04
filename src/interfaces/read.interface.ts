@@ -30,7 +30,7 @@ export interface ReadInterface {
    * @param {boolean} recursive
    * @returns {Array}
    */
-  listContents(directory: string, recursive: boolean): Promise<Array<any>>;
+  listContents(directory: string, recursive: boolean): Promise<ListContentInfo[]>;
 
   /**
    * Get all the meta data of a file or directory.
