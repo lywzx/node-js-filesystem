@@ -1,12 +1,16 @@
 import { AdapterInterface } from '../interfaces';
-import { AbstractAdapter } from './abstract-adapter';
-import { Client } from 'basic-ftp';
+import { AbstractFtpAdapter } from './abstract-ftp-adapter';
 
-export class Ftp extends AbstractAdapter implements AdapterInterface {
+export class Ftp extends AbstractFtpAdapter {
   /**
-   * @var int
+   * @var Client
    */
-  protected transferMode = '';
+  protected client: Client;
+
+  /**
+   * @var number
+   */
+  protected transferMode = 0;
 
   /**
    * @var null|bool
@@ -46,14 +50,14 @@ export class Ftp extends AbstractAdapter implements AdapterInterface {
   ];
 
   /**
-   * @var bool
+   * @var {boolean}
    */
   protected isPureFtpd: boolean;
 
   /**
    * Set the transfer mode.
    *
-   * @param int mode
+   * @param {} mode
    *
    * @return this
    */
@@ -66,11 +70,11 @@ export class Ftp extends AbstractAdapter implements AdapterInterface {
   /**
    * Set if Ssl is enabled.
    *
-   * @param bool ssl
+   * @param {boolean} ssl
    *
    * @return this
    */
-  public setSsl(ssl) {
+  public setSsl(ssl: boolean) {
     this.ssl = !!ssl;
 
     return this;
@@ -79,28 +83,28 @@ export class Ftp extends AbstractAdapter implements AdapterInterface {
   /**
    * Set if passive mode should be used.
    *
-   * @param bool passive
+   * @param {boolean} passive
    */
   public setPassive(passive = true) {
     this.passive = passive;
   }
 
   /**
-   * @param bool ignorePassiveAddress
+   * @param {boolean} ignorePassiveAddress
    */
-  public setIgnorePassiveAddress(ignorePassiveAddress) {
+  public setIgnorePassiveAddress(ignorePassiveAddress: boolean) {
     this.ignorePassiveAddress = ignorePassiveAddress;
   }
 
   /**
-   * @param bool recurseManually
+   * @param {boolean} recurseManually
    */
-  public setRecurseManually(recurseManually) {
+  public setRecurseManually(recurseManually: boolean) {
     this.recurseManually = recurseManually;
   }
 
   /**
-   * @param bool utf8
+   * @param {boolean} utf8
    */
   public setUtf8(utf8) {
     this.utf8 = !!utf8;
@@ -123,7 +127,7 @@ export class Ftp extends AbstractAdapter implements AdapterInterface {
     this.login();
     this.setUtf8Mode();
     this.setConnectionPassiveMode();
-    this.setConnectionRoot();
+    this.setConnectionRoot();有没有8栋的群，拉一把
     this.isPureFtpd = this.isPureFtpdServer();*/
   }
 
