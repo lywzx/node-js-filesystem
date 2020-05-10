@@ -8,10 +8,6 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    * @var Client
    */
   protected client: Client;
-  /**
-   * @var mixed
-   */
-  protected connection;
 
   /**
    * @var string
@@ -85,7 +81,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @param {FtpAdapterConstructorConfigInterface} config
    */
-  public constructor(config: FtpAdapterConstructorConfigInterface) {
+  public constructor(protected config: FtpAdapterConstructorConfigInterface) {
     super();
     this.client = new Client(config.timeout || 3000);
     this.setConfig(config);

@@ -1,8 +1,6 @@
+import { AccessOptions } from 'basic-ftp';
+
 // ftp adapter config
-export interface FtpAdapterConstructorConfigInterface {
+export interface FtpAdapterConstructorConfigInterface extends AccessOptions {
   timeout?: number;
-  host: string;
-  username: string;
-  password: string;
-  recurseManually: string;
 }

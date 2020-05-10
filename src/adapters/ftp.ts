@@ -1,12 +1,8 @@
 import { AdapterInterface } from '../interfaces';
 import { AbstractFtpAdapter } from './abstract-ftp-adapter';
+import { omit } from 'lodash';
 
 export class Ftp extends AbstractFtpAdapter {
-  /**
-   * @var Client
-   */
-  protected client: Client;
-
   /**
    * @var number
    */
@@ -75,7 +71,7 @@ export class Ftp extends AbstractFtpAdapter {
    * @return this
    */
   public setSsl(ssl: boolean) {
-    this.ssl = !!ssl;
+    this.ssl = ssl;
 
     return this;
   }
@@ -113,28 +109,18 @@ export class Ftp extends AbstractFtpAdapter {
   /**
    * Connect to the FTP server.
    */
-  public connect() {
-    /*if (this.ssl) {
-      this.connection = @ftp_ssl_connect(this.getHost(), this.getPort(), this.getTimeout());
-    } else {
-      this.connection = @ftp_connect(this.getHost(), this.getPort(), this.getTimeout());
-    }
-
-    if ( ! this.connection) {
-    throw new ConnectionRuntimeException('Could not connect to host: ' . this.getHost() . ', port:' . this.getPort());
-  }
-
-    this.login();
-    this.setUtf8Mode();
-    this.setConnectionPassiveMode();
-    this.setConnectionRoot();有没有8栋的群，拉一把
-    this.isPureFtpd = this.isPureFtpdServer();*/
+  public async connect() {
+    return this.client.connect(this.getHost(), this.getPort());
   }
 
   /**
    * Set the connection to UTF-8 mode.
    */
   protected setUtf8Mode() {
+    this.client.ftp.encoding;
+    if (this.client.ftp.encoding === 'utf8') {
+      // todo
+    }
     /*if (this.utf8) {
       response = ftp_raw(this.connection, "OPTS UTF8 ON");
       if (substr(response[0], 0, 3) !== '200') {
@@ -185,7 +171,12 @@ export class Ftp extends AbstractFtpAdapter {
    *
    * @throws ConnectionRuntimeException
    */
-  protected login() {
+  protected async login() {
+    await this.client.access(omit(this.config, ['timeout']));
+    if (this.client.closed) {
+      throw new Error('');
+    }
+
     /*set_error_handler(function () {
     });
     isLoggedIn = ftp_login(
@@ -208,11 +199,9 @@ export class Ftp extends AbstractFtpAdapter {
    * Disconnect from the FTP server.
    */
   public disconnect() {
-    /*if (is_resource(this.connection)) {
-    @ftp_close(this.connection);
+    if (!this.client.closed) {
+      this.client.close();
     }
-
-    this.connection = null;*/
   }
 
   /**
@@ -493,8 +482,7 @@ return result;*/
    * @throws ConnectionErrorException
    */
   public isConnected() {
-    /*return is_resource(this.connection)
-    && this.getRawExecResponseCode('NOOP') === 200;*/
+    return !this.client.closed;
   }
 
   /**
