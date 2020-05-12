@@ -102,7 +102,7 @@ export class Ftp extends AbstractFtpAdapter {
   /**
    * @param {boolean} utf8
    */
-  public setUtf8(utf8) {
+  public setUtf8(utf8: boolean) {
     this.utf8 = !!utf8;
   }
 
@@ -294,7 +294,9 @@ return result;*/
   /**
    * @inheritdoc
    */
-  public createDir(dirname, config: any) {
+  public async createDir(dirname: string, config: any) {
+    this.client.ensureDir(dirname);
+
     /*connection = this.getConnection();
   directories = explode('/', dirname);
 

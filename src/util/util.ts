@@ -80,3 +80,24 @@ export function isReadableStream(stream: ReadStream) {
     typeof ((stream as any)._readableState === 'object')
   );
 }
+
+/**
+ * string chunk by length
+ * @param {string} str
+ * @param {number} length
+ * @return {string[]}
+ */
+export function stringChunk(str: string, length = 1): string[] {
+  const len = str.length;
+  const ret = [];
+  let start = 0;
+  while (true) {
+    if (start >= len) {
+      break;
+    }
+    const chunked = str.substr(start, length);
+    ret.push(chunked);
+    start += length;
+  }
+  return ret;
+}

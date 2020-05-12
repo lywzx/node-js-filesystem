@@ -1,7 +1,8 @@
 import { FtpAdapterConstructorConfigInterface } from '../interfaces/ftp-adapter.interface';
 import { AbstractAdapter } from './abstract-adapter';
 import { Client } from 'basic-ftp';
-import { upperFirst, isFunction } from 'lodash';
+import { upperFirst, isFunction, first, isNumber, chunk } from 'lodash';
+import { stringChunk } from '../util/util';
 
 export abstract class AbstractFtpAdapter extends AbstractAdapter {
   /**
@@ -502,8 +503,9 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @return string the system type
    */
-  protected detectSystemType(item: string) {
-    // return preg_match('/^[0-9]{2,4}-[0-9]{2}-[0-9]{2}/', $item) ? 'windows' : 'unix';
+  protected async detectSystemType(item: string) {
+    const result = await this.client.send('SYSTEM');
+    return /^[0-9]{2,4}-[0-9]{2}-[0-9]{2}/.test(result.message) ? 'windows' : 'unix';
   }
 
   /**
@@ -513,18 +515,47 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @return string file type
    */
-  protected detectType(permissions: string) {
+  protected async detectType(permissions: string) {
+    // const result = await this.client.send(`RSTATUS ${}`)
+    return first(permissions) === 'd' ? 'dir' : 'file';
     //return substr($permissions, 0, 1) === 'd' ? 'dir' : 'file';
   }
 
   /**
    * Normalize a permissions string.
    *
-   * @param {string} permissions
+   * @param {string|number} permissions
    *
    * @return int
    */
-  protected normalizePermissions(permissions: string) {
+  protected normalizePermissions(permissions: string | number) {
+    if (isNumber(permissions)) {
+      return permissions & 0o777;
+    }
+    // remove the type identifier
+    permissions = permissions.substr(1);
+
+    // map the string rights to the numeric counterparts
+    permissions = permissions.replace(/[-rwx]/g, ($0: string) => {
+      return (({
+        '-': '0',
+        r: '4',
+        w: '2',
+        x: '1',
+      } as any)[$0] || $0) as string;
+    });
+
+    // split up the permission groups
+    const chunkPermission = stringChunk(permissions, 3);
+
+    return parseInt(
+      chunkPermission
+        .map((item) => {
+          return item.split('').reduce((init: number, next: string) => init + parseInt(next, 10), 0);
+        })
+        .join(''),
+      10
+    ).toString(8);
     /*if (is_numeric($permissions)) {
     return ((int) $permissions) & 0777;
   }
@@ -566,7 +597,10 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
   /**
    * @inheritdoc
    */
-  public has(path: string) {
+  public async has(path: string) {
+    const result = await this.client.send(`RSTATUS ${path}`);
+    return true;
+    //this.client.lastMod(path);
     // return $this->getMetadata($path);
   }
 
