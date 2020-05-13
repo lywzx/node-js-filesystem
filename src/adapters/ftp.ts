@@ -1,6 +1,8 @@
 import { AdapterInterface } from '../interfaces';
 import { AbstractFtpAdapter } from './abstract-ftp-adapter';
 import { omit } from 'lodash';
+import { ReadStream } from 'fs';
+import { FileVisible } from '../enum';
 
 export class Ftp extends AbstractFtpAdapter {
   /**
@@ -9,24 +11,24 @@ export class Ftp extends AbstractFtpAdapter {
   protected transferMode = 0;
 
   /**
-   * @var null|bool
+   * @var boolean
    */
-  protected ignorePassiveAddress = null;
+  protected ignorePassiveAddress = true;
 
   /**
-   * @var bool
+   * @var boolean
    */
   protected recurseManually = false;
 
   /**
-   * @var bool
+   * @var boolean
    */
   protected utf8 = false;
 
   /**
    * @var array
    */
-  protected configurable = [
+  protected configurable: string[] = [
     'host',
     'port',
     'username',
@@ -48,16 +50,16 @@ export class Ftp extends AbstractFtpAdapter {
   /**
    * @var {boolean}
    */
-  protected isPureFtpd: boolean;
+  protected isPureFtpd = true;
 
   /**
    * Set the transfer mode.
    *
-   * @param {} mode
+   * @param {number} mode
    *
    * @return this
    */
-  public setTransferMode(mode) {
+  public setTransferMode(mode: number) {
     this.transferMode = mode;
 
     return this;
@@ -207,7 +209,7 @@ export class Ftp extends AbstractFtpAdapter {
   /**
    * @inheritdoc
    */
-  public write(path, contents, config: any) {
+  public async write(path: string, contents: string | Buffer, config: any) {
     /*stream = fopen('php://temp', 'w+b');
   fwrite(stream, contents);
   rewind(stream);
@@ -222,12 +224,14 @@ result['contents'] = contents;
 result['mimetype'] = config->get('mimetype') ?: Util::guessMimeType(path, contents);
 
 return result;*/
+
+    return {} as any;
   }
 
   /**
    * @inheritdoc
    */
-  public writeStream(path, resource, config: any) {
+  public async writeStream(path: string, resource: ReadStream, config: any) {
     /*this.ensureDirectory(Util::dirname(path));
 
   if ( ! ftp_fput(this.getConnection(), path, resource, this.transferMode)) {
@@ -241,40 +245,45 @@ return result;*/
   type = 'file';
 
   return compact('type', 'path', 'visibility');*/
+    return {
+      type: '',
+      path: '',
+      visibility: '',
+    } as any;
   }
 
   /**
    * @inheritdoc
    */
-  public update(path, contents, config: any) {
+  public async update(path: string, contents: string | Buffer, config: any) {
     //return this.write(path, contents, config);
   }
 
   /**
    * @inheritdoc
    */
-  public updateStream(path, resource, config: any) {
+  public async updateStream(path: string, resource: ReadStream, config: any) {
     //return this.writeStream(path, resource, config);
   }
 
   /**
    * @inheritdoc
    */
-  public rename(path, newpath) {
+  public async rename(path: string, newpath: string) {
     //return ftp_rename(this.getConnection(), path, newpath);
   }
 
   /**
    * @inheritdoc
    */
-  public delete(path) {
+  public async delete(path: string) {
     //return ftp_delete(this.getConnection(), path);
   }
 
   /**
    * @inheritdoc
    */
-  public deleteDir(dirname) {
+  public async deleteDir(dirname: string) {
     /*connection = this.getConnection();
   contents = array_reverse(this.listDirectoryContents(dirname, false));
 
@@ -323,7 +332,7 @@ return result;*/
    *
    * @return bool
    */
-  protected createActualDirectory(directory, connection) {
+  protected createActualDirectory(directory: string, connection: any) {
     /*// List the current directory
   listing = ftp_nlist(connection, '.') ?: [];
 
@@ -343,7 +352,7 @@ return result;*/
   /**
    * @inheritdoc
    */
-  public getMetadata(path) {
+  public getMetadata(path: string) {
     /*if (path === '') {
     return ['type' => 'dir', 'path' => ''];
   }
@@ -374,7 +383,7 @@ return result;*/
   /**
    * @inheritdoc
    */
-  public getMimetype(path) {
+  public getMimetype(path: string) {
     /*if ( ! metadata = this.getMetadata(path)) {
     return false;
   }
@@ -387,7 +396,7 @@ return result;*/
   /**
    * @inheritdoc
    */
-  public getTimestamp(path) {
+  public getTimestamp(path: string) {
     /*timestamp = ftp_mdtm(this.getConnection(), path);
 
   return (timestamp !== -1) ? ['path' => path, 'timestamp' => timestamp] : false;*/
@@ -396,7 +405,7 @@ return result;*/
   /**
    * @inheritdoc
    */
-  public read(path) {
+  public read(path: string) {
     /*if ( ! object = this.readStream(path)) {
     return false;
   }
@@ -411,7 +420,7 @@ return result;*/
   /**
    * @inheritdoc
    */
-  public readStream(path) {
+  public readStream(path: string) {
     /*stream = fopen('php://temp', 'w+b');
   result = ftp_fget(this.getConnection(), stream, path, this.transferMode);
   rewind(stream);
@@ -428,7 +437,7 @@ return result;*/
   /**
    * @inheritdoc
    */
-  public setVisibility(path, visibility) {
+  public setVisibility(path: string, visibility: FileVisible | string) {
     /*mode = visibility === AdapterInterface::VISIBILITY_PUBLIC ? this.getPermPublic() : this.getPermPrivate();
 
   if ( ! ftp_chmod(this.getConnection(), mode, path)) {
@@ -443,7 +452,7 @@ return result;*/
    *
    * @param string directory
    */
-  protected listDirectoryContents(directory, recursive = true) {
+  protected async listDirectoryContents(directory = '', recursive = true) {
     /*directory = str_replace('*', '\\*', directory);
 
   if (recursive && this.recurseManually) {
@@ -454,6 +463,8 @@ return result;*/
   listing = this.ftpRawlist(options, directory);
 
   return listing ? this.normalizeListing(listing, directory) : [];*/
+
+    return [];
   }
 
   /**
@@ -461,7 +472,7 @@ return result;*/
    *
    * @param string directory
    */
-  protected listDirectoryContentsRecursive(directory) {
+  protected listDirectoryContentsRecursive(directory: string) {
     /*listing = this.normalizeListing(this.ftpRawlist('-aln', directory) ?: [], directory);
   output = [];
 
@@ -504,7 +515,7 @@ return result;*/
    *
    * @return array
    */
-  protected ftpRawlist(options, path) {
+  protected ftpRawlist(options: string, path: string) {
     /*connection = this.getConnection();
 
   if (this.isPureFtpd) {
@@ -514,7 +525,7 @@ return result;*/
   return ftp_rawlist(connection, options . ' ' . path);*/
   }
 
-  private getRawExecResponseCode(command) {
+  private getRawExecResponseCode(command: string) {
     /*response = @ftp_raw(this.connection, trim(command));
 
   return (int) preg_replace('/\D/', '', implode(' ', response));*/

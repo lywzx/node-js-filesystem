@@ -13,7 +13,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
   /**
    * @var string
    */
-  protected host: string;
+  protected host: string | undefined;
 
   /**
    * @var int
@@ -43,7 +43,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
   /**
    * @var string|null
    */
-  protected root: string | null;
+  protected root: string | null | undefined;
 
   /**
    * @var int
@@ -58,12 +58,12 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
   /**
    * @var array
    */
-  protected configurable = [];
+  protected configurable: string[] = [];
 
   /**
    * @var string
    */
-  protected systemType: string;
+  protected systemType: string | undefined;
 
   /**
    * @var SafeStorage
@@ -102,12 +102,12 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    */
   public setConfig(config: FtpAdapterConstructorConfigInterface) {
     for (const setting of this.configurable) {
-      if (!config[setting]) {
+      if (!(setting in config)) {
         continue;
       }
       const method = 'set' + upperFirst(setting);
       if (isFunction((this as any)[method])) {
-        (this as any)[method](config[setting]);
+        (this as any)[method]((config as any)[setting]);
       }
     }
 
