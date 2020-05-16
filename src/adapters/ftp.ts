@@ -1,8 +1,10 @@
-import { AdapterInterface } from '../interfaces';
 import { AbstractFtpAdapter } from './abstract-ftp-adapter';
 import { omit } from 'lodash';
-import { ReadStream } from 'fs';
+import { ReadStream, WriteStream } from 'fs';
 import { FileVisible } from '../enum';
+import { FtpAdapterConstructorConfigInterface } from '../interfaces/ftp-adapter.interface';
+import { InvalidRootException } from '../exceptions';
+import { guessMimeType } from '../util/util';
 
 export class Ftp extends AbstractFtpAdapter {
   /**
@@ -51,6 +53,11 @@ export class Ftp extends AbstractFtpAdapter {
    * @var {boolean}
    */
   protected isPureFtpd = true;
+
+  constructor(protected config: FtpAdapterConstructorConfigInterface) {
+    super(config);
+    this.setConfig(config);
+  }
 
   /**
    * Set the transfer mode.
@@ -105,7 +112,7 @@ export class Ftp extends AbstractFtpAdapter {
    * @param {boolean} utf8
    */
   public setUtf8(utf8: boolean) {
-    this.utf8 = !!utf8;
+    this.utf8 = utf8;
   }
 
   /**
@@ -118,10 +125,13 @@ export class Ftp extends AbstractFtpAdapter {
   /**
    * Set the connection to UTF-8 mode.
    */
-  protected setUtf8Mode() {
+  protected async setUtf8Mode() {
     this.client.ftp.encoding;
+
+    const response = await this.client.send('OPTS UTF8 ON');
+
     if (this.client.ftp.encoding === 'utf8') {
-      // todo
+      throw new Error(`Could not set UTF-8 mode for connection: ${this.getHost()} :: ${this.getPort()}`);
     }
     /*if (this.utf8) {
       response = ftp_raw(this.connection, "OPTS UTF8 ON");
@@ -153,19 +163,22 @@ export class Ftp extends AbstractFtpAdapter {
   /**
    * Set the connection root.
    */
-  protected setConnectionRoot() {
-    /*root = this.getRoot();
-    connection = this.connection;
-
-    if (root && ! ftp_chdir(connection, root)) {
-      throw new InvalidRootException('Root is invalid or does not exist: ' . this.getRoot());
+  protected async setConnectionRoot() {
+    const root = this.getRoot();
+    if (root) {
+      // TODO check
+      try {
+        await this.client.cd(root);
+      } catch (e) {
+        throw new InvalidRootException(`Root is invalid or does not exist: ${this.getRoot()}`);
+      }
     }
 
     // Store absolute path for further reference.
     // This is needed when creating directories and
     // initial root was a relative path, else the root
     // would be relative to the chdir'd path.
-    this.root = ftp_pwd(connection);*/
+    this.root = await this.client.pwd();
   }
 
   /**
@@ -173,10 +186,12 @@ export class Ftp extends AbstractFtpAdapter {
    *
    * @throws ConnectionRuntimeException
    */
-  protected async login() {
-    await this.client.access(omit(this.config, ['timeout']));
+  public async login() {
+    const result = await this.client.access(omit(this.config, ['timeout']));
     if (this.client.closed) {
-      throw new Error('');
+      throw new Error(
+        `Could not login with connection: ${this.getHost()} :: ${this.getPort()}, username: ${this.getUsername()}`
+      );
     }
 
     /*set_error_handler(function () {
@@ -256,6 +271,7 @@ return result;*/
    * @inheritdoc
    */
   public async update(path: string, contents: string | Buffer, config: any) {
+    return {} as any;
     //return this.write(path, contents, config);
   }
 
@@ -263,6 +279,7 @@ return result;*/
    * @inheritdoc
    */
   public async updateStream(path: string, resource: ReadStream, config: any) {
+    return {} as any;
     //return this.writeStream(path, resource, config);
   }
 
@@ -270,6 +287,7 @@ return result;*/
    * @inheritdoc
    */
   public async rename(path: string, newpath: string) {
+    return {} as any;
     //return ftp_rename(this.getConnection(), path, newpath);
   }
 
@@ -277,6 +295,7 @@ return result;*/
    * @inheritdoc
    */
   public async delete(path: string) {
+    return {} as any;
     //return ftp_delete(this.getConnection(), path);
   }
 
@@ -284,6 +303,7 @@ return result;*/
    * @inheritdoc
    */
   public async deleteDir(dirname: string) {
+    return {} as any;
     /*connection = this.getConnection();
   contents = array_reverse(this.listDirectoryContents(dirname, false));
 
@@ -305,7 +325,7 @@ return result;*/
    */
   public async createDir(dirname: string, config: any) {
     this.client.ensureDir(dirname);
-
+    return {} as any;
     /*connection = this.getConnection();
   directories = explode('/', dirname);
 
@@ -352,12 +372,37 @@ return result;*/
   /**
    * @inheritdoc
    */
-  public getMetadata(path: string) {
-    /*if (path === '') {
-    return ['type' => 'dir', 'path' => ''];
-  }
+  public async getMetadata(path: string) {
+    if (path === '') {
+      return {
+        type: 'dir',
+        path: '',
+      };
+    }
+    let isDir = false;
+    try {
+      const result = await this.client.cd(path);
+      isDir = true;
+    } catch (e) {
+      const message = (e.message || '').toLowerCase();
+      if (!(message.includes('directory') && message.includes('not'))) {
+        throw e;
+      }
+    }
 
-  if (@ftp_chdir(this.getConnection(), path) === true) {
+    if (isDir) {
+      await this.setConnectionRoot();
+      return {
+        type: 'dir',
+        path,
+      };
+    }
+
+    const result = await this.client.list(path);
+
+    return false;
+    return {} as any;
+    /*if (@ftp_chdir(this.getConnection(), path) === true) {
     this.setConnectionRoot();
 
     return ['type' => 'dir', 'path' => path];
@@ -383,29 +428,45 @@ return result;*/
   /**
    * @inheritdoc
    */
-  public getMimetype(path: string) {
-    /*if ( ! metadata = this.getMetadata(path)) {
+  public async getMimetype(path: string) {
+    const metadata = await this.getMetadata(path);
+    if (!metadata) {
+      return false;
+    }
+
+    const mimetype = await guessMimeType(path);
+
+    if (mimetype) {
+      (metadata as any)['mimetype'] = mimetype;
+      return metadata;
+    }
+
     return false;
   }
 
-  metadata['mimetype'] = MimeType::detectByFilename(path);
-
-  return metadata;*/
+  /**
+   * @inheritdoc
+   */
+  public async getTimestamp(path: string) {
+    try {
+      const timestamp = await this.client.lastMod(path);
+      return {
+        path,
+        timestamp,
+      };
+    } catch (e) {
+      return false;
+    }
   }
 
   /**
    * @inheritdoc
    */
-  public getTimestamp(path: string) {
-    /*timestamp = ftp_mdtm(this.getConnection(), path);
-
-  return (timestamp !== -1) ? ['path' => path, 'timestamp' => timestamp] : false;*/
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public read(path: string) {
+  public async read(path: string) {
+    const client = this.client;
+    const wS = new WriteStream();
+    await client.downloadTo(wS, path);
+    return {} as any;
     /*if ( ! object = this.readStream(path)) {
     return false;
   }
@@ -421,6 +482,7 @@ return result;*/
    * @inheritdoc
    */
   public readStream(path: string) {
+    return {} as any;
     /*stream = fopen('php://temp', 'w+b');
   result = ftp_fget(this.getConnection(), stream, path, this.transferMode);
   rewind(stream);
@@ -438,6 +500,7 @@ return result;*/
    * @inheritdoc
    */
   public setVisibility(path: string, visibility: FileVisible | string) {
+    return {} as any;
     /*mode = visibility === AdapterInterface::VISIBILITY_PUBLIC ? this.getPermPublic() : this.getPermPrivate();
 
   if ( ! ftp_chmod(this.getConnection(), mode, path)) {
@@ -450,9 +513,11 @@ return result;*/
   /**
    * @inheritdoc
    *
-   * @param string directory
+   * @param {string} directory
+   * @param {boolean} recursive
    */
   protected async listDirectoryContents(directory = '', recursive = true) {
+    return this.client.list(directory) as any;
     /*directory = str_replace('*', '\\*', directory);
 
   if (recursive && this.recurseManually) {
@@ -463,8 +528,6 @@ return result;*/
   listing = this.ftpRawlist(options, directory);
 
   return listing ? this.normalizeListing(listing, directory) : [];*/
-
-    return [];
   }
 
   /**
@@ -529,5 +592,30 @@ return result;*/
     /*response = @ftp_raw(this.connection, trim(command));
 
   return (int) preg_replace('/\D/', '', implode(' ', response));*/
+  }
+
+  /**
+   * Copy a file.
+   *
+   * @param {string} path
+   * @param {string} newPath
+   *
+   * @return bool
+   */
+  public async copy(path: string, newPath: string) {
+    return {} as any;
+    /*$response = $this->readStream($path);
+
+    if ($response === false || ! is_resource($response['stream'])) {
+      return false;
+    }
+
+    $result = $this->writeStream($newpath, $response['stream'], new Config());
+
+    if ($result !== false && is_resource($response['stream'])) {
+      fclose($response['stream']);
+    }
+
+    return $result !== false;*/
   }
 }

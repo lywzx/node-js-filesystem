@@ -1,6 +1,6 @@
 import { ReadStream } from 'fs';
 import { FileVisible } from '../enum';
-import { FileType } from '../util/util';
+import { FileType } from '../interfaces';
 
 export type ReadStreamResult = {
   type: string;
@@ -41,8 +41,8 @@ export type ListContentInfo = {
   basename?: string;
   path: string;
   type: FileType;
-  timestamp: number;
-  size: number;
+  timestamp?: number;
+  size?: number;
 };
 export type FileInfo = {
   type: FileType;

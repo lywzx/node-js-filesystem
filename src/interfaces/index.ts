@@ -1,6 +1,6 @@
 export * from './adapter.interface';
 
-export * from './read.interface';
+export * from './read.abstract';
 
 export * from './filesystem.abstract';
 

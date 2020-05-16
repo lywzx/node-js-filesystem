@@ -1,14 +1,15 @@
 import { FtpAdapterConstructorConfigInterface } from '../interfaces/ftp-adapter.interface';
 import { AbstractAdapter } from './abstract-adapter';
 import { Client } from 'basic-ftp';
-import { upperFirst, isFunction, first, isNumber, chunk } from 'lodash';
-import { stringChunk } from '../util/util';
+import { upperFirst, isFunction, first, isNumber, times } from 'lodash';
+import { createDateFromFormat, isNumeric, stringChunk } from '../util/util';
+import { FileVisible } from '../enum';
 
 export abstract class AbstractFtpAdapter extends AbstractAdapter {
   /**
    * @var Client
    */
-  protected client: Client;
+  public client: Client;
 
   /**
    * @var string
@@ -82,10 +83,9 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @param {FtpAdapterConstructorConfigInterface} config
    */
-  public constructor(protected config: FtpAdapterConstructorConfigInterface) {
+  protected constructor(protected config: FtpAdapterConstructorConfigInterface) {
     super();
     this.client = new Client(config.timeout || 3000);
-    this.setConfig(config);
   }
   /* public __construct(array $config)
 {
@@ -212,8 +212,8 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    * @return {string} username
    */
   public getUsername() {
-    //$username = $this->safeStorage->retrieveSafely('username');
-    //return $username !== null ? $username : 'anonymous';
+    const username = this.config.user;
+    return username ? username : 'anonymous';
   }
 
   /**
@@ -223,12 +223,12 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @return this
    */
-  public setUsername(username: string) {
-    /*$this->safeStorage->storeSafely('username', $username);
+  /*public setUsername(username: string) {
+    /!*$this->safeStorage->storeSafely('username', $username);
 
-  return $this;*/
+  return $this;*!/
     return this;
-  }
+  }*/
 
   /**
    * Returns the password.
@@ -236,7 +236,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    * @return string password
    */
   public getPassword() {
-    //return $this->safeStorage->retrieveSafely('password');
+    return this.config.password;
   }
 
   /**
@@ -246,11 +246,11 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @return this
    */
-  public setPassword(password: string) {
+  /*public setPassword(password: string) {
     //$this->safeStorage->storeSafely('password', $password);
 
     return this;
-  }
+  }*/
 
   /**
    * Returns the amount of seconds before the connection will timeout.
@@ -371,7 +371,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    * @throws NotSupportedException
    */
   protected normalizeObject(item: string, base: string) {
-    /*$systemType = $this->systemType ?: $this->detectSystemType($item);
+    /*$systemType = $this->systemType ?: await $this->detectSystemType($item);
 
   if ($systemType === 'unix') {
     return $this->normalizeUnixObject($item, $base);
@@ -445,19 +445,27 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    * @return int
    */
   protected normalizeUnixTimestamp(month: string, day: string, timeOrYear: string) {
-    /*if (is_numeric($timeOrYear)) {
-    $year = $timeOrYear;
-    $hour = '00';
-    $minute = '00';
-    $seconds = '00';
-  } else {
-    $year = date('Y');
-    list($hour, $minute) = explode(':', $timeOrYear);
-    $seconds = '00';
-  }
-  $dateTime = DateTime::createFromFormat('Y-M-j-G:i:s', "{$year}-{$month}-{$day}-{$hour}:{$minute}:{$seconds}");
+    let year: string, hour, minute, seconds;
+    if (isNumeric(timeOrYear)) {
+      year = timeOrYear;
+      hour = '00';
+      minute = '00';
+      seconds = '00';
+    } else {
+      year = new Date().getFullYear().toString();
+      [hour, minute] = timeOrYear.split(':');
+      seconds = '00';
+    }
+    const dateTime = new Date(
+      parseInt(year),
+      parseInt(month),
+      parseInt(day),
+      parseInt(hour),
+      parseInt(minute),
+      parseInt(seconds)
+    );
 
-  return $dateTime->getTimestamp();*/
+    return dateTime.getTime();
   }
 
   /**
@@ -469,31 +477,37 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    * @return array normalized file array
    */
   protected normalizeWindowsObject(item: string, base: string) {
-    /*$item = preg_replace('#\s+#', ' ', trim($item), 3);
+    item = item.trim();
+    times(3, () => {
+      item = item.replace(/\s+/, ' ');
+    });
 
-  if (count(explode(' ', $item, 4)) !== 4) {
-    throw new RuntimeException("Metadata can't be parsed from item '$item' , not enough parts.");
-  }
+    if (item.split(' ', 4).length !== 4) {
+      throw new Error(`Metadata can't be parsed from item ${item} , not enough parts.`);
+    }
+    const [date, time, size, ...name] = item.split(' ');
+    const joinedName = name.join(' ');
+    const path = base === '' ? joinedName : `${base}${this.separator}${joinedName}`;
 
-  list($date, $time, $size, $name) = explode(' ', $item, 4);
-  $path = $base === '' ? $name : $base . $this->separator . $name;
+    // Check for the correct date/time format
+    const format = date.length === 8 ? 'm-d-yH:iA' : 'Y-m-dH:i';
+    const dt = createDateFromFormat(`${date}${time}`, format);
+    const timestamp = dt ? dt.getTime() : Date.parse(`${date} ${time}`);
 
-  // Check for the correct date/time format
-  $format = strlen($date) === 8 ? 'm-d-yH:iA' : 'Y-m-dH:i';
-  $dt = DateTime::createFromFormat($format, $date . $time);
-  $timestamp = $dt ? $dt->getTimestamp() : (int) strtotime("$date $time");
+    if (size === '<DIR>') {
+      return {
+        type: 'dir',
+        path,
+        timestamp,
+      };
+    }
 
-  if ($size === '<DIR>') {
-    $type = 'dir';
-
-    return compact('type', 'path', 'timestamp');
-  }
-
-  $type = 'file';
-  $visibility = AdapterInterface::VISIBILITY_PUBLIC;
-  $size = (int) $size;
-
-  return compact('type', 'path', 'visibility', 'size', 'timestamp');*/
+    return {
+      type: 'file',
+      visibility: FileVisible.VISIBILITY_PUBLIC,
+      size,
+      timestamp,
+    };
   }
 
   /**
@@ -516,9 +530,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    * @return string file type
    */
   protected async detectType(permissions: string) {
-    // const result = await this.client.send(`RSTATUS ${}`)
     return first(permissions) === 'd' ? 'dir' : 'file';
-    //return substr($permissions, 0, 1) === 'd' ? 'dir' : 'file';
   }
 
   /**
@@ -556,27 +568,6 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
         .join(''),
       10
     ).toString(8);
-    /*if (is_numeric($permissions)) {
-    return ((int) $permissions) & 0777;
-  }
-
-  // remove the type identifier
-  $permissions = substr($permissions, 1);
-
-  // map the string rights to the numeric counterparts
-  $map = ['-' => '0', 'r' => '4', 'w' => '2', 'x' => '1'];
-  $permissions = strtr($permissions, $map);
-
-  // split up the permission groups
-  $parts = str_split($permissions, 3);
-
-  // convert the groups
-  $mapper = function ($part) {
-    return array_sum(str_split($part));
-  };
-
-  // converts to decimal number
-  return octdec(implode('', array_map($mapper, $parts)));*/
   }
 
   /**
@@ -586,19 +577,22 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @return array
    */
-  public removeDotDirectories(list: any[]) {
-    /*$filter = function ($line) {
-    return $line !== '' && ! preg_match('#.* \.(\.)?$|^total#', $line);
-  };
-
-  return array_filter($list, $filter);*/
+  public removeDotDirectories(list: string[]) {
+    return list.filter((line: string) => {
+      return line !== '' && /.* \.(\.)?$|^total/.test(line);
+    });
   }
 
   /**
    * @inheritdoc
    */
   public async has(path: string) {
-    const result = await this.client.send(`RSTATUS ${path}`);
+    try {
+      const result = await this.client.sendIgnoringError('pwd');
+      debugger;
+    } catch (e) {
+      debugger;
+    }
     return true;
     //this.client.lastMod(path);
     // return $this->getMetadata($path);
@@ -608,14 +602,14 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    * @inheritdoc
    */
   public getSize(path: string) {
-    // return $this->getMetadata($path);
+    return this.getMetadata(path) as any;
   }
 
   /**
    * @inheritdoc
    */
   public getVisibility(path: string) {
-    // return $this->getMetadata($path);
+    return this.getMetadata(path) as any;
   }
 
   /**
@@ -623,12 +617,10 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @param {string} dirname
    */
-  public ensureDirectory(dirname: string) {
-    /*$dirname = (string) $dirname;
-
-  if ($dirname !== '' && ! $this->has($dirname)) {
-  $this->createDir($dirname, new Config());
-}*/
+  public async ensureDirectory(dirname: string) {
+    if (dirname !== '' && !(await this.has(dirname))) {
+      await this.createDir(dirname, {});
+    }
   }
 
   /**

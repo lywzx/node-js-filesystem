@@ -1,6 +1,6 @@
-import { sep } from 'path';
+import { AdapterInterface } from '../interfaces';
 
-export abstract class AbstractAdapter {
+export abstract class AbstractAdapter extends AdapterInterface {
   /**
    * @var string|undefined path prefix
    */
@@ -9,7 +9,7 @@ export abstract class AbstractAdapter {
   /**
    * @var string
    */
-  protected pathSeparator = sep;
+  protected pathSeparator = '/';
 
   /**
    * Set the path prefix.

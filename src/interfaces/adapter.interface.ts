@@ -1,6 +1,6 @@
 import { ReadStream } from 'fs';
 import { DirType } from '../types/local-adpater.types';
-import { ReadInterface } from './read.interface';
+import { ReadAbstract } from './read.abstract';
 import { Stream } from 'stream';
 import { FileVisible } from '../enum';
 
@@ -17,7 +17,7 @@ export type AdapterWriteResultType = {
   visibility: FileVisible | string;
 };
 
-export interface AdapterInterface extends ReadInterface {
+export abstract class AdapterInterface extends ReadAbstract {
   /**
    * Write a new file.
    *
@@ -27,7 +27,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @return array|false false on failure file meta data on success
    */
-  write(path: string, contents: string | Buffer, config: any): Promise<AdapterWriteResultType | false>;
+  public abstract write(path: string, contents: string | Buffer, config: any): Promise<AdapterWriteResultType | false>;
   /**
    * Write a new file using a stream.
    *
@@ -37,7 +37,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @return array|false false on failure file meta data on success
    */
-  writeStream(path: string, resource: ReadStream, config: any): Promise<any | false>;
+  public abstract writeStream(path: string, resource: ReadStream, config: any): Promise<any | false>;
 
   /**
    * Update a file.
@@ -48,7 +48,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @return array|false false on failure file meta data on success
    */
-  update(path: string, contents: string | Buffer, config: any): Promise<object | false>;
+  public abstract update(path: string, contents: string | Buffer, config: any): Promise<object | false>;
 
   /**
    * Update a file using a stream.
@@ -59,7 +59,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @returns {object | false} false on failure file meta data on success
    */
-  updateStream(path: string, resource: Stream, config: any): Promise<any | false>;
+  public abstract updateStream(path: string, resource: Stream, config: any): Promise<any | false>;
 
   /**
    * Rename a file.
@@ -69,7 +69,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @returns {boolean}
    */
-  rename(path: string, newPath: string): Promise<boolean>;
+  public abstract rename(path: string, newPath: string): Promise<boolean>;
 
   /**
    * Copy a file.
@@ -79,7 +79,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @returns {boolean}
    */
-  copy(path: string, newPath: string): Promise<boolean>;
+  public abstract copy(path: string, newPath: string): Promise<boolean>;
 
   /**
    * Delete a file.
@@ -88,7 +88,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @returns {boolean}
    */
-  delete(path: string): Promise<boolean>;
+  public abstract delete(path: string): Promise<boolean>;
 
   /**
    * Delete a directory.
@@ -97,7 +97,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @return {boolean}
    */
-  deleteDir(dirname: string): Promise<boolean>;
+  public abstract deleteDir(dirname: string): Promise<boolean>;
 
   /**
    * Create a directory.
@@ -107,7 +107,7 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @returns {array|false}
    */
-  createDir(dirname: string, config: any): Promise<DirType | false>;
+  public abstract createDir(dirname: string, config: any): Promise<DirType | false>;
 
   /**
    * Set the visibility for a file.
@@ -117,5 +117,5 @@ export interface AdapterInterface extends ReadInterface {
    *
    * @return array|false file meta data
    */
-  setVisibility(path: string, visibility: FileVisible | string): Promise<object | false>;
+  public abstract setVisibility(path: string, visibility: FileVisible | string): Promise<object | false>;
 }
