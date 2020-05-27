@@ -5,6 +5,8 @@ import { FileVisible } from '../enum';
 import { FtpAdapterConstructorConfigInterface } from '../interfaces/ftp-adapter.interface';
 import { InvalidRootException } from '../exceptions';
 import { guessMimeType } from '../util/util';
+import { defer } from '../util/promise-defer.util';
+import { Writable } from 'stream';
 
 export class Ftp extends AbstractFtpAdapter {
   /**
@@ -464,18 +466,32 @@ return result;*/
    */
   public async read(path: string) {
     const client = this.client;
-    const wS = new WriteStream();
+    const promiseDefer = defer<any>();
+    let result: Buffer | string;
+    const wS = new Writable({
+      autoDestroy: true,
+      write(chunk: any, encoding: string, callback: (error?: Error | null) => void) {
+        if (encoding === 'buffer') {
+          if (!result) {
+            result = chunk;
+          } else {
+            result = Buffer.concat([result, chunk]);
+          }
+        }
+        callback(null);
+      },
+      final(callback: (error?: Error | null) => void) {
+        callback();
+        if (result === undefined) {
+          promiseDefer.reject(new Error(''));
+        } else {
+          promiseDefer.resolve(result);
+        }
+      },
+    });
     await client.downloadTo(wS, path);
-    return {} as any;
-    /*if ( ! object = this.readStream(path)) {
-    return false;
-  }
 
-  object['contents'] = stream_get_contents(object['stream']);
-  fclose(object['stream']);
-  unset(object['stream']);
-
-  return object;*/
+    return promiseDefer.promise;
   }
 
   /**
