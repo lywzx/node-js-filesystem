@@ -1,0 +1,43 @@
+{
+  "name": "@filesystem/core",
+  "version": "0.0.1",
+  "description": "Filesystem abstraction: Many filesystems, one API.",
+  "main": "dist/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "typings": "dist/types",
+  "scripts": {
+    "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lywzx/node-js-filesystem.git"
+  },
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "keywords": [
+    "filesystem"
+  ],
+  "author": "liuyang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lywzx/node-js-filesystem/issues"
+  },
+  "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
+  "devDependencies": {
+    "@types/fs-extra": "^8.1.0",
+    "@types/lodash": "^4.14.150",
+    "@types/mime": "^2.0.1"
+  },
+  "dependencies": {
+    "basic-ftp": "^4.5.4",
+    "debug": "^4.1.1",
+    "file-type": "^14.2.0",
+    "fs-extra": "^9.0.0",
+    "lodash": "^4.17.15",
+    "mime": "^2.4.5"
+  }
+}
