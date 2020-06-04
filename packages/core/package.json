@@ -1,6 +1,6 @@
 {
   "name": "@filesystem/core",
-  "version": "0.0.2-alpha.0",
+  "version": "0.0.0",
   "description": "Filesystem abstraction: Many filesystems, one API.",
   "main": "dist/index.js",
   "publishConfig": {
@@ -39,5 +39,5 @@
     "fs-extra": "^9.0.0",
     "lodash": "^4.17.15",
     "mime": "^2.4.5"
-  }
+  },
 }
