@@ -2,11 +2,14 @@
   "name": "@filesystem/core",
   "version": "0.0.1-alpha.0",
   "description": "Filesystem abstraction: Many filesystems, one API.",
-  "main": "dist/index.js",
   "publishConfig": {
     "access": "public"
   },
-  "typings": "dist/types",
+  "main": "lib/index.common.js",
+  "module": "lib/index.esm.js",
+  "unpkg": "lib/index.js",
+  "jsdelivr": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
     "build": "tsc"

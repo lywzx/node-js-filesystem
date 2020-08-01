@@ -11,12 +11,15 @@ node_js:
   - '12'
   - '11'
   - '10'
+  - '9'
+  - '8'
 
 install:
-  - npm install
+  - npm install yarn -g
+  - npm install codecov -g
+  - yarn
 
 script:
-  - npm install codecov -g
   - npm test
   - codecov -f coverage/*.json
 

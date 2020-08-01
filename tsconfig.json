@@ -10,7 +10,7 @@
     "esModuleInterop": true,
     "lib": ["es6"]
   },
-  "include": ["src", "test"],
+  "include": ["packages", "examples"],
   "exclude": ["node_modules"],
   "typedocOptions": {
     "mode": "modules",
