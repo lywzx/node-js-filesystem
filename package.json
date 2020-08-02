@@ -5,8 +5,8 @@
     "start": "rollup -w -c build/rollup.config.js",
     "build": "node build/build-pkg.js",
     "lint": "eslint src --ext .ts --fix",
-    "format": "prettier --write \"+(src|test)/**/*.ts\"",
-    "test": "mocha --require ts-node/register test/*.ts test/**/*.ts",
+    "format": "prettier --write \"packages/**/*.ts\"",
+    "test": "mocha --require ts-node/register packages/*.ts packages/**/*.ts",
     "report-coverage": "codecov"
   },
   "devDependencies": {

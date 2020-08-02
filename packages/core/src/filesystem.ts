@@ -11,7 +11,7 @@ import { AdapterInterface, FilesystemAbstract, FileWithMimetypeInterface } from 
 import { FilesystemConfigInterface } from './interfaces';
 import { ReadFileResult } from './types/local-adpater.types';
 import { isReadableStream, normalizeRelativePath } from './util/util';
-import { get } from 'lodash';
+import get from 'lodash/get';
 
 export class Filesystem extends FilesystemAbstract {
   public constructor(protected adapter: AdapterInterface, protected config: FilesystemConfigInterface | null = null) {

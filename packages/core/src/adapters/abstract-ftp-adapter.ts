@@ -1,7 +1,11 @@
 import { FtpAdapterConstructorConfigInterface } from '../interfaces/ftp-adapter.interface';
 import { AbstractAdapter } from './abstract-adapter';
 import { Client } from 'basic-ftp';
-import { upperFirst, isFunction, first, isNumber, times } from 'lodash';
+import upperFirst from 'lodash/upperFirst';
+import isFunction from 'lodash/isFunction';
+import first from 'lodash/first';
+import isNumber from 'lodash/isNumber';
+import times from 'lodash/times';
 import { createDateFromFormat, isNumeric, stringChunk } from '../util/util';
 import { FileVisible } from '../enum';
 

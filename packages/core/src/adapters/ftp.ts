@@ -1,5 +1,5 @@
 import { AbstractFtpAdapter } from './abstract-ftp-adapter';
-import { omit } from 'lodash';
+import omit from 'lodash/omit';
 import { ReadStream, WriteStream } from 'fs';
 import { FileVisible } from '../enum';
 import { FtpAdapterConstructorConfigInterface } from '../interfaces/ftp-adapter.interface';

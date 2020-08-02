@@ -2,3 +2,4 @@
 dist/
 apidocs/
 /node_modules
+lib/

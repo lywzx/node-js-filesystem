@@ -1,6 +1,10 @@
 import { createReadStream, createWriteStream, ReadStream, realpathSync } from 'fs';
 import { chmod, copyFile, lstat, pathExists, readFile, rename, stat, unlink, writeFile } from 'fs-extra';
-import { filter, isBuffer, merge, toPairs, padStart } from 'lodash';
+import filter from 'lodash/filter';
+import isBuffer from 'lodash/isBuffer';
+import merge from 'lodash/merge';
+import toPairs from 'lodash/toPairs';
+import padStart from 'lodash/padStart';
 import { dirname, sep } from 'path';
 import { format } from 'util';
 import { FileVisible } from '../enum';

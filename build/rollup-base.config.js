@@ -5,20 +5,38 @@ import commonjs from '@rollup/plugin-commonjs';
 import rollupTypescript from 'rollup-plugin-typescript2';
 import json from '@rollup/plugin-json';
 import { terser } from 'rollup-plugin-terser';
-import { readJsonSync } from 'fs-extra';
+import { readFileSync } from 'fs';
 import { join } from 'path';
+import { uniq, get, isFunction } from 'lodash';
 
-export function createEntries(configs, pkgName, banner) {
-  return configs.map(c => createEntry(c, pkgName, banner));
+export function createEntries(configs, pkg) {
+  return configs.map(c => createEntry(c, pkg));
 }
 
-function createEntry(config, pkgName, banner) {
-  const pkg = readJsonSync(join(__dirname, '../packages', pkgName, 'package.json'));
+/**
+ * 生成对应的external
+ * @param pkg
+ * @param format
+ * @param borwser {boolean}
+ * @return {unknown[]}
+ */
+function makeExternal(pkg, format, borwser) {
+  const external = pkg.external || [];
+  let targetExternal = get(pkg, `${format}.external`, []);
+  if (isFunction(targetExternal)) {
+    targetExternal = targetExternal(borwser) || [];
+  }
+  return uniq([...external, ...targetExternal]);
+}
+
+function createEntry(config, pakg) {
+  const pkgDir = pakg.dir;
+  const pkg = JSON.parse(readFileSync(join(__dirname, '../packages', pkgDir, 'package.json')).toString());
   const c = {
-    input: join(__dirname, '../packages', pkgName, config.input),
+    input: join(__dirname, '../packages', pkgDir, config.input),
     plugins: [
       rollupTypescript({
-        tsconfig: join(__dirname, '../packages', pkgName, 'tsconfig.json'),
+        tsconfig: join(__dirname, '../packages', pkgDir, 'tsconfig.json'),
         tsconfigOverride: {
           include: ["src"],
           exclude: ["test"],
@@ -30,19 +48,21 @@ function createEntry(config, pkgName, banner) {
       json(),
     ],
     output: {
-      banner,
-      file: join(__dirname, '../packages', pkgName, config.file),
+      banner: pakg.banner,
+      file: join(__dirname, '../packages', pkgDir, config.file),
       format: config.format,
+      globals: pakg.globals || {}
     },
     onwarn: (msg, warn) => {
       if (!/Circular/.test(msg)) {
         warn(msg);
       }
     },
+    external: makeExternal(pakg, config.format, config.browser)
   };
 
   if (config.format === 'umd') {
-    c.output.name = c.output.name || 'Vuex';
+    c.output.name = c.output.name || pakg.outputName;
   }
 
   c.plugins.push(
@@ -64,7 +84,10 @@ function createEntry(config, pkgName, banner) {
   }
 
   c.plugins.push(
-    resolve({extensions: ['.ts', '.tsx', '.js', '.mjs']})
+    resolve({
+      preferBuiltins: false,
+      extensions: ['.ts', '.tsx', '.js', '.mjs']
+    })
   );
   c.plugins.push(
     commonjs({

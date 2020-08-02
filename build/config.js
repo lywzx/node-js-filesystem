@@ -1,3 +1,8 @@
+const fs = require('fs');
+const path = require('path');
+
+const lernaPackage = JSON.parse(fs.readFileSync(path.join(__dirname, '../lerna.json')).toString());
+
 const entries = [
   {
     input: 'src/index.ts',
@@ -24,7 +29,15 @@ const entries = [
 ];
 
 const packages = [
-  'core'
+  {
+    dir: 'core',
+    outputName: 'Fla',
+    banner: `/*!
+ * @filesystem/core v${lernaPackage.version}
+ * (c) ${new Date().getFullYear()} LiuYang
+ * @license MIT
+ */`
+  },
 ];
 
 module.exports = {
