@@ -1,12 +1,23 @@
-const fs = require('fs')
-const chalk = require('chalk')
-const execa = require('execa')
-const { gzipSync } = require('zlib')
-const { compress } = require('brotli')
+const fs = require('fs');
+const chalk = require('chalk');
+const execa = require('execa');
+const { gzipSync } = require('zlib');
+const { compress } = require('brotli');
+const lodash = require('lodash');
+const path = require('path');
 
 async function run(config, files) {
-  await build(config)
-  checkAllSizes(files)
+  await cleanDir(files);
+  await build(config);
+  checkAllSizes(files);
+}
+
+async function cleanDir(files) {
+  const reg = new RegExp(`${path.sep}lib${path.sep}.*$`.replace(/\//g, '\/').replace(/\\/g, '\\\\'));
+  const rmDirs = lodash.uniq(files.map((dirs) => {
+    return dirs.replace(reg, `${path.sep}lib`);
+  }));
+  await execa('rimraf', [...rmDirs]);
 }
 
 async function build(config) {
