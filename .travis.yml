@@ -16,10 +16,11 @@ node_js:
 
 install:
   - npm install yarn -g
-  - npm install codecov -g
+  - yarn add codecov
   - yarn
 
 script:
-  - npm test
-  - codecov -f coverage/*.json
+  - yarn run build
+  - yarn run coverage -- --reporter=text-lcov > coverage.lcov
+  - npx codecov -f .nyc_output/*.json
 

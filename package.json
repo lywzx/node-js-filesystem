@@ -7,7 +7,9 @@
     "lint": "eslint src --ext .ts --fix",
     "format": "prettier --write \"packages/**/*.ts\"",
     "test": "mocha --require ts-node/register packages/*.ts packages/**/*.ts",
-    "report-coverage": "codecov"
+    "coverage": "nyc npm run test",
+    "coverage:report": "nyc npm run test --reporter=lcov --reporter=text-summary",
+    "lint-staged": "lint-staged"
   },
   "devDependencies": {
     "@commitlint/cli": "^9.1.1",
