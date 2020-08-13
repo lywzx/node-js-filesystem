@@ -16,7 +16,7 @@ node_js:
 
 install:
   - npm install yarn -g
-  - yarn add codecov
+  - yarn add codecov -W
   - yarn
 
 script:
