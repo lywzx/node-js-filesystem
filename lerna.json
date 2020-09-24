@@ -7,7 +7,16 @@
   "version": "0.0.1-alpha.0",
   "command": {
     "publish": {
-      "message": "chore: release"
+      "publish": {
+        "ignoreChanges": [
+          "**/test/**",
+          "**/tsconfig.json"
+        ],
+        "allowBranch": [
+          "master"
+        ],
+        "registry": "http://registry.npmjs.org"
+      }
     }
   }
 }

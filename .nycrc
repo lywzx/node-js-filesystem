@@ -1,0 +1,24 @@
+{
+  "extends": "@istanbuljs/nyc-config-typescript",
+  "include": [
+    "packages/**/*.ts"
+  ],
+  "exclude":[
+    "packages/**/*.d.ts",
+    "packages/**/test/**/*.ts",
+    "packages/pdd-origin-api/**",
+    "packages/scripts/**"
+  ],
+  "extension": [
+    ".ts"
+  ],
+  "reporter": [
+    "lcov",
+    "text-summary",
+    "html"
+  ],
+  "check-coverage": true,
+  "sourceMap": true,
+  "instrument": true,
+  "all": true
+}
