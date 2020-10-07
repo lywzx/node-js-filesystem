@@ -1,0 +1,34 @@
+{
+  "name": "@filesystem/nestjs",
+  "version": "0.0.1-alpha.0",
+  "description": "> TODO: description",
+  "author": "lywzx <liuyang@lyblog.net>",
+  "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
+  "license": "MIT",
+  "main": "lib/index.common.js",
+  "module": "lib/index.esm.js",
+  "unpkg": "lib/index.js",
+  "jsdelivr": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
+    "build": "tsc"
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lywzx/node-js-filesystem.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lywzx/node-js-filesystem/issues"
+  }
+}
