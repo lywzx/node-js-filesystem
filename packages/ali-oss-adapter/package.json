@@ -30,5 +30,8 @@
   },
   "bugs": {
     "url": "https://github.com/lywzx/node-js-filesystem/issues"
+  },
+  "dependencies": {
+    "ali-oss": "^6.10.0"
   }
 }

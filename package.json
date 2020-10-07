@@ -2,13 +2,14 @@
   "name": "@filesystem/core",
   "private": true,
   "scripts": {
-    "start": "rollup -w -c build/rollup.config.js",
-    "build": "node build/build-pkg.js",
-    "lint": "eslint src --ext .ts --fix",
-    "format": "prettier --write \"packages/**/*.ts\"",
+    "dev": "cross-env node_options=--max_old_space_size=4096 rollup -w -c build/rollup.config.js",
+    "build": "cross-env node_options=--max_old_space_size=4096 node build/build-pkg.js",
+    "lint": "eslint packages --ext .ts --fix",
+    "format": "prettier --write \"+(packages)/**/*.ts\"",
     "test": "mocha",
     "coverage": "nyc mocha",
     "coverage:watch": "nyc mocha --watch",
+    "generate-code": "cross-env NODE_ICU_DATA=node_modules/full-icu ts-node -r tsconfig-paths/register packages/scripts/src/index.ts",
     "lint-staged": "lint-staged"
   },
   "devDependencies": {
@@ -50,6 +51,28 @@
   "workspaces": [
     "packages/*"
   ],
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lywzx/pdd-node-sdk.git"
+  },
+  "keywords": [
+    "pdd",
+    "pinduoduo",
+    "duoduoke",
+    "pdd-sdk",
+    "sdk",
+    "拼多多",
+    "多多客",
+    "拼多多SDK"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lywzx/node-js-filesystem/issues"
+  },
+  "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
   "author": {
     "name": "liuyang",
     "email": "liuyang@lyblog.net"

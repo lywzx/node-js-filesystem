@@ -14,6 +14,12 @@
     "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
     "build": "tsc"
   },
+  "dependencies": {},
+  "devDependencies": {
+    "@nestjs/core": "^7.4.2",
+    "@nestjs/common": "^7.4.2",
+    "@nestjs/testing": "^7.4.2"
+  },
   "directories": {
     "lib": "lib",
     "test": "__tests__"

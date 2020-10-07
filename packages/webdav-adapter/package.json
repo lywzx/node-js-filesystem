@@ -30,5 +30,8 @@
   },
   "bugs": {
     "url": "https://github.com/lywzx/node-js-filesystem/issues"
+  },
+  "dependencies": {
+    "webdav": "^3.3.0"
   }
 }

@@ -2,9 +2,9 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./lib",
-    "emitDecoratorMetadata": false,
-    "experimentalDecorators": false
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": ["src", "test"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "test/**/*.spec.ts"]
 }
