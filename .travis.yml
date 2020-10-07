@@ -2,8 +2,16 @@ language: node_js
 
 os:
   - linux
-  - windows
+  # - windows
   - osx
+
+cache:
+  timeout: 60
+  npm: true
+  yarn: true
+  directories:
+    - node_modules/ # npm packages
+    - .nyc_output/
 
 node_js:
   - 'node'
@@ -11,16 +19,18 @@ node_js:
   - '12'
   - '11'
   - '10'
-  - '9'
-  - '8'
+
+before_install:
+  - npm install yarn -g
+  - npm install codecov -g
 
 install:
-  - npm install yarn -g
-  - yarn add codecov -W
   - yarn
 
 script:
-  - yarn run build
-  - yarn run coverage -- --reporter=text-lcov > coverage.lcov
-  - npx codecov -f .nyc_output/*.json
+  - npm run build
+  - npm run coverage
 
+after_script:
+  - codecov -f .nyc_output/*.json
+  - travis_terminate 0 # try to make Windows quit

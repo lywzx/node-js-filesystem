@@ -1,5 +1,5 @@
 /.idea
 dist/
 apidocs/
-/node_modules
+node_modules
 lib/
