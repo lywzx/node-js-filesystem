@@ -397,6 +397,13 @@
     js-yaml "^3.13.1"
     resolve-from "^5.0.0"
 
+"@istanbuljs/nyc-config-typescript@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.npm.taobao.org/@istanbuljs/nyc-config-typescript/download/@istanbuljs/nyc-config-typescript-1.0.1.tgz#55172f5663b3635586add21b14d42ca94a163d58"
+  integrity sha1-VRcvVmOzY1WGrdIbFNQsqUoWPVg=
+  dependencies:
+    "@istanbuljs/schema" "^0.1.2"
+
 "@istanbuljs/schema@^0.1.2":
   version "0.1.2"
   resolved "https://registry.npm.taobao.org/@istanbuljs/schema/download/@istanbuljs/schema-0.1.2.tgz#26520bf09abe4a5644cd5414e37125a8954241dd"

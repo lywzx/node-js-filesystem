@@ -3,3 +3,8 @@ dist/
 apidocs/
 node_modules
 lib/
+/.nyc_output
+coverage.lcov
+coverage/
+/report.*.json
+/lerna-*.log
