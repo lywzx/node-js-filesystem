@@ -2,7 +2,7 @@ language: node_js
 
 os:
   - linux
-  # - windows
+  - windows
   - osx
 
 cache:
@@ -28,7 +28,7 @@ before_install:
   - npm install codecov -g
 
 install:
-  - yarn
+  - yarn --ignore-engines
 
 script:
   - npm run build
