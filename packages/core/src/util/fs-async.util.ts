@@ -1,7 +1,7 @@
 import { constants, Stats } from 'fs';
 import { dirname, join } from 'path';
 import { PathStatsInterface } from '../interfaces';
-import { access, lstat, mkdir, readdir, rmdir, stat, unlink } from 'fs-extra';
+import { access, lstat, mkdir, readdir, rmdir, stat, unlink } from './fs-extra.util';
 
 /**
  * check director is symbolic link

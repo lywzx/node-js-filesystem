@@ -1,5 +1,4 @@
 import { createReadStream, createWriteStream, ReadStream, realpathSync } from 'fs';
-import { chmod, copyFile, lstat, pathExists, readFile, rename, stat, unlink, writeFile } from 'fs-extra';
 import filter from 'lodash/filter';
 import isBuffer from 'lodash/isBuffer';
 import merge from 'lodash/merge';
@@ -42,6 +41,7 @@ import {
 import { defer } from '../util/promise-defer.util';
 import { getType, guessMimeType } from '../util/util';
 import { AbstractAdapter } from './abstract-adapter';
+import { copyFile, readFile, writeFile, rename, unlink, stat, lstat, chmod, pathExists } from '../util/fs-extra.util';
 
 export class Local extends AbstractAdapter implements AdapterInterface {
   /**

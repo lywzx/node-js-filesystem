@@ -15,10 +15,13 @@ cache:
 
 node_js:
   - 'node'
+  - '14'
   - '13'
   - '12'
   - '11'
   - '10'
+  - '9'
+  - '8'
 
 before_install:
   - npm install yarn -g

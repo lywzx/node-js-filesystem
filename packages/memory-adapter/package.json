@@ -1,9 +1,14 @@
 {
-  "name": "@filesystem/ftp-adapter",
+  "name": "@filesystem/memory-adapter",
   "version": "0.0.1-alpha.0",
-  "description": "nodejs filesystem ftp adapter",
+  "description": "nodejs memory adapter",
+  "keywords": [
+    "nodejs",
+    "memory",
+    "adapter"
+  ],
   "author": "lywzx <liuyang@lyblog.net>",
-  "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
+  "homepage": "https://github.com/lywzx/node-js-filesystem/tree/master/packages/memory-adapter#readme",
   "license": "MIT",
   "main": "lib/index.common.js",
   "module": "lib/index.esm.js",

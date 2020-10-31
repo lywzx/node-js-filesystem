@@ -31,13 +31,67 @@ const entries = [
 const packages = [
   {
     dir: 'core',
-    outputName: 'Fla',
+    outputName: 'FilesystemCore',
     banner: `/*!
  * @filesystem/core v${lernaPackage.version}
  * (c) ${new Date().getFullYear()} LiuYang
  * @license MIT
  */`
   },
+  {
+    dir: 'ali-oss-adapter',
+    outputName: 'AliOssAdapter',
+    banner: `/*!
+ * @filesystem/ali-oss-adapter v${lernaPackage.version}
+ * (c) ${new Date().getFullYear()} LiuYang
+ * @license MIT
+ */`
+  },
+  {
+    dir: 'ftp-adapter',
+    outputName: 'FtpAdapter',
+    banner: `/*!
+ * @filesystem/ftp-adapter v${lernaPackage.version}
+ * (c) ${new Date().getFullYear()} LiuYang
+ * @license MIT
+ */`
+  },
+  {
+    dir: 'memory-adapter',
+    outputName: 'MemoryAdapter',
+    banner: `/*!
+ * @filesystem/core v${lernaPackage.version}
+ * (c) ${new Date().getFullYear()} LiuYang
+ * @license MIT
+ */`
+  },
+  {
+    dir: 'nestjs',
+    outputName: 'FilesystemNestModule',
+    banner: `/*!
+ * @filesystem/nestjs v${lernaPackage.version}
+ * (c) ${new Date().getFullYear()} LiuYang
+ * @license MIT
+ */`
+  },
+  {
+    dir: 'sftp-adapter',
+    outputName: 'SftpAdapter',
+    banner: `/*!
+ * @filesystem/sftp-adapter v${lernaPackage.version}
+ * (c) ${new Date().getFullYear()} LiuYang
+ * @license MIT
+ */`
+  },
+  {
+    dir: 'webdav-adapter',
+    outputName: 'WebdavAdapter',
+    banner: `/*!
+ * @filesystem/webdav-adapter v${lernaPackage.version}
+ * (c) ${new Date().getFullYear()} LiuYang
+ * @license MIT
+ */`
+  }
 ];
 
 module.exports = {

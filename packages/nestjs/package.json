@@ -1,7 +1,7 @@
 {
   "name": "@filesystem/nestjs",
   "version": "0.0.1-alpha.0",
-  "description": "> TODO: description",
+  "description": "filesystem for nestjs framework",
   "author": "lywzx <liuyang@lyblog.net>",
   "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
   "license": "MIT",
@@ -14,20 +14,27 @@
     "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
     "build": "tsc"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@filesystem/core": "^0.0.1-alpha.0"
+  },
   "devDependencies": {
+    "@filesystem/core": "^0.0.1-alpha.0"
+  },
+  "peerDependencies": {
     "@nestjs/core": "^7.4.2",
     "@nestjs/common": "^7.4.2",
-    "@nestjs/testing": "^7.4.2"
+    "@nestjs/testing": "^7.4.2",
+    "@filesystem/core": "^0.0.1-alpha.0"
   },
   "directories": {
     "lib": "lib",
-    "test": "__tests__"
+    "test": "test"
   },
   "files": [
     "lib"
   ],
   "publishConfig": {
+    "registry": "https://registry.npmjs.org",
     "access": "public"
   },
   "repository": {

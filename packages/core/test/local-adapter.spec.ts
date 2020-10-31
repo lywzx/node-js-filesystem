@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { ReadStream } from 'fs';
-import { lstat, mkdir, realpath, rmdir, stat, symlink, unlink, writeFile } from 'fs-extra';
+import { lstat, mkdir, realpath, rmdir, stat, symlink, unlink, writeFile } from '../src/util/fs-extra.util';
 import { uniqueId } from 'lodash';
 import { platform } from 'os';
 import { join, sep } from 'path';

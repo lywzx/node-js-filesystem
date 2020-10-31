@@ -1,7 +1,7 @@
 {
   "name": "@filesystem/webdav-adapter",
   "version": "0.0.1-alpha.0",
-  "description": "> TODO: description",
+  "description": "filesystem node webdav adapter",
   "author": "lywzx <liuyang@lyblog.net>",
   "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
   "license": "MIT",
@@ -16,12 +16,13 @@
   },
   "directories": {
     "lib": "lib",
-    "test": "__tests__"
+    "test": "test"
   },
   "files": [
     "lib"
   ],
   "publishConfig": {
+    "registry": "https://registry.npmjs.org",
     "access": "public"
   },
   "repository": {
@@ -32,6 +33,10 @@
     "url": "https://github.com/lywzx/node-js-filesystem/issues"
   },
   "dependencies": {
-    "webdav": "^3.3.0"
+    "webdav": "^3.3.0",
+    "@filesystem/core": "^0.0.1-alpha.0"
+  },
+  "peerDependencies": {
+    "@filesystem/core": "^0.0.1-alpha.0"
   }
 }

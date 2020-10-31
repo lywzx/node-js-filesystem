@@ -9,7 +9,7 @@
     "test": "mocha",
     "coverage": "nyc mocha",
     "coverage:watch": "nyc mocha --watch",
-    "generate-code": "cross-env NODE_ICU_DATA=node_modules/full-icu ts-node -r tsconfig-paths/register packages/scripts/src/index.ts",
+    "generate-code": "ts-node -r tsconfig-paths/register packages/scripts/src/index.ts",
     "lint-staged": "lint-staged"
   },
   "devDependencies": {
@@ -57,17 +57,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lywzx/pdd-node-sdk.git"
+    "url": "git+https://github.com/lywzx/node-js-filesystem.git"
   },
   "keywords": [
-    "pdd",
-    "pinduoduo",
-    "duoduoke",
-    "pdd-sdk",
-    "sdk",
-    "拼多多",
-    "多多客",
-    "拼多多SDK"
+    "nodejs",
+    "filesystems",
+    "file manager",
+    "file",
+    "storage",
+    "files",
+    "s3",
+    "ali-oss"
   ],
   "license": "MIT",
   "bugs": {
