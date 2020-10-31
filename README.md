@@ -33,6 +33,7 @@ Adapters | Status | Description
 @filesystem/ftp-adapter     | doing       | nodejs ftp upload
 @filesystem/sftp-adapter    | doing       | sftp adapter
 @filesystem/webdav-adapter  | doing       | webdav adapter
+@filesystem/memory-adapter  | doing       | memory filesystem adapter
 @filesystem/nestjs          | doing       | NestJs Module
 
 
