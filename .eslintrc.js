@@ -20,7 +20,6 @@ module.exports = {
     'semi': 2,
     'object-curly-newline': 1, // Incompatible with prettier
     'quotes': ['error', 'single'],
-    '@typescript-eslint/interface-name-prefix': 1,
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',

@@ -1,5 +1,5 @@
 import { ListContentInfo, ReadFileResult, ReadStreamResult } from '../types/local-adpater.types';
-import { FileWithMimetypeInterface } from './path-stats.interface';
+import { FileWithMimetypeInterface, FileWithVisibilityInterface } from './path-stats.interface';
 
 export abstract class ReadAbstract {
   /**
@@ -47,14 +47,14 @@ export abstract class ReadAbstract {
    *
    * @returns {Array| false}
    */
-  public abstract getSize(path: string): Promise<ListContentInfo>;
+  public abstract getSize(path: string): Promise<ListContentInfo | undefined>;
 
   /**
    * Get the mimetype of a file.
    *
    * @param path
    *
-   * @returns {array|false}
+   * @returns {FileWithMimetypeInterface|false}
    */
   public abstract getMimetype(path: string): Promise<FileWithMimetypeInterface>;
 
@@ -71,7 +71,7 @@ export abstract class ReadAbstract {
    * Get the visibility of a file.
    * @param {string} path
    *
-   * @returns {object|false}
+   * @returns {FileWithVisibilityInterface|undefined}
    */
-  public abstract getVisibility(path: string): Promise<object | false>;
+  public abstract getVisibility(path: string): Promise<FileWithVisibilityInterface | undefined>;
 }

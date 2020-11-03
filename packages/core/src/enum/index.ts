@@ -1,3 +1,6 @@
+/**
+ * file visible
+ */
 export enum FileVisible {
   /**
    * public visibility
@@ -8,4 +11,22 @@ export enum FileVisible {
    * private visibility
    */
   VISIBILITY_PRIVATE = 'private',
+}
+
+/**
+ * file type
+ */
+export enum FileType {
+  /**
+   * file
+   */
+  file = 'file',
+  /**
+   * directory
+   */
+  dir = 'dir',
+  /**
+   * link
+   */
+  link = 'link',
 }

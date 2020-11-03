@@ -2,9 +2,7 @@ import { ReadStream } from 'fs';
 import { DirType } from '../types/local-adpater.types';
 import { ReadAbstract } from './read.abstract';
 import { Stream } from 'stream';
-import { FileVisible } from '../enum';
-
-export type FileType = 'file' | 'dir' | 'link';
+import { FileType, FileVisible } from '../enum';
 
 /**
  * write method response
@@ -48,7 +46,11 @@ export abstract class AdapterInterface extends ReadAbstract {
    *
    * @return array|false false on failure file meta data on success
    */
-  public abstract update(path: string, contents: string | Buffer, config: any): Promise<object | false>;
+  public abstract update(
+    path: string,
+    contents: string | Buffer,
+    config: any
+  ): Promise<Record<string, unknown> | false>;
 
   /**
    * Update a file using a stream.

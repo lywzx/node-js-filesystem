@@ -100,7 +100,12 @@ export class Local extends AbstractAdapter implements AdapterInterface {
    *
    * @throws LogicException
    */
-  public constructor(root: string, writeFlags = 'w', linkHandling = Local.DISALLOW_LINKS, permissions?: object) {
+  public constructor(
+    root: string,
+    writeFlags = 'w',
+    linkHandling = Local.DISALLOW_LINKS,
+    permissions?: Record<string, unknown>
+  ) {
     super();
     try {
       root = isSymbolicLinkSync(root) ? realpathSync(root) : root;
@@ -581,7 +586,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
     }
 
     if (this.linkHandling & Local.DISALLOW_LINKS) {
-      throw new NotSupportedException(file.path);
+      throw NotSupportedException.forLink(file.path);
     }
   }
 

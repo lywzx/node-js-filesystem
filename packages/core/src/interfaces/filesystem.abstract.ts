@@ -95,7 +95,7 @@ export abstract class FilesystemAbstract {
    *
    * @return {string|false} The timestamp or false on failure.
    */
-  public abstract async getTimestamp(path: string): Promise<string | false>;
+  public abstract async getTimestamp(path: string): Promise<number | false>;
 
   /**
    * Get a file's visibility.
@@ -113,7 +113,7 @@ export abstract class FilesystemAbstract {
    *
    * @param {string} path     The path of the new file.
    * @param {string | Buffer} contents The file contents.
-   * @param {array}  config   An optional configuration array.
+   * @param {object}  config   An optional configuration array.
    *
    * @throws FileExistsException
    *

@@ -1,12 +1,13 @@
-import { AbstractFtpAdapter } from './abstract-ftp-adapter';
 import omit from 'lodash/omit';
 import { ReadStream, WriteStream } from 'fs';
-import { FileVisible } from '../enum';
-import { FtpAdapterConstructorConfigInterface } from '../interfaces/ftp-adapter.interface';
-import { InvalidRootException } from '../exceptions';
-import { guessMimeType } from '../util/util';
-import { defer } from '../util/promise-defer.util';
+import { FileType, FileVisible } from '@filesystem/core/src/enum';
+import { InvalidRootException } from '@filesystem/core/src/exceptions';
+import { guessMimeType } from '@filesystem/core/src/util/util';
+import { defer } from '@filesystem/core/src/util/promise-defer.util';
 import { Writable } from 'stream';
+import { AbstractFtpAdapter } from './abstract-ftp-adapter';
+import { FtpAdapterConstructorConfigInterface } from '../interfaces';
+import { DirType, ListContentInfo } from '@filesystem/core/lib/types/local-adpater.types';
 
 export class Ftp extends AbstractFtpAdapter {
   /**
@@ -288,62 +289,48 @@ return result;*/
   /**
    * @inheritdoc
    */
-  public async rename(path: string, newpath: string) {
-    return {} as any;
-    //return ftp_rename(this.getConnection(), path, newpath);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public async delete(path: string) {
-    return {} as any;
-    //return ftp_delete(this.getConnection(), path);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public async deleteDir(dirname: string) {
-    return {} as any;
-    /*connection = this.getConnection();
-  contents = array_reverse(this.listDirectoryContents(dirname, false));
-
-  foreach (contents as object) {
-  if (object['type'] === 'file') {
-    if ( ! ftp_delete(connection, object['path'])) {
+  public async rename(path: string, newPath: string): Promise<boolean> {
+    try {
+      await this.client.rename(path, newPath);
+    } catch (e) {
       return false;
     }
-  } elseif ( ! this.deleteDir(object['path'])) {
-    return false;
-  }
-}
-
-  return ftp_rmdir(connection, dirname);*/
+    return true;
   }
 
   /**
    * @inheritdoc
    */
-  public async createDir(dirname: string, config: any) {
-    this.client.ensureDir(dirname);
-    return {} as any;
-    /*connection = this.getConnection();
-  directories = explode('/', dirname);
-
-  foreach (directories as directory) {
-  if (false === this.createActualDirectory(directory, connection)) {
-    this.setConnectionRoot();
-
-    return false;
+  public async delete(path: string): Promise<boolean> {
+    try {
+      await this.client.remove(path);
+    } catch (e) {
+      return false;
+    }
+    return true;
   }
 
-  ftp_chdir(connection, directory);
-}
+  /**
+   * @inheritdoc
+   */
+  public async deleteDir(dirname: string): Promise<boolean> {
+    try {
+      await this.client.removeDir(dirname);
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
 
-  this.setConnectionRoot();
-
-  return ['type' => 'dir', 'path' => dirname];*/
+  /**
+   * @inheritdoc
+   */
+  public async createDir(dirname: string, config?: any): Promise<DirType> {
+    await this.client.ensureDir(dirname);
+    return {
+      type: FileType.dir,
+      path: dirname,
+    };
   }
 
   /**
@@ -354,21 +341,13 @@ return result;*/
    *
    * @return bool
    */
-  protected createActualDirectory(directory: string, connection: any) {
-    /*// List the current directory
-  listing = ftp_nlist(connection, '.') ?: [];
-
-  foreach (listing as key => item) {
-    if (preg_match('~^\./.*~', item)) {
-      listing[key] = substr(item, 2);
+  protected async createActualDirectory(directory: string): Promise<boolean> {
+    try {
+      await this.client.ensureDir(directory);
+    } catch (e) {
+      return false;
     }
-}
-
-  if (in_array(directory, listing, true)) {
     return true;
-  }
-
-  return (boolean) ftp_mkdir(connection, directory);*/
   }
 
   /**
@@ -395,7 +374,7 @@ return result;*/
     if (isDir) {
       await this.setConnectionRoot();
       return {
-        type: 'dir',
+        type: FileType.dir,
         path,
       };
     }
@@ -532,8 +511,8 @@ return result;*/
    * @param {string} directory
    * @param {boolean} recursive
    */
-  protected async listDirectoryContents(directory = '', recursive = true) {
-    return this.client.list(directory) as any;
+  protected async listDirectoryContents(directory = '', recursive = true): Promise<ListContentInfo[]> {
+    // return this.client.send(`LIST ${directory} -a`);
     /*directory = str_replace('*', '\\*', directory);
 
   if (recursive && this.recurseManually) {
@@ -544,6 +523,13 @@ return result;*/
   listing = this.ftpRawlist(options, directory);
 
   return listing ? this.normalizeListing(listing, directory) : [];*/
+    directory = directory.replace('*', '\\*');
+    if (recursive && this.recurseManually) {
+      return this.listDirectoryContentsRecursive(directory);
+    }
+
+    const list = await this.client.list(directory);
+    return this.normalizeListing(list);
   }
 
   /**
@@ -551,7 +537,7 @@ return result;*/
    *
    * @param string directory
    */
-  protected listDirectoryContentsRecursive(directory: string) {
+  protected listDirectoryContentsRecursive(directory: string): Promise<ListContentInfo[]> {
     /*listing = this.normalizeListing(this.ftpRawlist('-aln', directory) ?: [], directory);
   output = [];
 

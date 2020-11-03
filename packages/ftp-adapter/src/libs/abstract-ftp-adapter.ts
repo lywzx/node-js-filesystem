@@ -1,13 +1,11 @@
-import { FtpAdapterConstructorConfigInterface } from '../interfaces/ftp-adapter.interface';
-import { AbstractAdapter } from './abstract-adapter';
-import { Client } from 'basic-ftp';
+import { Client, FileInfo } from 'basic-ftp';
 import upperFirst from 'lodash/upperFirst';
 import isFunction from 'lodash/isFunction';
-import first from 'lodash/first';
 import isNumber from 'lodash/isNumber';
-import times from 'lodash/times';
-import { createDateFromFormat, isNumeric, stringChunk } from '../util/util';
-import { FileVisible } from '../enum';
+import { isNumeric, stringChunk } from '@filesystem/core/src/util/util';
+import { AbstractAdapter, FileVisible, ListContentInfo, NotSupportedException } from '@filesystem/core';
+import { FtpAdapterConstructorConfigInterface } from '../interfaces';
+import { FileType } from '@filesystem/core/lib/src';
 
 export abstract class AbstractFtpAdapter extends AbstractAdapter {
   /**
@@ -245,6 +243,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
 
   /**
    * Set the ftp password.
+   * Set the ftp password.
    *
    * @param {string} password
    *
@@ -316,11 +315,11 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
   /**
    * @inheritdoc
    */
-  public listContents(directory = '', recursive = false) {
+  public listContents(directory = '', recursive = false): Promise<ListContentInfo[]> {
     return this.listDirectoryContents(directory, recursive);
   }
 
-  protected abstract listDirectoryContents(directory: string, recursive: boolean): Promise<any>;
+  protected abstract listDirectoryContents(directory: string, recursive: boolean): Promise<ListContentInfo[]>;
 
   /**
    * Normalize a directory listing.
@@ -330,7 +329,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @return array directory listing
    */
-  protected normalizeListing(listing: object, prefix = '') {
+  protected normalizeListing(listing: FileInfo[], prefix = '') {
     /*$base = $prefix;
   $result = [];
   $listing = $this->removeDotDirectories($listing);
@@ -345,6 +344,13 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
   }
 
   return $this->sortListing($result);*/
+    return this.sortListing(listing.map( it => this.normalizeObject(it, prefix)));
+
+
+
+    const base = prefix;
+    const result = [];
+    const list = this.removeDotDirectories(listing);
   }
 
   /**
@@ -354,7 +360,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @return {object} sorted listing
    */
-  protected sortListing(result: object) {
+  protected sortListing(result: Record<string, unknown>) {
     /*$compare = ($one, $two) {
     return strnatcmp($one['path'], $two['path']);
   };
@@ -367,23 +373,23 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
   /**
    * Normalize a file entry.
    *
-   * @param {string} item
+   * @param {FileInfo} item
    * @param {string} base
    *
    * @return array normalized file array
    *
    * @throws NotSupportedException
    */
-  protected normalizeObject(item: string, base: string) {
-    /*$systemType = $this->systemType ?: await $this->detectSystemType($item);
+  protected async normalizeObject(item: FileInfo, base: string) {
+    const systemType = this.systemType ? this.systemType : await this.detectSystemType(item);
 
-  if ($systemType === 'unix') {
-    return $this->normalizeUnixObject($item, $base);
-  } elseif ($systemType === 'windows') {
-  return $this->normalizeWindowsObject($item, $base);
-}
+    if (systemType === 'unix') {
+      return this.normalizeUnixObject(item, base);
+    } else if (systemType === 'windows') {
+      return this.normalizeWindowsObject(item, base);
+    }
 
-  throw NotSupportedException::forFtpSystemType($systemType);*/
+    throw new NotSupportedException(`The FTP system type '${systemType}' is currently not supported.`);
   }
 
   /**
@@ -401,12 +407,16 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *   'timestamp' => 1566205260
    * ]
    *
-   * @param {string} item
+   * @param {FileInfo} item
    * @param {string} base
    *
    * @return array normalized file array
    */
-  protected normalizeUnixObject(item: string, base: string) {
+  protected normalizeUnixObject(item: FileInfo, base: string): File {
+    const type = item.isFile ? FileType.file : item.isDirectory ? FileType.dir : FileType.link;
+    return {
+      type,
+    };
     /*$item = preg_replace('#\s+#', ' ', trim($item), 7);
 
   if (count(explode(' ', $item, 9)) !== 9) {
@@ -480,37 +490,14 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @return array normalized file array
    */
-  protected normalizeWindowsObject(item: string, base: string) {
-    item = item.trim();
-    times(3, () => {
-      item = item.replace(/\s+/, ' ');
-    });
-
-    if (item.split(' ', 4).length !== 4) {
-      throw new Error(`Metadata can't be parsed from item ${item} , not enough parts.`);
-    }
-    const [date, time, size, ...name] = item.split(' ');
-    const joinedName = name.join(' ');
-    const path = base === '' ? joinedName : `${base}${this.separator}${joinedName}`;
-
-    // Check for the correct date/time format
-    const format = date.length === 8 ? 'm-d-yH:iA' : 'Y-m-dH:i';
-    const dt = createDateFromFormat(`${date}${time}`, format);
-    const timestamp = dt ? dt.getTime() : Date.parse(`${date} ${time}`);
-
-    if (size === '<DIR>') {
-      return {
-        type: 'dir',
-        path,
-        timestamp,
-      };
-    }
+  protected normalizeWindowsObject(item: FileInfo, base: string) {
+    const type = item.isFile ? FileType.file : item.isSymbolicLink ? FileType.link : FileType.dir;
 
     return {
-      type: 'file',
+      type,
       visibility: FileVisible.VISIBILITY_PUBLIC,
-      size,
-      timestamp,
+      size: item.size,
+      timestamp: item.modifiedAt,
     };
   }
 
@@ -521,21 +508,11 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @return string the system type
    */
-  protected async detectSystemType(item: string) {
+  protected async detectSystemType(item: FileInfo) {
     const result = await this.client.send('SYSTEM');
     return /^[0-9]{2,4}-[0-9]{2}-[0-9]{2}/.test(result.message) ? 'windows' : 'unix';
   }
 
-  /**
-   * Get the file type from the permissions.
-   *
-   * @param {string} permissions
-   *
-   * @return string file type
-   */
-  protected async detectType(permissions: string) {
-    return first(permissions) === 'd' ? 'dir' : 'file';
-  }
 
   /**
    * Normalize a permissions string.
@@ -581,11 +558,11 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @return array
    */
-  public removeDotDirectories(list: string[]) {
-    return list.filter((line: string) => {
+  /*public removeDotDirectories(list: FileInfo[]): FileInfo[] {
+    return list.filter((line: FileInfo) => {
       return line !== '' && /.* \.(\.)?$|^total/.test(line);
     });
-  }
+  }*/
 
   /**
    * @inheritdoc
@@ -606,7 +583,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    * @inheritdoc
    */
   public getSize(path: string) {
-    return this.getMetadata(path) as any;
+    return this.getMetadata(path);
   }
 
   /**

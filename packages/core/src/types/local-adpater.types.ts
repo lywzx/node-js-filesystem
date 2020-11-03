@@ -1,6 +1,5 @@
 import { ReadStream } from 'fs';
-import { FileVisible } from '../enum';
-import { FileType } from '../interfaces';
+import { FileType, FileVisible } from '../enum';
 
 export type ReadStreamResult = {
   type: string;
@@ -51,7 +50,10 @@ export type FileInfo = {
   size: number;
 };
 
+/**
+ * dir type
+ */
 export type DirType = {
-  type: 'dir';
+  type: FileType.dir;
   path: string;
 };
