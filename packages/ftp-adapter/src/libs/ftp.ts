@@ -8,6 +8,7 @@ import { Writable } from 'stream';
 import { AbstractFtpAdapter } from './abstract-ftp-adapter';
 import { FtpAdapterConstructorConfigInterface } from '../interfaces';
 import { DirType, ListContentInfo } from '@filesystem/core/lib/types/local-adpater.types';
+import { ConnectionException } from '../exceptions/connection.exception';
 
 export class Ftp extends AbstractFtpAdapter {
   /**
@@ -134,7 +135,7 @@ export class Ftp extends AbstractFtpAdapter {
     const response = await this.client.send('OPTS UTF8 ON');
 
     if (this.client.ftp.encoding === 'utf8') {
-      throw new Error(`Could not set UTF-8 mode for connection: ${this.getHost()} :: ${this.getPort()}`);
+      throw new ConnectionException(`Could not set UTF-8 mode for connection: ${this.getHost()} :: ${this.getPort()}`);
     }
     /*if (this.utf8) {
       response = ftp_raw(this.connection, "OPTS UTF8 ON");
@@ -190,29 +191,14 @@ export class Ftp extends AbstractFtpAdapter {
    * @throws ConnectionRuntimeException
    */
   public async login() {
-    const result = await this.client.access(omit(this.config, ['timeout']));
+    try {
+      await this.client.access(omit(this.config, ['timeout']));
+    } catch (e) {}
     if (this.client.closed) {
-      throw new Error(
+      throw new ConnectionException(
         `Could not login with connection: ${this.getHost()} :: ${this.getPort()}, username: ${this.getUsername()}`
       );
     }
-
-    /*set_error_handler(function () {
-    });
-    isLoggedIn = ftp_login(
-      this.connection,
-      this.getUsername(),
-      this.getPassword()
-    );
-    restore_error_handler();
-
-    if ( ! isLoggedIn) {
-      this.disconnect();
-      throw new ConnectionRuntimeException(
-        'Could not login with connection: ' . this.getHost() . '::' . this.getPort(
-      ) . ', username: ' . this.getUsername()
-    );
-    }*/
   }
 
   /**
@@ -356,7 +342,7 @@ return result;*/
   public async getMetadata(path: string) {
     if (path === '') {
       return {
-        type: 'dir',
+        type: FileType.dir,
         path: '',
       };
     }
@@ -537,7 +523,7 @@ return result;*/
    *
    * @param string directory
    */
-  protected listDirectoryContentsRecursive(directory: string): Promise<ListContentInfo[]> {
+  protected async listDirectoryContentsRecursive(directory: string): Promise<ListContentInfo[]> {
     /*listing = this.normalizeListing(this.ftpRawlist('-aln', directory) ?: [], directory);
   output = [];
 
@@ -550,6 +536,7 @@ return result;*/
 }
 
   return output;*/
+    return [];
   }
 
   /**

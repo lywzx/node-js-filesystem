@@ -1,10 +1,9 @@
-export class FileSystemNotFoundException extends Error {
+import { bindErrorConstructor } from '../util/exception.util';
+import { Exception } from './exception';
+
+export class FileSystemNotFoundException extends Exception {
   constructor(message?: string) {
     super(message);
-    Object.setPrototypeOf(this, FileSystemNotFoundException.prototype);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
-    this.name = FileSystemNotFoundException.name;
+    bindErrorConstructor(this, FileSystemNotFoundException);
   }
 }

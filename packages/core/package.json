@@ -42,6 +42,7 @@
   },
   "peerDependencies": {
     "debug": "^4.1.1",
-    "file-type": "^14.2.0"
+    "file-type": "^14.2.0",
+    "mime": "^2.4.5"
   }
 }

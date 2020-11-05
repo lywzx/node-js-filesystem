@@ -1,13 +1,12 @@
+import { bindErrorConstructor } from '../util/exception.util';
+import { Exception } from './exception';
+
 /**
  * 文件不存在
  */
-export class FileExistsException extends Error {
+export class FileExistsException extends Exception {
   constructor(message?: string) {
     super(message);
-    Object.setPrototypeOf(this, FileExistsException.prototype);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
-    this.name = FileExistsException.name;
+    bindErrorConstructor(this, FileExistsException);
   }
 }

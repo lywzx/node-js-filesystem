@@ -1,14 +1,12 @@
 /**
  * not support info
  */
+import { bindErrorConstructor } from '../util/exception.util';
+
 export class NotSupportedException extends Error {
   constructor(public message: string) {
     super(message);
-    Object.setPrototypeOf(this, NotSupportedException.prototype);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
-    this.name = NotSupportedException.name;
+    bindErrorConstructor(this, NotSupportedException);
   }
 
   /**

@@ -1,9 +1,9 @@
 import { ReadStream, Stats } from 'fs';
-import { fromFile, fromBuffer } from 'file-type';
+import { fromBuffer, fromFile } from 'file-type';
 import { getType as getMimeType } from 'mime';
 import { extname } from 'path';
 import { Stream } from 'stream';
-import { FileType } from '../interfaces';
+import { FileType } from '../enum';
 
 /**
  * read file type
@@ -11,11 +11,11 @@ import { FileType } from '../interfaces';
  */
 export function getType(stats: Stats): FileType {
   if (stats.isSymbolicLink()) {
-    return 'link';
+    return FileType.link;
   } else if (stats.isDirectory()) {
-    return 'dir';
+    return FileType.dir;
   } else {
-    return 'file';
+    return FileType.file;
   }
 }
 

@@ -3,9 +3,8 @@ import upperFirst from 'lodash/upperFirst';
 import isFunction from 'lodash/isFunction';
 import isNumber from 'lodash/isNumber';
 import { isNumeric, stringChunk } from '@filesystem/core/src/util/util';
-import { AbstractAdapter, FileVisible, ListContentInfo, NotSupportedException } from '@filesystem/core';
+import { AbstractAdapter, FileVisible, ListContentInfo, NotSupportedException, FileType } from '@filesystem/core';
 import { FtpAdapterConstructorConfigInterface } from '../interfaces';
-import { FileType } from '@filesystem/core/lib/src';
 
 export abstract class AbstractFtpAdapter extends AbstractAdapter {
   /**
@@ -69,11 +68,6 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
   protected systemType: string | undefined;
 
   /**
-   * @var SafeStorage
-   */
-  protected safeStorage: any;
-
-  /**
    * True to enable timestamps for FTP servers that return unix-style listings.
    *
    * @var boolR
@@ -89,11 +83,6 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
     super();
     this.client = new Client(config.timeout || 3000);
   }
-  /* public __construct(array $config)
-{
-  $this->safeStorage = new SafeStorage();
-  $this->setConfig($config);
-}*/
 
   /**
    * Set the config.
@@ -219,20 +208,6 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
   }
 
   /**
-   * Set ftp username.
-   *
-   * @param {string} username
-   *
-   * @return this
-   */
-  /*public setUsername(username: string) {
-    /!*$this->safeStorage->storeSafely('username', $username);
-
-  return $this;*!/
-    return this;
-  }*/
-
-  /**
    * Returns the password.
    *
    * @return string password
@@ -240,20 +215,6 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
   public getPassword() {
     return this.config.password;
   }
-
-  /**
-   * Set the ftp password.
-   * Set the ftp password.
-   *
-   * @param {string} password
-   *
-   * @return this
-   */
-  /*public setPassword(password: string) {
-    //$this->safeStorage->storeSafely('password', $password);
-
-    return this;
-  }*/
 
   /**
    * Returns the amount of seconds before the connection will timeout.
@@ -345,12 +306,10 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
 
   return $this->sortListing($result);*/
     return this.sortListing(listing.map( it => this.normalizeObject(it, prefix)));
-
-
-
+/*
     const base = prefix;
     const result = [];
-    const list = this.removeDotDirectories(listing);
+    const list = this.removeDotDirectories(listing);*/
   }
 
   /**
@@ -380,7 +339,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @throws NotSupportedException
    */
-  protected async normalizeObject(item: FileInfo, base: string) {
+  protected async normalizeObject(item: FileInfo, base: string): Promise<ListContentInfo> {
     const systemType = this.systemType ? this.systemType : await this.detectSystemType(item);
 
     if (systemType === 'unix') {
@@ -412,10 +371,14 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @return array normalized file array
    */
-  protected normalizeUnixObject(item: FileInfo, base: string): File {
+  protected normalizeUnixObject(item: FileInfo, base: string): ListContentInfo & { visibility: FileVisible } {
     const type = item.isFile ? FileType.file : item.isDirectory ? FileType.dir : FileType.link;
+    // todo 待完善
     return {
       type,
+      path: item.name,
+      visibility: FileVisible.VISIBILITY_PUBLIC,
+      size: item.size,
     };
     /*$item = preg_replace('#\s+#', ' ', trim($item), 7);
 
@@ -490,7 +453,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @return array normalized file array
    */
-  protected normalizeWindowsObject(item: FileInfo, base: string) {
+  protected normalizeWindowsObject(item: FileInfo, base: string): ListContentInfo {
     const type = item.isFile ? FileType.file : item.isSymbolicLink ? FileType.link : FileType.dir;
 
     return {
