@@ -21,7 +21,7 @@ async function cleanDir(files) {
 }
 
 async function build(config) {
-  await execa('rollup', ['-c', 'build/' + config], { stdio: 'inherit' })
+  await execa('rollup', ['-c', 'build/' + config, ...process.argv.slice(2)], { stdio: 'inherit' })
 }
 
 function checkAllSizes(files) {

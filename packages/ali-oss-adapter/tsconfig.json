@@ -3,7 +3,11 @@
   "compilerOptions": {
     "outDir": "./lib",
     "emitDecoratorMetadata": false,
-    "experimentalDecorators": false
+    "experimentalDecorators": false,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "lib": ["es6", "dom"]
   },
-  "include": ["src", "test"]
+  "include": ["src", "test"],
+  "exclude": ["node_modules"]
 }

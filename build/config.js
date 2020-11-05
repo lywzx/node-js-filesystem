@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const argv = require('minimist')(process.argv);
 
 const lernaPackage = JSON.parse(fs.readFileSync(path.join(__dirname, '../lerna.json')).toString());
 
@@ -45,7 +46,11 @@ const packages = [
  * @filesystem/ali-oss-adapter v${lernaPackage.version}
  * (c) ${new Date().getFullYear()} LiuYang
  * @license MIT
- */`
+ */`,
+    external: ['ali-oss'],
+    globals: {
+      'ali-oss': 'OSS',
+    }
   },
   {
     dir: 'ftp-adapter',
@@ -96,5 +101,10 @@ const packages = [
 
 module.exports = {
   entries,
-  packages,
+  packages: packages.filter((package) => {
+    if (argv.only && typeof argv.only === 'string') {
+      return argv.only.split(',').includes(package.dir);
+    }
+    return true;
+  }),
 };
