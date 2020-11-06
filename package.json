@@ -2,8 +2,8 @@
   "name": "@filesystem/core",
   "private": true,
   "scripts": {
-    "dev": "cross-env node_options=--max_old_space_size=4096 rollup -w -c build/rollup.config.js",
-    "build": "cross-env node_options=--max_old_space_size=4096 node build/build-pkg.js",
+    "dev": "cross-env node_options=--max_old_space_size=8192 rollup -w -c build/rollup.config.js",
+    "build": "cross-env node_options=--max_old_space_size=8192 node build/build-pkg.js",
     "lint": "eslint packages --ext .ts --fix",
     "format": "prettier --write \"+(packages)/**/*.ts\"",
     "test": "mocha",
@@ -49,7 +49,10 @@
     "ts-node": "^9.0.0",
     "tsconfig-paths": "^3.9.0",
     "typescript": "^4.0.5",
-    "zlib": "^1.0.5"
+    "zlib": "^1.0.5",
+    "@nestjs/core": "^7.4.2",
+    "@nestjs/common": "^7.4.2",
+    "@nestjs/testing": "^7.4.2"
   },
   "resolutions": {
     "chalk": "^4.1.0"

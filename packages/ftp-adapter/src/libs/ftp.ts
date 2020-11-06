@@ -515,7 +515,7 @@ return result;*/
     }
 
     const list = await this.client.list(directory);
-    return this.normalizeListing(list);
+    return await this.normalizeListing(list);
   }
 
   /**

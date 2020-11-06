@@ -1,6 +1,7 @@
 import { Client, FileInfo } from 'basic-ftp';
 import upperFirst from 'lodash/upperFirst';
 import isFunction from 'lodash/isFunction';
+import sortBy from 'lodash/sortBy';
 import isNumber from 'lodash/isNumber';
 import { isNumeric, stringChunk } from '@filesystem/core/src/util/util';
 import { AbstractAdapter, FileVisible, ListContentInfo, NotSupportedException, FileType } from '@filesystem/core';
@@ -290,43 +291,24 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @return array directory listing
    */
-  protected normalizeListing(listing: FileInfo[], prefix = '') {
-    /*$base = $prefix;
-  $result = [];
-  $listing = $this->removeDotDirectories($listing);
-
-  while ($item = array_shift($listing)) {
-    if (preg_match('#^.*:$#', $item)) {
-      $base = preg_replace('~^\./!*|:$~', '', $item);
-      continue;
+  protected async normalizeListing(listing: FileInfo[], prefix = ''): Promise<ListContentInfo[]> {
+    const result: ListContentInfo[] = [];
+    for (const item of listing) {
+      result.push(await this.normalizeObject(item, prefix));
     }
 
-    $result[] = $this->normalizeObject($item, $base);
-  }
-
-  return $this->sortListing($result);*/
-    return this.sortListing(listing.map( it => this.normalizeObject(it, prefix)));
-/*
-    const base = prefix;
-    const result = [];
-    const list = this.removeDotDirectories(listing);*/
+    return this.sortListing(result);
   }
 
   /**
    * Sort a directory listing.
    *
-   * @param {object} result
+   * @param {ListContentInfo[]} result
    *
    * @return {object} sorted listing
    */
-  protected sortListing(result: Record<string, unknown>) {
-    /*$compare = ($one, $two) {
-    return strnatcmp($one['path'], $two['path']);
-  };
-
-  usort($result, $compare);*/
-
-    return result;
+  protected sortListing(result: ListContentInfo[]) {
+    return sortBy(result, 'path');
   }
 
   /**
@@ -379,6 +361,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
       path: item.name,
       visibility: FileVisible.VISIBILITY_PUBLIC,
       size: item.size,
+      timestamp: item.modifiedAt?.getTime() || 0,
     };
     /*$item = preg_replace('#\s+#', ' ', trim($item), 7);
 
@@ -453,14 +436,15 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @return array normalized file array
    */
-  protected normalizeWindowsObject(item: FileInfo, base: string): ListContentInfo {
+  protected normalizeWindowsObject(item: FileInfo, base: string): ListContentInfo & { visibility: FileVisible } {
     const type = item.isFile ? FileType.file : item.isSymbolicLink ? FileType.link : FileType.dir;
 
     return {
       type,
+      path: item.name,
       visibility: FileVisible.VISIBILITY_PUBLIC,
       size: item.size,
-      timestamp: item.modifiedAt,
+      timestamp: item.modifiedAt?.getDate() || 0,
     };
   }
 
@@ -475,7 +459,6 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
     const result = await this.client.send('SYSTEM');
     return /^[0-9]{2,4}-[0-9]{2}-[0-9]{2}/.test(result.message) ? 'windows' : 'unix';
   }
-
 
   /**
    * Normalize a permissions string.

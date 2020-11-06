@@ -12,7 +12,6 @@
     "lib": ["es6"]
   },
   "include": ["packages", "examples"],
-  "exclude": ["node_modules"],
   "typedocOptions": {
     "mode": "modules",
     "out": "apidocs"
