@@ -2,7 +2,7 @@ import { ReadStream } from 'fs';
 import { DirType } from '../types/local-adpater.types';
 import { ReadAbstract } from './read.abstract';
 import { Stream } from 'stream';
-import { FileType, FileVisible } from '../enum';
+import { FileType, Visibility } from '../enum';
 
 /**
  * write method response
@@ -12,7 +12,7 @@ export type AdapterWriteResultType = {
   contents: string | Buffer;
   type: FileType;
   size: number;
-  visibility: FileVisible | string;
+  visibility: Visibility | string;
 };
 
 export abstract class AdapterInterface extends ReadAbstract {
@@ -115,9 +115,9 @@ export abstract class AdapterInterface extends ReadAbstract {
    * Set the visibility for a file.
    *
    * @param {string} path
-   * @param {FileVisible} visibility
+   * @param {Visibility} visibility
    *
    * @return array|false file meta data
    */
-  public abstract setVisibility(path: string, visibility: FileVisible | string): Promise<object | false>;
+  public abstract setVisibility(path: string, visibility: Visibility | string): Promise<object | false>;
 }

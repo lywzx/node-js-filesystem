@@ -19,6 +19,7 @@ module.exports = {
   rules: {
     'semi': 2,
     'object-curly-newline': 1, // Incompatible with prettier
+    'no-unused-vars': ["error", { "args": "all" }],
     'quotes': ['error', 'single'],
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',

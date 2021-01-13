@@ -1,17 +1,4 @@
-/**
- * file visible
- */
-export enum FileVisible {
-  /**
-   * public visibility
-   */
-  VISIBILITY_PUBLIC = 'public',
-
-  /**
-   * private visibility
-   */
-  VISIBILITY_PRIVATE = 'private',
-}
+export * from './visibility';
 
 /**
  * file type

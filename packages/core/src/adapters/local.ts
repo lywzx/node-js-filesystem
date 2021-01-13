@@ -6,7 +6,7 @@ import toPairs from 'lodash/toPairs';
 import padStart from 'lodash/padStart';
 import { dirname, sep } from 'path';
 import { format } from 'util';
-import { FileVisible } from '../enum';
+import { Visibility } from '../enum';
 import { NotSupportedException, UnReadableFileException } from '../exceptions';
 import {
   AdapterInterface,
@@ -43,6 +43,9 @@ import { getType, guessMimeType } from '../util/util';
 import { AbstractAdapter } from './abstract-adapter';
 import { copyFile, readFile, writeFile, rename, unlink, stat, lstat, chmod, pathExists } from '../util/fs-extra.util';
 
+/**
+ * local filesystem adapter
+ */
 export class Local extends AbstractAdapter implements AdapterInterface {
   /**
    * 0001
@@ -61,12 +64,12 @@ export class Local extends AbstractAdapter implements AdapterInterface {
    */
   protected static permissions = {
     file: {
-      [FileVisible.VISIBILITY_PUBLIC]: 0o644,
-      [FileVisible.VISIBILITY_PRIVATE]: 0o600,
+      [Visibility.VISIBILITY_PUBLIC]: 0o644,
+      [Visibility.VISIBILITY_PRIVATE]: 0o600,
     },
     dir: {
-      [FileVisible.VISIBILITY_PUBLIC]: 0o755,
-      [FileVisible.VISIBILITY_PRIVATE]: 0o700,
+      [Visibility.VISIBILITY_PUBLIC]: 0o755,
+      [Visibility.VISIBILITY_PRIVATE]: 0o700,
     },
   };
 
@@ -187,11 +190,11 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   public async write(
     path: string,
     contents: string | Buffer,
-    config: WriteConfig | undefined = { visibility: FileVisible.VISIBILITY_PUBLIC }
+    config: WriteConfig | undefined = { visibility: Visibility.VISIBILITY_PUBLIC }
   ) {
     const location = this.applyPathPrefix(path);
     await this.ensureDirectory(dirname(location));
-    const visibility = config?.visibility || FileVisible.VISIBILITY_PUBLIC;
+    const visibility = config?.visibility || Visibility.VISIBILITY_PUBLIC;
 
     const options: any = {
       flag: config?.flag || this.writeFlags,
@@ -224,11 +227,11 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   public async writeStream(
     path: string,
     resource: ReadStream,
-    config: WriteStreamConfig | null = { visibility: FileVisible.VISIBILITY_PUBLIC }
+    config: WriteStreamConfig | null = { visibility: Visibility.VISIBILITY_PUBLIC }
   ) {
     const location = this.applyPathPrefix(path);
     await this.ensureDirectory(dirname(location));
-    const visibility = config?.visibility || FileVisible.VISIBILITY_PUBLIC;
+    const visibility = config?.visibility || Visibility.VISIBILITY_PUBLIC;
 
     const option: any = {
       flags: config?.flags || this.writeFlags,
@@ -280,7 +283,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   public updateStream(
     path: string,
     resource: ReadStream,
-    config: WriteStreamConfig | null = { visibility: FileVisible.VISIBILITY_PUBLIC }
+    config: WriteStreamConfig | null = { visibility: Visibility.VISIBILITY_PUBLIC }
   ) {
     return this.writeStream(path, resource, config);
   }
@@ -291,10 +294,10 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   public async update(
     path: string,
     contents: string | Buffer,
-    config: UpdateConfig | null = { visibility: FileVisible.VISIBILITY_PUBLIC }
+    config: UpdateConfig | null = { visibility: Visibility.VISIBILITY_PUBLIC }
   ): Promise<UpdateFileResult | false> {
     const location = this.applyPathPrefix(path);
-    const visibility = config?.visibility || FileVisible.VISIBILITY_PUBLIC;
+    const visibility = config?.visibility || Visibility.VISIBILITY_PUBLIC;
 
     const options: any = {
       flag: config?.flag || this.writeFlags,
@@ -490,7 +493,7 @@ export class Local extends AbstractAdapter implements AdapterInterface {
   /**
    * @inheritdoc
    */
-  public async setVisibility(path: string, visibility: FileVisible | string) {
+  public async setVisibility(path: string, visibility: Visibility | string) {
     const location = this.applyPathPrefix(path);
     const type = (await isDir(location)) ? 'dir' : 'file';
 
@@ -511,10 +514,10 @@ export class Local extends AbstractAdapter implements AdapterInterface {
    */
   public async createDir(
     dirname: string,
-    config: VisibilityConfig | null = { visibility: FileVisible.VISIBILITY_PUBLIC }
+    config: VisibilityConfig | null = { visibility: Visibility.VISIBILITY_PUBLIC }
   ) {
     const location = this.applyPathPrefix(dirname);
-    const mode = this.permissionMap['dir'][config?.visibility || FileVisible.VISIBILITY_PUBLIC];
+    const mode = this.permissionMap['dir'][config?.visibility || Visibility.VISIBILITY_PUBLIC];
 
     let mkdirResult;
     try {

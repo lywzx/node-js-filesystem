@@ -36,5 +36,17 @@ Adapters | Status | Description
 @filesystem/memory-adapter  | doing       | memory filesystem adapter
 @filesystem/nestjs          | doing       | NestJs Module
 
+# Usage
 
+To safely interact with the filesystem, always wrap the adapter in a Filesystem instance.
 
+```typescript
+import { Local, Filesystem  } from '@filesystem/core';
+
+// SETUP
+const adapter = new Local(rootPath);
+const filesystem = Filesystem(adapter);
+
+// USAGE
+await filesystem.write($path, $contents);
+```

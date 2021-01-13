@@ -4,7 +4,7 @@ import isFunction from 'lodash/isFunction';
 import sortBy from 'lodash/sortBy';
 import isNumber from 'lodash/isNumber';
 import { isNumeric, stringChunk } from '@filesystem/core/src/util/util';
-import { AbstractAdapter, FileVisible, ListContentInfo, NotSupportedException, FileType } from '@filesystem/core';
+import { AbstractAdapter, Visibility, ListContentInfo, NotSupportedException, FileType } from '@filesystem/core';
 import { FtpAdapterConstructorConfigInterface } from '../interfaces';
 
 export abstract class AbstractFtpAdapter extends AbstractAdapter {
@@ -353,13 +353,13 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @return array normalized file array
    */
-  protected normalizeUnixObject(item: FileInfo, base: string): ListContentInfo & { visibility: FileVisible } {
+  protected normalizeUnixObject(item: FileInfo, base: string): ListContentInfo & { visibility: Visibility } {
     const type = item.isFile ? FileType.file : item.isDirectory ? FileType.dir : FileType.link;
     // todo 待完善
     return {
       type,
       path: item.name,
-      visibility: FileVisible.VISIBILITY_PUBLIC,
+      visibility: Visibility.VISIBILITY_PUBLIC,
       size: item.size,
       timestamp: item.modifiedAt?.getTime() || 0,
     };
@@ -436,13 +436,13 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    *
    * @return array normalized file array
    */
-  protected normalizeWindowsObject(item: FileInfo, base: string): ListContentInfo & { visibility: FileVisible } {
+  protected normalizeWindowsObject(item: FileInfo, base: string): ListContentInfo & { visibility: Visibility } {
     const type = item.isFile ? FileType.file : item.isSymbolicLink ? FileType.link : FileType.dir;
 
     return {
       type,
       path: item.name,
-      visibility: FileVisible.VISIBILITY_PUBLIC,
+      visibility: Visibility.VISIBILITY_PUBLIC,
       size: item.size,
       timestamp: item.modifiedAt?.getDate() || 0,
     };

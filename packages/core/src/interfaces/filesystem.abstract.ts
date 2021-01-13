@@ -1,7 +1,6 @@
 import { Stream } from 'stream';
-import { FileVisible } from '../enum';
+import { Visibility } from '../enum';
 import { PluginNotFoundException } from '../exceptions';
-import { Handler } from '../handler';
 import { ListContentInfo } from '../types/local-adpater.types';
 import { AdapterWriteResultType } from './adapter.interface';
 import { PluginInterface } from './plugin.interface';
@@ -104,9 +103,9 @@ export abstract class FilesystemAbstract {
    *
    * @throws {FileNotFoundException}
    *
-   * @return {FileVisible|false} The visibility (public|private) or false on failure.
+   * @return {Visibility|false} The visibility (public|private) or false on failure.
    */
-  public abstract async getVisibility(path: string): Promise<FileVisible | false>;
+  public abstract async getVisibility(path: string): Promise<Visibility | false>;
 
   /**
    * Write a new file.
@@ -224,13 +223,13 @@ export abstract class FilesystemAbstract {
    * Set the visibility for a file.
    *
    * @param {string} path       The path to the file.
-   * @param {FileVisible|string} visibility One of 'public' or 'private'.
+   * @param {Visibility|string} visibility One of 'public' or 'private'.
    *
    * @throws FileNotFoundException
    *
    * @return {boolean} True on success, false on failure.
    */
-  public abstract async setVisibility(path: string, visibility: FileVisible | string): Promise<boolean>;
+  public abstract async setVisibility(path: string, visibility: Visibility | string): Promise<boolean>;
 
   /**
    * Create a file or update if exists.

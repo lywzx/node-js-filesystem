@@ -1,6 +1,6 @@
 import { ReadStream } from 'fs';
 import { CanOverwriteFiles } from './adapters/can-overwrite-files';
-import { FileVisible } from './enum';
+import { Visibility } from './enum';
 import {
   FileExistsException,
   FileNotFoundException,
@@ -13,6 +13,9 @@ import { ReadFileResult } from './types/local-adpater.types';
 import { isReadableStream, normalizeRelativePath } from './util/util';
 import get from 'lodash/get';
 
+/**
+ * filesystem manager
+ */
 export class Filesystem extends FilesystemAbstract {
   public constructor(protected adapter: AdapterInterface, protected config: FilesystemConfigInterface | null = null) {
     super();
@@ -325,7 +328,7 @@ export class Filesystem extends FilesystemAbstract {
   /**
    * @inheritdoc
    */
-  public async setVisibility(path: string, visibility: FileVisible | string) {
+  public async setVisibility(path: string, visibility: Visibility | string) {
     path = normalizeRelativePath(path);
     await this.assertPresent(path);
 

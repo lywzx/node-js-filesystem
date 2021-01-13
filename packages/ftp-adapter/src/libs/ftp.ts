@@ -1,6 +1,6 @@
 import omit from 'lodash/omit';
 import { ReadStream, WriteStream } from 'fs';
-import { FileType, FileVisible } from '@filesystem/core/src/enum';
+import { FileType, Visibility } from '@filesystem/core/src/enum';
 import { InvalidRootException } from '@filesystem/core/src/exceptions';
 import { guessMimeType } from '@filesystem/core/src/util/util';
 import { defer } from '@filesystem/core/src/util/promise-defer.util';
@@ -480,7 +480,7 @@ return result;*/
   /**
    * @inheritdoc
    */
-  public setVisibility(path: string, visibility: FileVisible | string) {
+  public setVisibility(path: string, visibility: Visibility | string) {
     return {} as any;
     /*mode = visibility === AdapterInterface::VISIBILITY_PUBLIC ? this.getPermPublic() : this.getPermPrivate();
 

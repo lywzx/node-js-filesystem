@@ -1,5 +1,5 @@
 import { ReadStream } from 'fs';
-import { FileType, FileVisible } from '../enum';
+import { FileType, Visibility } from '../enum';
 
 export type ReadStreamResult = {
   type: string;
@@ -8,7 +8,7 @@ export type ReadStreamResult = {
 };
 
 export type VisibilityConfig = {
-  visibility?: FileVisible | string;
+  visibility?: Visibility | string;
 };
 export type WriteStreamConfig = {
   encoding?: string;

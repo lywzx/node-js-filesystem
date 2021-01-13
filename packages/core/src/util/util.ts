@@ -20,7 +20,7 @@ export function getType(stats: Stats): FileType {
 }
 
 /**
- * get file mimetype
+ * get file mimetype by content
  * @param path
  * @param content
  */

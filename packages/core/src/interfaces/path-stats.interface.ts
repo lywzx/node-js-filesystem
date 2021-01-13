@@ -1,5 +1,5 @@
 import { Stats } from 'fs';
-import { FileVisible } from '../enum';
+import { Visibility } from '../enum';
 
 export interface PathStatsInterface {
   path: string;
@@ -14,5 +14,5 @@ export interface FileWithMimetypeInterface {
 
 export interface FileWithVisibilityInterface {
   path: string;
-  visibility: FileVisible | string;
+  visibility: Visibility | string;
 }
