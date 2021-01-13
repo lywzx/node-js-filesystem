@@ -7,8 +7,8 @@ import { defer } from '@filesystem/core/src/util/promise-defer.util';
 import { Writable } from 'stream';
 import { AbstractFtpAdapter } from './abstract-ftp-adapter';
 import { FtpAdapterConstructorConfigInterface } from '../interfaces';
-import { DirType, ListContentInfo } from '@filesystem/core/lib/types/local-adpater.types';
 import { ConnectionException } from '../exceptions/connection.exception';
+import { DirType, ListContentInfo } from '@filesystem/core';
 
 export class Ftp extends AbstractFtpAdapter {
   /**

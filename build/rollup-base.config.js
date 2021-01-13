@@ -8,6 +8,8 @@ import { terser } from 'rollup-plugin-terser';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { uniq, get, isFunction } from 'lodash';
+import copy from 'rollup-plugin-copy';
+const argv = require('minimist')(process.argv);
 
 export function createEntries(configs, pkg) {
   return configs.map(c => createEntry(c, pkg));
@@ -46,12 +48,35 @@ function createEntry(config, pakg) {
         }
       }),
       json(),
+      copy({
+        targets: [
+          {
+            src: join(__dirname, '../packages', pkgDir, 'package.json'),
+            dest: join(__dirname, `../${argv.dist || 'dist'}`, pkgDir),
+            transform(contents) {
+              return JSON.stringify({
+                ...JSON.parse(contents),
+                "main": "index.common.js",
+                "module": "index.esm.js",
+                "unpkg": "index.js",
+                "jsdelivr": "index.js",
+                "types": "index.d.ts",
+              }, null, 2)
+            }
+          },
+          {
+            src: join(__dirname, '../packages', pkgDir, 'README.md'),
+            dest: join(__dirname, `../${argv.dist || 'dist'}`, pkgDir),
+          }
+        ]
+      }),
     ],
     output: {
       banner: pakg.banner,
-      file: join(__dirname, '../packages', pkgDir, config.file),
+      file: join(__dirname, `../${argv.dist || 'dist'}`, pkgDir, config.file),
       format: config.format,
-      globals: pakg.globals || {}
+      globals: pakg.globals || {},
+      sourcemap: true,
     },
     onwarn: (msg, warn) => {
       if (!/Circular/.test(msg)) {

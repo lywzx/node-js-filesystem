@@ -5,22 +5,10 @@
   "author": "lywzx <liuyang@lyblog.net>",
   "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
   "license": "MIT",
-  "main": "lib/index.common.js",
-  "module": "lib/index.esm.js",
-  "unpkg": "lib/index.js",
-  "jsdelivr": "lib/index.js",
-  "types": "lib/index.d.ts",
   "scripts": {
     "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
     "build": "tsc"
   },
-  "directories": {
-    "lib": "lib",
-    "test": "test"
-  },
-  "files": [
-    "lib"
-  ],
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
     "access": "public"
@@ -33,8 +21,7 @@
     "url": "https://github.com/lywzx/node-js-filesystem/issues"
   },
   "dependencies": {
-    "webdav": "^3.3.0",
-    "@filesystem/core": "^0.0.1-alpha.0"
+    "webdav": "^3.3.0"
   },
   "peerDependencies": {
     "@filesystem/core": "^0.0.1-alpha.0"

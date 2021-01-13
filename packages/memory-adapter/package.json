@@ -10,22 +10,10 @@
   "author": "lywzx <liuyang@lyblog.net>",
   "homepage": "https://github.com/lywzx/node-js-filesystem/tree/master/packages/memory-adapter#readme",
   "license": "MIT",
-  "main": "lib/index.common.js",
-  "module": "lib/index.esm.js",
-  "unpkg": "lib/index.js",
-  "jsdelivr": "lib/index.js",
-  "types": "lib/index.d.ts",
   "scripts": {
     "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
     "build": "tsc"
   },
-  "directories": {
-    "lib": "lib",
-    "test": "test"
-  },
-  "files": [
-    "lib"
-  ],
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
     "access": "public"

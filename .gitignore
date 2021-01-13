@@ -1,8 +1,8 @@
 /.idea
+/packages/ftp-adapter/test
 dist/
 apidocs/
 node_modules
-lib/
 /.nyc_output
 coverage.lcov
 coverage/
