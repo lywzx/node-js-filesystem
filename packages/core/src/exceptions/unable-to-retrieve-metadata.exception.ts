@@ -1,3 +1,4 @@
+import { bindErrorConstructor } from '../util/exception.util';
 import { FilesystemOperationFailedException } from './filesystem-operation-failed.exception';
 import { FileAttributes } from '../libs/file-attributes';
 
@@ -16,6 +17,11 @@ export class UnableToRetrieveMetadataException extends FilesystemOperationFailed
    * @var string
    */
   private _reason = '';
+
+  constructor(message: string) {
+    super(message);
+    bindErrorConstructor(this, UnableToRetrieveMetadataException);
+  }
 
   static lastModified(location: string, reason = '', previous: Error | null = null): UnableToRetrieveMetadataException {
     return this.create(location, FileAttributes.ATTRIBUTE_LAST_MODIFIED, reason, previous);

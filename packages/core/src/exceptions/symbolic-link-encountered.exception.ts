@@ -4,7 +4,7 @@ import { bindErrorConstructor } from '../util/exception.util';
 export class SymbolicLinkEncounteredException extends FilesystemException {
   constructor(message: string) {
     super(message);
-    bindErrorConstructor(this, FilesystemException);
+    bindErrorConstructor(this, SymbolicLinkEncounteredException);
   }
 
   /**

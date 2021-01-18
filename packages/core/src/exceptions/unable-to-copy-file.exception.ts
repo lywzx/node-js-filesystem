@@ -1,3 +1,4 @@
+import { bindErrorConstructor } from '../util/exception.util';
 import { FilesystemOperationFailedException } from './filesystem-operation-failed.exception';
 
 export class UnableToCopyFileException extends FilesystemOperationFailedException {
@@ -10,6 +11,11 @@ export class UnableToCopyFileException extends FilesystemOperationFailedExceptio
    * @var string
    */
   private _destination = '';
+
+  constructor(message: string) {
+    super(message);
+    bindErrorConstructor(this, UnableToCopyFileException);
+  }
 
   public source(): string {
     return this._source;

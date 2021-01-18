@@ -1,20 +1,25 @@
+import { LocalFilesystemAdapter, Visibility } from '@filesystem/core';
+import { abortBucketWorm } from 'ali-oss/lib/common/bucket/abortBucketWorm';
 import { expect, use } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import * as fs from 'fs';
-import * as fsExtra from '../../src/util/fs-extra.util';
 import { uniqueId } from 'lodash';
 import { platform } from 'os';
 import { join } from 'path';
-import chaiAsPromised from 'chai-as-promised';
-import { LocalFilesystemAdapter, Visibility } from '@filesystem/core';
-import { isDir, rmDir } from '../../src/util';
-import { UnableToCreateDirectoryException } from '../../src/exceptions/unable-to-create-directory.exception';
+import { fake, replace, restore } from 'sinon';
 import { Readable } from 'stream';
-import { readFile, stat } from '../../src/util/fs-extra.util';
-import { PortableVisibilityConverter } from '../../src/libs/UnixVisibility/portable-visibility-converter';
+import { SymbolicLinkEncounteredException } from '../../src/exceptions/symbolic-link-encountered.exception';
+import { UnableToCopyFileException } from '../../src/exceptions/unable-to-copy-file.exception';
+import { UnableToCreateDirectoryException } from '../../src/exceptions/unable-to-create-directory.exception';
+import { UnableToDeleteFileException } from '../../src/exceptions/unable-to-delete-file.exception';
+import { UnableToRetrieveMetadataException } from '../../src/exceptions/unable-to-retrieve-metadata.exception';
 import { UnableToSetVisibilityException } from '../../src/exceptions/unable-to-set-visibility.exception';
 import { UnableToWriteFileException } from '../../src/exceptions/unable-to-write-file.exception';
-import { replace, fake, restore } from 'sinon';
-import { UnableToDeleteFileException } from '../../src/exceptions/unable-to-delete-file.exception';
+import { UnableToMoveFileException } from '../../src/interfaces/unable-to-move-file.exception';
+import { PortableVisibilityConverter } from '../../src/libs/UnixVisibility/portable-visibility-converter';
+import { isDir, mkDir, rmDir } from '../../src/util';
+import * as fsExtra from '../../src/util/fs-extra.util';
+import { lstat, readFile, stat } from '../../src/util/fs-extra.util';
 
 use(chaiAsPromised);
 
@@ -215,133 +220,150 @@ describe('local adapter test', function (): void {
       expect(contentListing).to.be.length(1);
     });
 
-    it('listing_directory_contents_with_disallowing_links', function () {
-      /*$this->expectException(SymbolicLinkEncountered::class);
+    it('listing_directory_contents_with_disallowing_links', async function () {
       const adapter = new LocalFilesystemAdapter(root, undefined, 'wx', LocalFilesystemAdapter.DISALLOW_LINKS);
       await fsExtra.writeFile(join(root, './file.txt'), 'content');
       await fsExtra.symlink(join(root, './file.txt'), join(root, './link.txt'), 'file');
-  
-      /!** @var Traversable $contentListing *!/
-      await expect(adapter.listContents('/', true)).to.be.rejectedWith();*/
+
+      /** @var Traversable $contentListing */
+      await expect(adapter.listContents('/', true)).to.be.rejectedWith(SymbolicLinkEncounteredException);
     });
   });
 
-  it('deleting_a_directory', function () {
-    /*const adapter = new LocalFilesystemAdapter(root);
-    mkdir(root . '/directory/subdir/', 0744, true);
-    $this->assertDirectoryExists(root . '/directory/subdir/');
-    file_put_contents(root . '/directory/subdir/file.txt', 'content');
-    symlink(root . '/directory/subdir/file.txt', root . '/directory/subdir/link.txt');
-    adapter.deleteDirectory('directory/subdir');
-    $this->assertDirectoryDoesNotExist(root . '/directory/subdir/');
-    adapter.deleteDirectory('directory');
-    $this->assertDirectoryDoesNotExist(root . '/directory/');*/
+  describe('#deleteDirectory', function () {
+    it('deleting_a_directory', async function () {
+      const subdir = './directory/subdir';
+      const adapter = new LocalFilesystemAdapter(root);
+      await mkDir(join(root, subdir), 0o0744);
+
+      expect(await isDir(join(root, subdir))).to.be.true;
+      await fsExtra.writeFile(join(root, subdir, 'file.txt'), 'content');
+      await fsExtra.symlink(join(root, subdir, 'file.txt'), join(root, subdir, 'link.txt'));
+
+      await adapter.deleteDirectory(subdir);
+
+      expect(await isDir(join(root, subdir))).to.be.false;
+
+      await adapter.deleteDirectory('directory');
+
+      expect(await isDir(join(root, './directory/'))).to.be.false;
+    });
+
+    it('deleting_directories_with_other_directories_in_it', async function () {
+      const adapter = new LocalFilesystemAdapter(root);
+      await adapter.write('a/b/c/d/e.txt', 'contents');
+      await adapter.deleteDirectory('a/b');
+
+      expect(await isDir(join(root, './a'))).to.be.true;
+      expect(await isDir(join(root, './a/b'))).to.be.false;
+    });
+
+    it('deleting_a_non_existing_directory', async function () {
+      const adapter = new LocalFilesystemAdapter(root);
+      await adapter.deleteDirectory('/non-existing-directory/');
+      expect(true).to.be.true;
+    });
+
+    it('not_being_able_to_delete_a_directory', async function () {
+      /*$this->expectException(UnableToDeleteDirectory::class);
+
+      mock_function('rmdir', false);
+
+      const adapter = new LocalFilesystemAdapter(root);
+      await adapter.createDirectory('/etc/');
+      await expect().to.be.rejectedWith()
+      adapter.deleteDirectory('/etc/');*/
+    });
+
+    it('not_being_able_to_delete_a_sub_directory', function () {
+      /*$this->expectException(UnableToDeleteDirectory::class);
+
+      mock_function('rmdir', false);
+
+      const adapter = new LocalFilesystemAdapter(root);
+      adapter.createDirectory('/etc/subdirectory/', new Config());
+      adapter.deleteDirectory('/etc/');*/
+    });
   });
 
-  it('deleting_directories_with_other_directories_in_it', function () {
-    /*const adapter = new LocalFilesystemAdapter(root);
-    adapter.write('a/b/c/d/e.txt', 'contents', new Config());
-    adapter.deleteDirectory('a/b');
-    $this->assertDirectoryExists(root . '/a');
-    $this->assertDirectoryDoesNotExist(root . '/a/b');*/
+  describe('#createDirectory', function () {
+    it('creating_a_directory', async function () {
+      const adapter = new LocalFilesystemAdapter(root);
+      await adapter.createDirectory('public', { visibility: Visibility.PUBLIC });
+
+      expect(await isDir(join(root, './public'))).to.be.true;
+      expect((await lstat(join(root, './public'))).mode & 0o1777).to.be.eq(0o0755);
+
+      await adapter.createDirectory('private', { visibility: Visibility.PRIVATE });
+      expect(await isDir(join(root, './private'))).to.be.true;
+      expect((await lstat(join(root, './private'))).mode & 0o1777).to.be.eq(0o0700);
+
+      await adapter.createDirectory('also_private', { directory_visibility: Visibility.PRIVATE });
+      expect(await isDir(join(root, './also_private'))).to.be.true;
+      expect((await lstat(join(root, './also_private'))).mode & 0o1777).to.be.eq(0o0700);
+    });
+
+    it('not_being_able_to_create_a_directory', async function () {
+      const adapter = new LocalFilesystemAdapter('/');
+      await expect(adapter.createDirectory('/something/')).to.be.rejectedWith(UnableToCreateDirectoryException);
+    });
+
+    it('creating_a_directory_is_idempotent', async function () {
+      const adapter = new LocalFilesystemAdapter(root);
+      await adapter.createDirectory('/something/', { visibility: Visibility.PRIVATE });
+
+      expect((await lstat(join(root, './something'))).mode & 0o1777).to.be.eq(0o0700);
+
+      await adapter.createDirectory('/something/', { visibility: Visibility.PUBLIC });
+      expect((await lstat(join(root, './something'))).mode & 0o1777).to.be.eq(0o0755);
+    });
   });
 
-  it('deleting_a_non_existing_directory', function () {
-    /*const adapter = new LocalFilesystemAdapter(root);
-    adapter.deleteDirectory('/non-existing-directory/');
-    $this->assertTrue(true);*/
+  describe('#visibility', function () {
+    it('retrieving_visibility', async function () {
+      const adapter = new LocalFilesystemAdapter(root);
+      await adapter.write('public.txt', 'contents', { visibility: Visibility.PUBLIC });
+      expect((await adapter.visibility('public.txt')).visibility).to.be.eq(Visibility.PUBLIC);
+
+      await adapter.write('private.txt', 'contents', { visibility: 'private' });
+      expect((await adapter.visibility('private.txt')).visibility).to.be.eq(Visibility.PRIVATE);
+    });
+
+    it('not_being_able_to_retrieve_visibility', async function () {
+      const adapter = new LocalFilesystemAdapter(root);
+      await expect(adapter.visibility('something.txt')).to.be.rejectedWith(UnableToRetrieveMetadataException);
+    });
   });
 
-  it('not_being_able_to_delete_a_directory', function () {
-    /*$this->expectException(UnableToDeleteDirectory::class);
+  describe('#move', function () {
+    it('moving_a_file', async function () {
+      const adapter = new LocalFilesystemAdapter(root);
+      await adapter.write('first.txt', 'contents');
+      expect(await adapter.fileExists('first.txt')).to.be.true;
+      await adapter.move('first.txt', 'second.txt');
+      expect(await adapter.fileExists('second.txt')).to.be.true;
+      expect(await adapter.fileExists('first.txt')).to.be.false;
+    });
 
-    mock_function('rmdir', false);
-
-    const adapter = new LocalFilesystemAdapter(root);
-    adapter.createDirectory('/etc/', new Config());
-    adapter.deleteDirectory('/etc/');*/
+    it('not_being_able_to_move_a_file', async function () {
+      const adapter = new LocalFilesystemAdapter(root);
+      await expect(adapter.move('first.txt', 'second.txt')).to.be.rejectedWith(UnableToMoveFileException);
+    });
   });
 
-  it('not_being_able_to_delete_a_sub_directory', function () {
-    /*$this->expectException(UnableToDeleteDirectory::class);
+  describe('#copy', function () {
+    it('copying_a_file', async function () {
+      const adapter = new LocalFilesystemAdapter(root);
+      await adapter.write('first.txt', 'contents');
+      await adapter.copy('first.txt', 'second.txt');
+      expect(await adapter.fileExists('first.txt')).to.be.true;
+      expect(await adapter.fileExists('second.txt')).to.be.true;
+    });
 
-    mock_function('rmdir', false);
-
-    const adapter = new LocalFilesystemAdapter(root);
-    adapter.createDirectory('/etc/subdirectory/', new Config());
-    adapter.deleteDirectory('/etc/');*/
-  });
-
-  it('creating_a_directory', function () {
-    /*const adapter = new LocalFilesystemAdapter(root);
-    adapter.createDirectory('public', new Config(['visibility' => 'public']));
-    $this->assertDirectoryExists(root . '/public');
-    $this->assertFileHasPermissions(root . '/public', 0755);
-
-    adapter.createDirectory('private', new Config(['visibility' => 'private']));
-    $this->assertDirectoryExists(root . '/private');
-    $this->assertFileHasPermissions(root . '/private', 0700);
-
-    adapter.createDirectory('also_private', new Config(['directory_visibility' => 'private']));
-    $this->assertDirectoryExists(root . '/also_private');
-    $this->assertFileHasPermissions(root . '/also_private', 0700);*/
-  });
-
-  it('not_being_able_to_create_a_directory', function () {
-    /*$this->expectException(UnableToCreateDirectory::class);
-    $adapter = new LocalFilesystemAdapter('/');
-    adapter.createDirectory('/something/', new Config());*/
-  });
-
-  it('creating_a_directory_is_idempotent', function () {
-    /*const adapter = new LocalFilesystemAdapter(root);
-    adapter.createDirectory('/something/', new Config(['visibility' => 'private']));
-    $this->assertFileHasPermissions(root . '/something', 0700);
-    adapter.createDirectory('/something/', new Config(['visibility' => 'public']));
-    $this->assertFileHasPermissions(root . '/something', 0755);*/
-  });
-
-  it('retrieving_visibility', function () {
-    /*const adapter = new LocalFilesystemAdapter(root);
-    adapter.write('public.txt', 'contents', new Config(['visibility' => 'public']));
-    $this->assertEquals('public', adapter.visibility('public.txt')->visibility());
-    adapter.write('private.txt', 'contents', new Config(['visibility' => 'private']));
-    $this->assertEquals('private', adapter.visibility('private.txt')->visibility());*/
-  });
-
-  it('not_being_able_to_retrieve_visibility', function () {
-    /*$this->expectException(UnableToRetrieveMetadata::class);
-    const adapter = new LocalFilesystemAdapter(root);
-    adapter.visibility('something.txt');*/
-  });
-
-  it('moving_a_file', function () {
-    /*const adapter = new LocalFilesystemAdapter(root);
-    adapter.write('first.txt', 'contents', new Config());
-    $this->assertFileExists(root . '/first.txt');
-    adapter.move('first.txt', 'second.txt', new Config());
-    $this->assertFileExists(root . '/second.txt');
-    $this->assertFileDoesNotExist(root . '/first.txt');*/
-  });
-
-  it('not_being_able_to_move_a_file', function () {
-    /*$this->expectException(UnableToMoveFile::class);
-    const adapter = new LocalFilesystemAdapter(root);
-    adapter.move('first.txt', 'second.txt', new Config());*/
-  });
-
-  it('copying_a_file', function () {
-    /*const adapter = new LocalFilesystemAdapter(root);
-    adapter.write('first.txt', 'contents', new Config());
-    adapter.copy('first.txt', 'second.txt', new Config());
-    $this->assertFileExists(root . '/second.txt');
-    $this->assertFileExists(root . '/first.txt');*/
-  });
-
-  it('not_being_able_to_copy_a_file', function () {
-    /*$this->expectException(UnableToCopyFile::class);
-    const adapter = new LocalFilesystemAdapter(root);
-    adapter.copy('first.txt', 'second.txt', new Config());*/
+    it('not_being_able_to_copy_a_file', async function () {
+      const adapter = new LocalFilesystemAdapter(root);
+      await expect(adapter.copy('first.txt', 'second.txt')).to.be.rejectedWith(UnableToCopyFileException);
+    });
   });
 
   it('getting_mimetype', function () {

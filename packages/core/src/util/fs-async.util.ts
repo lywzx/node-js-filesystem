@@ -152,7 +152,7 @@ export async function rmDir(dir: string): Promise<boolean> {
 
   for (const file of files) {
     const realPath = join(dir, file);
-    const stats = await stat(realPath);
+    const stats = await lstat(realPath);
 
     if (stats.isDirectory()) {
       await rmDir(realPath);

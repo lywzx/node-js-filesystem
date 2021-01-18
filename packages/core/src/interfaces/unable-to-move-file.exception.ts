@@ -1,4 +1,5 @@
 import { FilesystemOperationFailedException } from '../exceptions/filesystem-operation-failed.exception';
+import { bindErrorConstructor } from '../util/exception.util';
 
 export class UnableToMoveFileException extends FilesystemOperationFailedException {
   /**
@@ -10,6 +11,11 @@ export class UnableToMoveFileException extends FilesystemOperationFailedExceptio
    * @var string
    */
   private _destination = '';
+
+  constructor(message: string) {
+    super(message);
+    bindErrorConstructor(this, UnableToMoveFileException);
+  }
 
   public source(): string {
     return this._source;
