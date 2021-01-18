@@ -1,10 +1,10 @@
-import { FileSystemException } from './file-system.exception';
+import { FilesystemException } from './filesystem.exception';
 import { bindErrorConstructor } from '../util/exception.util';
 
 /**
  * 出处错误
  */
-export class Exception extends FileSystemException {
+export class Exception extends FilesystemException {
   constructor(message?: string) {
     super(message);
     bindErrorConstructor(this, Exception);

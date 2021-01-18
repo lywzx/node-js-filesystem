@@ -41,10 +41,10 @@ Adapters | Status | Description
 To safely interact with the filesystem, always wrap the adapter in a Filesystem instance.
 
 ```typescript
-import { Local, Filesystem  } from '@filesystem/core';
+import { LocalFilesystemAdapter, Filesystem  } from '@filesystem/core';
 
 // SETUP
-const adapter = new Local(rootPath);
+const adapter = new LocalFilesystemAdapter(rootPath);
 const filesystem = Filesystem(adapter);
 
 // USAGE

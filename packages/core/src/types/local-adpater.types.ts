@@ -1,5 +1,6 @@
 import { ReadStream } from 'fs';
 import { FileType, Visibility } from '../enum';
+import { OPTION_DIRECTORY_VISIBILITY, OPTION_VISIBILITY } from '../constant';
 
 export type ReadStreamResult = {
   type: string;
@@ -7,22 +8,23 @@ export type ReadStreamResult = {
   stream: ReadStream;
 };
 
-export type VisibilityConfig = {
-  visibility?: Visibility | string;
+export type IVisibilityConfig = {
+  [OPTION_VISIBILITY]?: Visibility | string;
+  [OPTION_DIRECTORY_VISIBILITY]?: Visibility | string;
 };
-export type WriteStreamConfig = {
+export type IWriteStreamConfig = {
   encoding?: string;
   flags?: string;
-} & VisibilityConfig;
+} & IVisibilityConfig;
 
 export type UpdateConfig = {
   mimetype?: boolean;
-} & WriteConfig;
+} & IWriteConfig;
 
-export type WriteConfig = {
-  encoding?: string;
+export type IWriteConfig = {
+  encoding?: BufferEncoding;
   flag?: string;
-} & VisibilityConfig;
+} & IVisibilityConfig;
 
 export type UpdateFileResult = {
   type: string;

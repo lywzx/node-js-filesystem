@@ -1,9 +1,9 @@
-import { PromiseDeferInterface } from '../interfaces/promise-defer.interface';
+import { IPromiseDeferInterface } from '../interfaces/promise-defer.interface';
 
 /**
  * 生成promise的defer对象
  */
-export function defer<T>(): PromiseDeferInterface<T> {
+export function defer<T>(): IPromiseDeferInterface<T> {
   let resolve;
   let reject;
   const promise = new Promise<T>((r, j) => {

@@ -1,32 +1,32 @@
 import { ReadStream } from 'fs';
-import { CanOverwriteFiles } from './adapters/can-overwrite-files';
 import { Visibility } from './enum';
-import {
-  FileExistsException,
-  FileNotFoundException,
-  InvalidArgumentException,
-  RootViolationException,
-} from './exceptions';
-import { AdapterInterface, FilesystemAbstract, FileWithMimetypeInterface } from './interfaces';
-import { FilesystemConfigInterface } from './interfaces';
-import { ReadFileResult } from './types/local-adpater.types';
-import { isReadableStream, normalizeRelativePath } from './util/util';
+import { InvalidArgumentException } from './exceptions';
+import { IFilesystemOperator } from './interfaces';
+import { IFilesystemConfig } from './interfaces';
+import { isReadableStream } from './util/util';
 import get from 'lodash/get';
+import { WhitespacePathNormalizer } from './libs/whitespace-path-normalizer';
+import { IFilesystemAdapter } from './interfaces/filesystem-adapter';
 
 /**
  * filesystem manager
  */
-export class Filesystem extends FilesystemAbstract {
-  public constructor(protected adapter: AdapterInterface, protected config: FilesystemConfigInterface | null = null) {
-    super();
-  }
+export class Filesystem implements IFilesystemOperator {
+  static LIST_SHALLOW = false;
+  static LIST_DEEP = true;
+
+  public constructor(
+    protected adapter: IFilesystemAdapter,
+    protected config: IFilesystemConfig = {},
+    protected pathNormalizer = new WhitespacePathNormalizer()
+  ) {}
 
   /**
    * get default config
    * @param key
    * @param defaultValue
    */
-  protected getConfig(key: keyof FilesystemConfigInterface, defaultValue?: any) {
+  protected getConfig(key: keyof IFilesystemConfig, defaultValue?: any) {
     return get(this.config, key, defaultValue);
   }
 
@@ -39,35 +39,25 @@ export class Filesystem extends FilesystemAbstract {
     return this.adapter;
   }
 
-  /**
-   * @inheritdoc
-   */
-  public async has(path: string) {
-    path = normalizeRelativePath(path);
-
-    return (path || '').length === 0 ? false : this.getAdapter().has(path);
+  public fileExists(location: string): Promise<boolean> {
+    return this.adapter.fileExists(this.pathNormalizer.normalizePath(location));
   }
 
   /**
    * @inheritdoc
    */
-  public async write(path: string, contents: string | Buffer, config: any) {
-    path = normalizeRelativePath(path);
-    await this.assertAbsent(path);
-    config = this.prepareConfig(config);
-
-    return this.getAdapter().write(path, contents, config);
+  public async write(path: string, contents: string | Buffer, config?: any) {
+    return this.getAdapter().write(this.pathNormalizer.normalizePath(path), contents, config);
   }
 
   /**
    * @inheritdoc
    */
-  public async writeStream(path: string, resource: ReadStream, config: any = {}) {
+  public async writeStream(path: string, resource: ReadStream, config?: Record<string, any>) {
     if (!isReadableStream(resource)) {
       throw new InvalidArgumentException('writeStream expects argument #2 to be a valid readStream.');
     }
-    path = normalizeRelativePath(path);
-    await this.assertAbsent(path);
+    path = this.pathNormalizer.normalizePath(path);
     config = this.prepareConfig(config);
 
     // TODO: rewindStream
@@ -78,271 +68,91 @@ export class Filesystem extends FilesystemAbstract {
   /**
    * @inheritdoc
    */
-  public async put(path: string, contents: string | Buffer, config: any) {
-    path = normalizeRelativePath(path);
-    config = this.prepareConfig(config);
-
-    if (!(this.getAdapter() instanceof CanOverwriteFiles) && (await this.has(path))) {
-      return !!(await this.getAdapter().update(path, contents, config));
-    }
-
-    return !!(await this.getAdapter().write(path, contents, config));
+  public read(path: string) {
+    return this.adapter.read(this.pathNormalizer.normalizePath(path));
   }
 
   /**
    * @inheritdoc
    */
-  public async putStream(path: string, resource: ReadStream, config: any) {
-    if (!isReadableStream(resource)) {
-      throw new InvalidArgumentException('writeStream expects argument #2 to be a valid readStream.');
-    }
-    path = normalizeRelativePath(path);
-    config = this.prepareConfig(config);
-
-    // TODO: rewindStream
-
-    if (!(this.getAdapter() instanceof CanOverwriteFiles) && (await this.has(path))) {
-      return !!(await this.getAdapter().updateStream(path, resource, config));
-    }
-
-    return !!(await this.getAdapter().writeStream(path, resource, config));
+  public readStream(path: string) {
+    return this.adapter.readStream(this.pathNormalizer.normalizePath(path));
   }
 
   /**
    * @inheritdoc
    */
-  public async readAndDelete(path: string) {
-    path = normalizeRelativePath(path);
-    this.assertPresent(path);
-    const contents = await this.read(path);
-
-    if (contents === false) {
-      return false;
-    }
-    await this.delete(path);
-
-    return contents;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public async update(path: string, contents: string | Buffer, config: any) {
-    path = normalizeRelativePath(path);
-    config = this.prepareConfig(config);
-
-    await this.assertPresent(path);
-
-    return !!(await this.getAdapter().update(path, contents, config));
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public async updateStream(path: string, resource: ReadStream, config: any) {
-    if (!isReadableStream(resource)) {
-      throw new InvalidArgumentException('writeStream expects argument #2 to be a valid readStream.');
-    }
-    path = normalizeRelativePath(path);
-    config = this.prepareConfig(config);
-    await this.assertPresent(path);
-
-    // TODO: rewindStream
-
-    return !!(await this.getAdapter().updateStream(path, resource, config));
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public async read(path: string) {
-    path = normalizeRelativePath(path);
-    await this.assertPresent(path);
-
-    let result;
-    if (!(result = await this.getAdapter().read(path))) {
-      return false;
-    }
-
-    return (result as ReadFileResult).contents;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public async readStream(path: string) {
-    path = normalizeRelativePath(path);
-
-    await this.assertPresent(path);
-
-    let result;
-    if (!(result = await this.getAdapter().readStream(path))) {
-      return false;
-    }
-
-    return result.stream;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public async rename(path: string, newPath: string) {
-    path = normalizeRelativePath(path);
-    newPath = normalizeRelativePath(newPath);
-
-    await this.assertPresent(path);
-    await this.assertAbsent(newPath);
-
-    return this.getAdapter().rename(path, newPath);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public async copy(path: string, newPath: string) {
-    path = normalizeRelativePath(path);
-    newPath = normalizeRelativePath(newPath);
-
-    await this.assertPresent(path);
-    await this.assertAbsent(newPath);
-
-    return this.getAdapter().copy(path, newPath);
+  public copy(path: string, newPath: string, config: any) {
+    return this.getAdapter().copy(
+      this.pathNormalizer.normalizePath(path),
+      this.pathNormalizer.normalizePath(newPath),
+      config
+    );
   }
 
   /**
    * @inheritdoc
    */
   public async delete(path: string) {
-    path = normalizeRelativePath(path);
-    await this.assertPresent(path);
-
-    return this.getAdapter().delete(path);
+    return this.getAdapter().delete(this.pathNormalizer.normalizePath(path));
   }
 
   /**
    * @inheritdoc
    */
-  public deleteDir(dirname: string) {
-    dirname = normalizeRelativePath(dirname);
-
-    if (dirname === '') {
-      throw new RootViolationException('Root directories can not be deleted.');
-    }
-
-    return this.getAdapter().deleteDir(dirname);
+  public deleteDirectory(dirname: string) {
+    return this.getAdapter().deleteDirectory(this.pathNormalizer.normalizePath(dirname));
   }
 
   /**
    * @inheritdoc
    */
-  public async createDir(dirname: string, config: any) {
-    dirname = normalizeRelativePath(dirname);
+  public createDirectory(dirname: string, config: any) {
     config = this.prepareConfig(config);
 
-    return !!(await this.getAdapter().createDir(dirname, config));
+    return this.getAdapter().createDirectory(this.pathNormalizer.normalizePath(dirname), this.prepareConfig(config));
   }
 
   /**
    * @inheritdoc
    */
-  public async listContents(directory = '', recursive = false) {
-    directory = normalizeRelativePath(directory);
-
-    return this.getAdapter().listContents(directory, recursive);
-
-    /*$directory = Util::normalizePath($directory);
-  $contents = this.getAdapter()->listContents($directory, $recursive);
-
-  return (new ContentListingFormatter($directory, $recursive, this.config->get('case_sensitive', true)))
-->formatListing($contents);*/
+  public async listContents(directory = '', recursive = Filesystem.LIST_DEEP) {
+    return this.getAdapter().listContents(this.pathNormalizer.normalizePath(directory), recursive);
   }
 
   /**
    * @inheritdoc
    */
-  public async getMimetype(path: string) {
-    path = normalizeRelativePath(path);
-    await this.assertPresent(path);
-
-    let contents: FileWithMimetypeInterface;
-    if (
-      !(contents = await this.getAdapter().getMimetype(path)) &&
-      !('mimetype' in contents) &&
-      !(contents as FileWithMimetypeInterface).mimetype
-    ) {
-      return false;
-    }
-
-    return contents.mimetype as string;
+  public async mimeType(path: string) {
+    return (await this.adapter.mimeType(this.pathNormalizer.normalizePath(path))).mimeType;
   }
 
   /**
    * @inheritdoc
    */
-  public async getTimestamp(path: string) {
-    path = normalizeRelativePath(path);
-    await this.assertPresent(path);
-
-    let contents;
-    if (!(contents = await this.getAdapter().getTimestamp(path)) && !('timestamp' in contents) && !contents.timestamp) {
-      return false;
-    }
-
-    return contents.timestamp;
+  public async lastModified(path: string) {
+    return (await this.adapter.lastModified(this.pathNormalizer.normalizePath(path))).lastModified;
   }
 
   /**
    * @inheritdoc
    */
-  public async getVisibility(path: string) {
-    path = normalizeRelativePath(path);
-    await this.assertPresent(path);
-
-    let contents: any;
-    if (
-      !(contents = await this.getAdapter().getVisibility(path)) &&
-      !('visibility' in contents) &&
-      !contents.visibility
-    ) {
-      return false;
-    }
-
-    return contents.visibility;
+  public async visibility(path: string) {
+    return (await this.adapter.visibility(this.pathNormalizer.normalizePath(path))).visibility;
   }
 
   /**
    * @inheritdoc
    */
-  public async getSize(path: string) {
-    path = normalizeRelativePath(path);
-    await this.assertPresent(path);
-
-    let contents: any;
-    if (!(contents = await this.getAdapter().getSize(path)) && !('size' in contents) && !contents.size) {
-      return false;
-    }
-
-    return contents.size;
+  public async fileSize(path: string) {
+    return (await this.adapter.fileSize(this.pathNormalizer.normalizePath(path))).fileSize;
   }
 
   /**
    * @inheritdoc
    */
-  public async setVisibility(path: string, visibility: Visibility | string) {
-    path = normalizeRelativePath(path);
-    await this.assertPresent(path);
-
-    return !!(await this.getAdapter().setVisibility(path, visibility));
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public async getMetadata(path: string) {
-    path = normalizeRelativePath(path);
-    await this.assertPresent(path);
-
-    return this.getAdapter().getMetadata(path);
+  public setVisibility(path: string, visibility: Visibility | string) {
+    return this.adapter.setVisibility(this.pathNormalizer.normalizePath(path), visibility as Visibility);
   }
 
   /**
@@ -364,34 +174,12 @@ export class Filesystem extends FilesystemAbstract {
   return $handler;
   }*/
 
-  /**
-   * Assert a file is present.
-   *
-   * @param {string} path path to file
-   *
-   * @throws FileNotFoundException
-   *
-   * @return void
-   */
-  public async assertPresent(path: string) {
-    if (this.getConfig('disable_asserts', false) === false && !(await this.has(path))) {
-      throw new FileNotFoundException(path);
-    }
-  }
-
-  /**
-   * Assert a file is absent.
-   *
-   * @param {string} path path to file
-   *
-   * @throws FileExistsException
-   *
-   * @return void
-   */
-  public async assertAbsent(path: string) {
-    if (this.getConfig('disable_asserts', false) === false && (await this.has(path))) {
-      throw new FileExistsException(path);
-    }
+  public move(source: string, destination: string, config?: Record<string, any>): Promise<void> {
+    return this.adapter.move(
+      this.pathNormalizer.normalizePath(source),
+      this.pathNormalizer.normalizePath(destination),
+      this.prepareConfig(config)
+    );
   }
 
   protected prepareConfig(config: any) {

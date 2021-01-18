@@ -359,7 +359,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
     return {
       type,
       path: item.name,
-      visibility: Visibility.VISIBILITY_PUBLIC,
+      visibility: Visibility.PUBLIC,
       size: item.size,
       timestamp: item.modifiedAt?.getTime() || 0,
     };
@@ -442,7 +442,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
     return {
       type,
       path: item.name,
-      visibility: Visibility.VISIBILITY_PUBLIC,
+      visibility: Visibility.PUBLIC,
       size: item.size,
       timestamp: item.modifiedAt?.getDate() || 0,
     };

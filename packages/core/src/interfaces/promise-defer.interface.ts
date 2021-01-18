@@ -1,4 +1,4 @@
-export interface PromiseDeferInterface<T> {
+export interface IPromiseDeferInterface<T> {
   // 对应的promise方法
   promise: Promise<T>;
   // 对应的resolve方法

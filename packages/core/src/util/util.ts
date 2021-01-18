@@ -57,19 +57,6 @@ export function fileHasPermission(stats: Stats, mask: number): boolean {
 }
 
 /**
- * Normalize relative directories in a path.
- *
- * @param {string} path
- *
- * @throws LogicException
- *
- * @return string
- */
-export function normalizeRelativePath(path: string): string {
-  return '';
-}
-
-/**
  * js check variable is stream
  * @param stream
  */

@@ -1,18 +1,18 @@
 import { Stats } from 'fs';
 import { Visibility } from '../enum';
 
-export interface PathStatsInterface {
+export interface IPathStats {
   path: string;
   stats: Stats;
 }
 
-export interface FileWithMimetypeInterface {
+export interface IFileWithMimetype {
   path: string;
   type: 'file';
   mimetype?: string;
 }
 
-export interface FileWithVisibilityInterface {
+export interface IFileWithVisibility {
   path: string;
   visibility: Visibility | string;
 }

@@ -3,9 +3,9 @@ import { bindErrorConstructor } from '../util/exception.util';
 /**
  * 文件系统
  */
-export class FileSystemException extends Error {
+export class FilesystemException extends Error {
   constructor(message?: string) {
     super(message);
-    bindErrorConstructor(this, FileSystemException);
+    bindErrorConstructor(this, FilesystemException);
   }
 }
