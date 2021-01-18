@@ -29,7 +29,7 @@ export interface IFilesystemAdapter {
    * @throws UnableToReadFile
    * @throws FilesystemException
    */
-  read(path: string): Promise<string | Buffer>;
+  read(path: string, config?: IReadFileOptions): Promise<string | Buffer>;
 
   /**
    * @return resource
@@ -37,7 +37,7 @@ export interface IFilesystemAdapter {
    * @throws UnableToReadFile
    * @throws FilesystemException
    */
-  readStream(path: string): ReadStream;
+  readStream(path: string): Promise<ReadStream>;
 
   /**
    * @throws UnableToDeleteFile
@@ -105,4 +105,9 @@ export interface IFilesystemAdapter {
    * @throws FilesystemException
    */
   copy(source: string, destination: string, config?: Record<string, any>): Promise<void>;
+}
+
+export interface IReadFileOptions {
+  encoding?: BufferEncoding | null;
+  flag?: string;
 }

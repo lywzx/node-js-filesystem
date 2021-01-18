@@ -31,7 +31,7 @@ export interface IFilesystemReader {
    * @return ReadStream
    * @throws
    */
-  readStream(path: string): ReadStream;
+  readStream(path: string): Promise<ReadStream>;
 
   /**
    * List contents of a directory.

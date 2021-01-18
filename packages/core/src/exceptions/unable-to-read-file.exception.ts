@@ -1,4 +1,5 @@
 import { FilesystemOperationFailedException } from './filesystem-operation-failed.exception';
+import { bindErrorConstructor } from '../util/exception.util';
 
 export class UnableToReadFileException extends FilesystemOperationFailedException {
   /**
@@ -10,6 +11,11 @@ export class UnableToReadFileException extends FilesystemOperationFailedExceptio
    * @var string
    */
   private _reason = '';
+
+  constructor(message: string) {
+    super(message);
+    bindErrorConstructor(this, UnableToReadFileException);
+  }
 
   static fromLocation(location: string, reason = '', previousErr?: Error): UnableToReadFileException {
     const err = new UnableToReadFileException(`Unable to read file from location: ${location}. {$reason}`.trimEnd());

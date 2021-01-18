@@ -3803,6 +3803,11 @@ get-stream@^5.0.0:
   dependencies:
     pump "^3.0.0"
 
+get-stream@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.npm.taobao.org/get-stream/download/get-stream-6.0.0.tgz?cache=0&sync_timestamp=1597056544847&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fget-stream%2Fdownload%2Fget-stream-6.0.0.tgz#3e0012cb6827319da2706e601a1583e8629a6718"
+  integrity sha1-PgASy2gnMZ2icG5gGhWD6GKaZxg=
+
 get-uri@^2.0.0:
   version "2.0.4"
   resolved "https://registry.npm.taobao.org/get-uri/download/get-uri-2.0.4.tgz#d4937ab819e218d4cb5ae18e4f5962bef169cc6a"

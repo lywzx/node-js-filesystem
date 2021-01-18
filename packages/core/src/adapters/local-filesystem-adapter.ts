@@ -27,7 +27,7 @@ import {
 import { defer } from '../util/promise-defer.util';
 import { guessMimeType } from '../util/util';
 import { chmod, copyFile, lstat, pathExists, readFile, rename, stat, unlink, writeFile } from '../util/fs-extra.util';
-import { IFilesystemAdapter } from '../interfaces/filesystem-adapter';
+import { IFilesystemAdapter, IReadFileOptions } from '../interfaces/filesystem-adapter';
 import { IVisibilityConverter } from '../interfaces/visibility-converter';
 import { IMimeTypeDetector } from '../interfaces/mime-type-detector';
 import { PathPrefixer } from '../libs/path-prefixer';
@@ -195,6 +195,10 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
     }
 
     try {
+      if (options.mode && (await this.fileExists(path))) {
+        // 需要更改文件的权限，再更新内容
+        await this.setPermissions(location, options.mode);
+      }
       await writeFile(location, contents, options);
     } catch (e) {
       throw UnableToWriteFileException.atLocation(path, e.message, e);
@@ -245,9 +249,22 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
   /**
    * @inheritdoc
    */
-  public readStream(path: string, config?: any): ReadStream {
+  public async readStream(path: string, config?: any): Promise<ReadStream> {
     const location = this.prefixer.prefixPath(path);
-    return createReadStream(location, config);
+
+    const readStream = createReadStream(location, config);
+
+    const df = defer<ReadStream>();
+
+    readStream.once('error', (e) => {
+      df.reject(UnableToReadFileException.fromLocation(path, e.message, e));
+    });
+
+    setTimeout(() => {
+      df.resolve(readStream);
+    }, 0);
+
+    return df.promise;
   }
 
   /**
@@ -303,11 +320,11 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
   /**
    * @inheritdoc
    */
-  public async read(path: string): Promise<Buffer | string> {
+  public async read(path: string, config?: IReadFileOptions): Promise<Buffer | string> {
     const location = this.prefixer.prefixPath(path);
 
     try {
-      return await readFile(location);
+      return await readFile(location, config);
     } catch (e) {
       throw UnableToReadFileException.fromLocation(path, e.message, e);
     }
@@ -456,10 +473,15 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
   public async mimeType(path: string): Promise<RequireOne<FileAttributes, 'mimeType'>> {
     const location = this.prefixer.prefixPath(path);
 
-    const mimetype = await this.mimeTypeDetector.detectMimeTypeFromFile(location);
+    let mimetype, err: Error | undefined;
+    try {
+      mimetype = await this.mimeTypeDetector.detectMimeType(location);
+    } catch (e) {
+      err = e;
+    }
 
-    if (!mimetype) {
-      throw UnableToRetrieveMetadataException.mimeType(path, '');
+    if (!mimetype || err) {
+      throw UnableToRetrieveMetadataException.mimeType(path, err?.message, err);
     }
 
     return new FileAttributes(path, undefined, undefined, undefined, mimetype as string) as RequireOne<
@@ -600,7 +622,7 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
    */
   protected mapFileInfo(file: IPathStats): FileAttributes {
     return new FileAttributes(
-      file.path,
+      this.prefixer.stripPrefix(file.path),
       file.stats.size,
       file.stats.isFile()
         ? this._visibility.inverseForFile(file.stats.mode)
