@@ -1,6 +1,6 @@
 import { bindErrorConstructor } from '../util/exception.util';
 import { FilesystemOperationFailedException } from './filesystem-operation-failed.exception';
-import { FileAttributes } from '../libs/file-attributes';
+import { ATTRIBUTE_FILE_SIZE, ATTRIBUTE_LAST_MODIFIED, ATTRIBUTE_MIME_TYPE, ATTRIBUTE_VISIBILITY } from '../constant';
 
 export class UnableToRetrieveMetadataException extends FilesystemOperationFailedException {
   /**
@@ -24,19 +24,19 @@ export class UnableToRetrieveMetadataException extends FilesystemOperationFailed
   }
 
   static lastModified(location: string, reason = '', previous: Error | null = null): UnableToRetrieveMetadataException {
-    return this.create(location, FileAttributes.ATTRIBUTE_LAST_MODIFIED, reason, previous);
+    return this.create(location, ATTRIBUTE_LAST_MODIFIED, reason, previous);
   }
 
   static visibility(location: string, reason = '', previous: Error | null = null): UnableToRetrieveMetadataException {
-    return this.create(location, FileAttributes.ATTRIBUTE_VISIBILITY, reason, previous);
+    return this.create(location, ATTRIBUTE_VISIBILITY, reason, previous);
   }
 
   static fileSize(location: string, reason = '', previous: Error | null = null): UnableToRetrieveMetadataException {
-    return this.create(location, FileAttributes.ATTRIBUTE_FILE_SIZE, reason, previous);
+    return this.create(location, ATTRIBUTE_FILE_SIZE, reason, previous);
   }
 
   static mimeType(location: string, reason = '', previous: Error | null = null): UnableToRetrieveMetadataException {
-    return this.create(location, FileAttributes.ATTRIBUTE_MIME_TYPE, reason, previous);
+    return this.create(location, ATTRIBUTE_MIME_TYPE, reason, previous);
   }
 
   static create(

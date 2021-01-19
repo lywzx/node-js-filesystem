@@ -1,4 +1,4 @@
-import { createReadStream, createWriteStream, ReadStream, Stats, WriteStream } from 'fs';
+import { createReadStream, createWriteStream, ReadStream, Stats } from 'fs';
 import isBuffer from 'lodash/isBuffer';
 import padStart from 'lodash/padStart';
 import { dirname, sep } from 'path';
@@ -47,6 +47,7 @@ import { UnableToMoveFileException } from '../interfaces/unable-to-move-file.exc
 import { Readable } from 'stream';
 import { UnableToWriteFileException } from '../exceptions/unable-to-write-file.exception';
 import { SymbolicLinkEncounteredException } from '../exceptions/symbolic-link-encountered.exception';
+import { DirectoryAttributes } from '../libs/directory-attributes';
 
 /**
  * local filesystem adapter
@@ -620,26 +621,18 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
    *
    * @return array
    */
-  protected mapFileInfo(file: IPathStats): FileAttributes {
-    return new FileAttributes(
-      this.prefixer.stripPrefix(file.path),
-      file.stats.size,
-      file.stats.isFile()
-        ? this._visibility.inverseForFile(file.stats.mode)
-        : this._visibility.inverseForDirectory(file.stats.mode),
-      file.stats.ctimeMs,
-      undefined,
-      {}
-    );
-    /*return {
-      type: getType(file.stats),
-      path: file.path,
-      lastModified: file.stats.mtimeMs,
-      fileSize: file.stats.size,
-      isDir: file.stats.isDirectory(),
-      isFile: file.stats.isFile(),
-      visibility: ,
-    };*/
+  protected mapFileInfo(file: IPathStats): IStorageAttributes {
+    const path = this.prefixer.stripPrefix(file.path);
+    return file.stats.isFile()
+      ? new FileAttributes(
+          this.prefixer.stripPrefix(file.path),
+          file.stats.size,
+          this._visibility.inverseForFile(file.stats.mode),
+          file.stats.ctimeMs,
+          undefined,
+          {}
+        )
+      : new DirectoryAttributes(path, this._visibility.inverseForDirectory(file.stats.mode), file.stats.ctimeMs);
   }
 
   /**

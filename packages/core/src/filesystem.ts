@@ -6,7 +6,7 @@ import { IFilesystemConfig } from './interfaces';
 import { isReadableStream } from './util/util';
 import get from 'lodash/get';
 import { WhitespacePathNormalizer } from './libs/whitespace-path-normalizer';
-import { IFilesystemAdapter } from './interfaces/filesystem-adapter';
+import { IFilesystemAdapter } from './interfaces';
 
 /**
  * filesystem manager

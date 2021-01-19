@@ -4,10 +4,10 @@ import isFunction from 'lodash/isFunction';
 import sortBy from 'lodash/sortBy';
 import isNumber from 'lodash/isNumber';
 import { isNumeric, stringChunk } from '@filesystem/core/src/util/util';
-import { AbstractAdapter, Visibility, ListContentInfo, NotSupportedException, FileType } from '@filesystem/core';
+import { Visibility, ListContentInfo, NotSupportedException, FileType } from '@filesystem/core';
 import { FtpAdapterConstructorConfigInterface } from '../interfaces';
 
-export abstract class AbstractFtpAdapter extends AbstractAdapter {
+export abstract class AbstractFtpAdapter {
   /**
    * @var Client
    */
@@ -81,7 +81,6 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    * @param {FtpAdapterConstructorConfigInterface} config
    */
   protected constructor(protected config: FtpAdapterConstructorConfigInterface) {
-    super();
     this.client = new Client(config.timeout || 3000);
   }
 
@@ -529,6 +528,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    * @inheritdoc
    */
   public getSize(path: string) {
+    // @ts-ignore
     return this.getMetadata(path);
   }
 
@@ -536,6 +536,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    * @inheritdoc
    */
   public getVisibility(path: string) {
+    // @ts-ignore
     return this.getMetadata(path) as any;
   }
 
@@ -546,6 +547,7 @@ export abstract class AbstractFtpAdapter extends AbstractAdapter {
    */
   public async ensureDirectory(dirname: string) {
     if (dirname !== '' && !(await this.has(dirname))) {
+      // @ts-ignore
       await this.createDir(dirname, {});
     }
   }
