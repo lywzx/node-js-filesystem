@@ -1,5 +1,4 @@
 export * from './filesystem';
-export * from './handler';
 export * from './enum';
 export * from './adapters';
 export * from './exceptions';

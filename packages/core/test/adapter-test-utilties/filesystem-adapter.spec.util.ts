@@ -1,16 +1,23 @@
-import { expect } from 'chai';
-import { IFilesystemAdapter } from '../../src/interfaces/filesystem-adapter';
-import { Visibility } from '../../src';
-import { Readable } from 'stream';
-import { readFile } from '../../src/util/fs-extra.util';
-import { join } from 'path';
+import { expect, use } from 'chai';
 import getStream from 'get-stream';
+import { join } from 'path';
+import { Readable, Stream } from 'stream';
+import { Visibility } from '../../src';
 import { OPTION_VISIBILITY } from '../../src/constant';
+import { UnableToReadFileException } from '../../src/exceptions/unable-to-read-file.exception';
 import { UnableToRetrieveMetadataException } from '../../src/exceptions/unable-to-retrieve-metadata.exception';
+import { UnableToSetVisibilityException } from '../../src/exceptions/unable-to-set-visibility.exception';
+import { IFilesystemAdapter } from '../../src/interfaces/filesystem-adapter';
+import { UnableToMoveFileException } from '../../src/interfaces/unable-to-move-file.exception';
 import * as fsExtra from '../../src/util/fs-extra.util';
+import { readFile } from '../../src/util/fs-extra.util';
+import { stream_with_contents } from '../test-util';
+import chaiAsPromised from 'chai-as-promised';
+
+use(chaiAsPromised);
 
 export function filesystemAdapterSpecUtil(root: string, getAdapter: (root?: string) => IFilesystemAdapter) {
-  const runScenario = () => {};
+  // const runScenario = () => {};
 
   const givenWeHaveAnExistingFile = (
     adapter: IFilesystemAdapter,
@@ -35,13 +42,7 @@ export function filesystemAdapterSpecUtil(root: string, getAdapter: (root?: stri
     const adapter = getAdapter(root);
 
     const writeContent = 'contents';
-    const stream = new Readable({
-      // eslint-disable-next-line no-unused-vars
-      read(size: number) {
-        this.push(writeContent);
-        this.push(null);
-      },
-    });
+    const stream = stream_with_contents(writeContent);
     const file = './file.txt';
     await adapter.write(file, writeContent);
 
@@ -82,13 +83,7 @@ export function filesystemAdapterSpecUtil(root: string, getAdapter: (root?: stri
 
   it('writing_a_file_with_an_empty_stream', async function () {
     const adapter = getAdapter();
-    const stream = new Readable({
-      // eslint-disable-next-line no-unused-vars
-      read(size: number) {
-        this.push('');
-        this.push(null);
-      },
-    });
+    const stream = stream_with_contents('');
     await adapter.writeStream('path.txt', stream);
 
     const fileExists = await adapter.fileExists('path.txt');
@@ -248,166 +243,141 @@ export function filesystemAdapterSpecUtil(root: string, getAdapter: (root?: stri
     expect(list).to.be.length(2);
   });
 
-  it('writing_and_reading_with_streams', function () {
-    /*$writeStream = stream_with_contents('contents');
-    $adapter = $this->adapter();
+  it('writing_and_reading_with_streams', async function () {
+    const writeStream = stream_with_contents('contents');
+    const adapter = getAdapter();
 
-    $adapter->writeStream('path.txt', $writeStream, new Config());
-    if (is_resource($writeStream)) {
-      fclose($writeStream);
-    };
-    $readStream = $adapter->readStream('path.txt');
+    await adapter.writeStream('path.txt', writeStream);
 
-    $this->assertIsResource($readStream);
-    $contents = stream_get_contents($readStream);
-    fclose($readStream);
-    $this->assertEquals('contents', $contents);*/
+    expect(writeStream instanceof Readable).to.be.true;
+    writeStream.destroy();
+
+    const readStream = await adapter.readStream('path.txt');
+
+    expect(readStream instanceof Stream).to.be.true;
+    expect(await getStream(readStream)).to.be.eq('contents');
+    readStream.destroy();
   });
 
-  it('setting_visibility_on_a_file_that_does_not_exist', function () {
-    /* $this->expectException(UnableToSetVisibility::class);
-
-    $this->runScenario(function () {
-      $this->adapter()->setVisibility('path.txt', Visibility::PRIVATE);
-    });*/
+  it('setting_visibility_on_a_file_that_does_not_exist', async function () {
+    await expect(getAdapter().setVisibility('path.txt', Visibility.PRIVATE)).to.be.rejectedWith(
+      UnableToSetVisibilityException
+    );
   });
 
-  it('copying_a_file', function () {
-    /*$adapter = $this->adapter();
-    $adapter->write(
-      'source.txt',
-      'contents to be copied',
-      new Config([Config::OPTION_VISIBILITY => Visibility::PUBLIC])
-  );
+  it('copying_a_file', async function () {
+    const adapter = getAdapter();
+    await adapter.write('source.txt', 'contents to be copied', {
+      [OPTION_VISIBILITY]: Visibility.PUBLIC,
+    });
+    await adapter.copy('source.txt', 'destination.txt');
 
-    $adapter->copy('source.txt', 'destination.txt', new Config());
-
-    $this->assertTrue($adapter->fileExists('source.txt'));
-    $this->assertTrue($adapter->fileExists('destination.txt'));
-    $this->assertEquals(Visibility::PUBLIC, $adapter->visibility('destination.txt')->visibility());
-    $this->assertEquals('contents to be copied', $adapter->read('destination.txt'));*/
+    expect(await adapter.fileExists('source.txt')).to.be.true;
+    expect(await adapter.fileExists('destination.txt')).to.be.true;
+    expect((await adapter.visibility('destination.txt')).visibility).to.be.eq(Visibility.PUBLIC);
+    expect(await adapter.read('destination.txt', { encoding: 'utf8' })).to.be.eq('contents to be copied');
   });
 
-  it('copying_a_file_again', function () {
-    /*$adapter = $this->adapter();
-    $adapter->write(
-      'source.txt',
-      'contents to be copied',
-      new Config([Config::OPTION_VISIBILITY => Visibility::PUBLIC])
-  );
+  it('copying_a_file_again', async function () {
+    const adapter = getAdapter();
+    await adapter.write('source.txt', 'contents to be copied', { [OPTION_VISIBILITY]: Visibility.PUBLIC });
+    await adapter.copy('source.txt', 'destination.txt');
 
-    $adapter->copy('source.txt', 'destination.txt', new Config());
-
-    $this->assertTrue($adapter->fileExists('source.txt'));
-    $this->assertTrue($adapter->fileExists('destination.txt'));
-    $this->assertEquals(Visibility::PUBLIC, $adapter->visibility('destination.txt')->visibility());
-    $this->assertEquals('contents to be copied', $adapter->read('destination.txt'));*/
+    expect(await adapter.fileExists('source.txt')).to.be.true;
+    expect(await adapter.fileExists('destination.txt')).to.be.true;
+    expect((await adapter.visibility('destination.txt')).visibility).to.be.eq(Visibility.PUBLIC);
+    expect(await adapter.read('destination.txt', { encoding: 'utf8' })).to.be.eq('contents to be copied');
   });
 
-  it('moving_a_file', function () {
-    /*$adapter = $this->adapter();
-    $adapter->write(
-      'source.txt',
-      'contents to be copied',
-      new Config([Config::OPTION_VISIBILITY => Visibility::PUBLIC])
-  );
-    $adapter->move('source.txt', 'destination.txt', new Config());
-    $this->assertFalse(
-      $adapter->fileExists('source.txt'),
+  it('moving_a_file', async function () {
+    const adapter = getAdapter();
+    await adapter.write('source.txt', 'contents to be copied', { [OPTION_VISIBILITY]: Visibility.PUBLIC });
+    await adapter.move('source.txt', 'destination.txt');
+    expect(await adapter.fileExists('source.txt')).to.be.eq(
+      false,
       'After moving a file should no longer exist in the original location.'
     );
-    $this->assertTrue(
-      $adapter->fileExists('destination.txt'),
+    expect(await adapter.fileExists('destination.txt')).to.be.eq(
+      true,
       'After moving, a file should be present at the new location.'
     );
-    $this->assertEquals(Visibility::PUBLIC, $adapter->visibility('destination.txt')->visibility());
-    $this->assertEquals('contents to be copied', $adapter->read('destination.txt'));*/
+    expect((await adapter.visibility('destination.txt')).visibility).to.be.eq(Visibility.PUBLIC);
+    expect(await adapter.read('destination.txt', { encoding: 'utf8' })).to.be.eq('contents to be copied');
   });
 
-  it('reading_a_file_that_does_not_exist', function () {
-    /*$this->expectException(UnableToReadFile::class);
-
-    $this->runScenario(function () {
-      $this->adapter()->read('path.txt');
-    });*/
+  it('reading_a_file_that_does_not_exist', async function () {
+    await expect(getAdapter().read('path.txt')).to.be.rejectedWith(UnableToReadFileException);
   });
 
-  it('moving_a_file_that_does_not_exist', function () {
-    /*$this->expectException(UnableToMoveFile::class);
-
-    $this->runScenario(function () {
-      $this->adapter()->move('source.txt', 'destination.txt', new Config());
-    });*/
+  it('moving_a_file_that_does_not_exist', async function () {
+    await expect(getAdapter().move('source.txt', 'destination.txt')).to.be.rejectedWith(UnableToMoveFileException);
   });
 
-  it('trying_to_delete_a_non_existing_file', function () {
-    /*$adapter = $this->adapter();
+  it('trying_to_delete_a_non_existing_file', async function () {
+    const adapter = getAdapter();
 
-    $adapter->delete('path.txt');
-    $fileExists = $adapter->fileExists('path.txt');
+    await adapter.delete('path.txt');
+    const fileExists = await adapter.fileExists('path.txt');
 
-    $this->assertFalse($fileExists);*/
+    expect(fileExists).to.be.false;
   });
 
-  it('checking_if_files_exist', function () {
-    /* $adapter = $this->adapter();
+  it('checking_if_files_exist', async function () {
+    const adapter = getAdapter();
 
-    $fileExistsBefore = $adapter->fileExists('some/path.txt');
-    $adapter->write('some/path.txt', 'contents', new Config());
-    $fileExistsAfter = $adapter->fileExists('some/path.txt');
+    const fileExistsBefore = await adapter.fileExists('some/path.txt');
+    await adapter.write('some/path.txt', 'contents');
+    const fileExistsAfter = await adapter.fileExists('some/path.txt');
 
-    $this->assertFalse($fileExistsBefore);
-    $this->assertTrue($fileExistsAfter);*/
+    expect(fileExistsBefore).to.be.false;
+    expect(fileExistsAfter).to.be.true;
   });
 
-  it('fetching_last_modified', function () {
-    /* $adapter = $this->adapter();
-    $adapter->write('path.txt', 'contents', new Config());
+  it('fetching_last_modified', async function () {
+    const adapter = getAdapter();
+    await adapter.write('path.txt', 'contents');
 
-    $attributes = $adapter->lastModified('path.txt');
+    const attributes = await adapter.lastModified('path.txt');
 
-    $this->assertInstanceOf(FileAttributes::class, $attributes);
-    $this->assertIsInt($attributes->lastModified());
-    $this->assertTrue($attributes->lastModified() > time() - 30);
-    $this->assertTrue($attributes->lastModified() < time() + 30);*/
+    expect(attributes).to.be.haveOwnProperty('lastModified');
+    expect(attributes.lastModified).to.be.an('number');
+    expect(attributes.lastModified > Date.now() - 30).to.be.true;
+    expect(attributes.lastModified < Date.now() + 30).to.be.true;
   });
 
-  it('failing_to_read_a_non_existing_file_into_a_stream', function () {
-    /*$this->expectException(UnableToReadFile::class);
-
-    $this->adapter()->readStream('something.txt');*/
+  it('failing_to_read_a_non_existing_file_into_a_stream', async function () {
+    await expect(getAdapter().readStream('something.txt')).to.be.rejectedWith(UnableToReadFileException);
   });
 
-  it('failing_to_read_a_non_existing_file', function () {
-    /*$this->expectException(UnableToReadFile::class);
-
-    $this->adapter()->readStream('something.txt');*/
+  it('failing_to_read_a_non_existing_file', async function () {
+    await expect(getAdapter().readStream('something.txt')).to.be.rejectedWith(UnableToReadFileException);
   });
 
-  it('creating_a_directory', function () {
-    /*$adapter = $this->adapter();
+  it('creating_a_directory', async function () {
+    const adapter = getAdapter();
 
-    $adapter->createDirectory('path', new Config());
+    await adapter.createDirectory('path');
 
     // Creating a directory should be idempotent.
-    $adapter->createDirectory('path', new Config());
+    await adapter.createDirectory('path');
 
-    $contents = iterator_to_array($adapter->listContents('', false));
-    $this->assertCount(1, $contents, $this->formatIncorrectListingCount($contents));
-    /!** @var DirectoryAttributes $directory *!/
-    $directory = $contents[0];
-    $this->assertInstanceOf(DirectoryAttributes::class, $directory);
-    $this->assertEquals('path', $directory->path());*/
+    const list = await adapter.listContents('', false);
+    expect(list).to.be.length(1);
+    /** @var DirectoryAttributes $directory */
+    const directory = list[0];
+    expect(directory).to.be.instanceOf(Object);
+    // $this->assertInstanceOf(DirectoryAttributes::class, $directory);
+    expect(list[0].path).to.be.eq('path');
   });
 
-  it('copying_a_file_with_collision', function () {
-    /*$adapter = $this->adapter();
-    $adapter->write('path.txt', 'new contents', new Config());
-    $adapter->write('new-path.txt', 'contents', new Config());
+  it('copying_a_file_with_collision', async function () {
+    const adapter = getAdapter();
+    await adapter.write('path.txt', 'new contents');
+    await adapter.write('new-path.txt', 'contents');
 
-    $adapter->copy('path.txt', 'new-path.txt', new Config());
-    $contents = $adapter->read('new-path.txt');
+    await adapter.copy('path.txt', 'new-path.txt');
+    const contents = await adapter.read('new-path.txt', { encoding: 'utf8' });
 
-    $this->assertEquals('new contents', $contents);*/
+    expect(contents).to.be.eq('new contents');
   });
 }

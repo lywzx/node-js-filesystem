@@ -2,11 +2,8 @@ import { LocalFilesystemAdapter, Visibility } from '@filesystem/core';
 import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import * as fs from 'fs';
-import { uniqueId } from 'lodash';
-import { platform } from 'os';
 import { join } from 'path';
 import { fake, replace, restore } from 'sinon';
-import { Readable } from 'stream';
 import { SymbolicLinkEncounteredException } from '../../src/exceptions/symbolic-link-encountered.exception';
 import { UnableToCopyFileException } from '../../src/exceptions/unable-to-copy-file.exception';
 import { UnableToCreateDirectoryException } from '../../src/exceptions/unable-to-create-directory.exception';
@@ -21,14 +18,9 @@ import * as fsExtra from '../../src/util/fs-extra.util';
 import { lstat, readFile, stat } from '../../src/util/fs-extra.util';
 import { UnableToReadFileException } from '../../src/exceptions/unable-to-read-file.exception';
 import { filesystemAdapterSpecUtil } from '../adapter-test-utilties/filesystem-adapter.spec.util';
+import { stream_with_contents } from '../test-util';
 
 use(chaiAsPromised);
-
-function generateTestFile(prefix = '') {
-  return `${prefix}file_${uniqueId()}.txt`;
-}
-
-const IS_WINDOWS = platform() === 'win32';
 
 describe('local adapter test', function (): void {
   this.timeout(5000);
@@ -39,7 +31,7 @@ describe('local adapter test', function (): void {
     try {
       await rmDir(root);
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   });
 
@@ -47,7 +39,7 @@ describe('local adapter test', function (): void {
     try {
       await rmDir(root);
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
   });
 
@@ -97,13 +89,7 @@ describe('local adapter test', function (): void {
   });
 
   it('failing_to_write_a_file_using_a_stream', async function () {
-    const stream = new Readable({
-      // eslint-disable-next-line no-unused-vars
-      read(size: number) {
-        this.push('something');
-        this.push(null);
-      },
-    });
+    const stream = stream_with_contents('something');
     await expect(new LocalFilesystemAdapter('/').writeStream('/cannot-create-a-file-here', stream)).to.be.rejectedWith(
       UnableToWriteFileException
     );
