@@ -2,7 +2,7 @@ import { ReadStream, Stats } from 'fs';
 import { fromBuffer, fromFile } from 'file-type';
 import { getType as getMimeType } from 'mime';
 import { extname } from 'path';
-import { Stream } from 'stream';
+import { Readable, Stream } from 'stream';
 import { FileType } from '../enum';
 
 /**
@@ -60,7 +60,7 @@ export function fileHasPermission(stats: Stats, mask: number): boolean {
  * js check variable is stream
  * @param stream
  */
-export function isReadableStream(stream: ReadStream) {
+export function isReadableStream(stream: Readable) {
   return (
     stream instanceof Stream &&
     typeof ((stream as any)._read === 'function') &&

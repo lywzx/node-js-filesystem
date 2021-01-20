@@ -6,7 +6,7 @@ export interface IFilesystemWriter {
    * @throws UnableToWriteFile
    * @throws FilesystemException
    */
-  write(path: string, content: string | Buffer, config: Record<string, any>): Promise<void>;
+  write(path: string, content: string | Buffer, config?: Record<string, any>): Promise<void>;
 
   /**
    * @param mixed $contents
@@ -38,7 +38,7 @@ export interface IFilesystemWriter {
    * @throws UnableToCreateDirectory
    * @throws FilesystemException
    */
-  createDirectory(path: string, config: Record<string, any>): void;
+  createDirectory(path: string, config?: Record<string, any>): void;
 
   /**
    * @throws UnableToMoveFile

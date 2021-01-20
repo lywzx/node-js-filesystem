@@ -43,7 +43,7 @@ import { FileAttributes } from '../libs/file-attributes';
 import { UnableToRetrieveMetadataException } from '../exceptions/unable-to-retrieve-metadata.exception';
 import { RequireOne } from '../interfaces/types';
 import { UnableToCopyFileException } from '../exceptions/unable-to-copy-file.exception';
-import { UnableToMoveFileException } from '../interfaces/unable-to-move-file.exception';
+import { UnableToMoveFileException } from '../exceptions/unable-to-move-file.exception';
 import { Readable } from 'stream';
 import { UnableToWriteFileException } from '../exceptions/unable-to-write-file.exception';
 import { SymbolicLinkEncounteredException } from '../exceptions/symbolic-link-encountered.exception';

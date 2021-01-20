@@ -1,4 +1,4 @@
-import { FilesystemOperationFailedException } from '../exceptions/filesystem-operation-failed.exception';
+import { FilesystemOperationFailedException } from './filesystem-operation-failed.exception';
 import { bindErrorConstructor } from '../util/exception.util';
 
 export class UnableToMoveFileException extends FilesystemOperationFailedException {

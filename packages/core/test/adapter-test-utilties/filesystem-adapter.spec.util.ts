@@ -2,15 +2,16 @@ import { expect, use } from 'chai';
 import getStream from 'get-stream';
 import { join } from 'path';
 import { Readable, Stream } from 'stream';
-import { Visibility } from '../../src';
-import { OPTION_VISIBILITY } from '../../src/constant';
-import { UnableToReadFileException } from '../../src/exceptions/unable-to-read-file.exception';
-import { UnableToRetrieveMetadataException } from '../../src/exceptions/unable-to-retrieve-metadata.exception';
-import { UnableToSetVisibilityException } from '../../src/exceptions/unable-to-set-visibility.exception';
-import { IFilesystemAdapter } from '../../src/interfaces/filesystem-adapter';
-import { UnableToMoveFileException } from '../../src/interfaces/unable-to-move-file.exception';
+import {
+  OPTION_VISIBILITY,
+  IFilesystemAdapter,
+  Visibility,
+  UnableToReadFileException,
+  UnableToRetrieveMetadataException,
+  UnableToSetVisibilityException,
+  UnableToMoveFileException,
+} from '@filesystem/core';
 import * as fsExtra from '../../src/util/fs-extra.util';
-import { readFile } from '../../src/util/fs-extra.util';
 import { stream_with_contents } from '../test-util';
 import chaiAsPromised from 'chai-as-promised';
 
@@ -50,7 +51,7 @@ export function filesystemAdapterSpecUtil(root: string, getAdapter: (root?: stri
     stream.destroy();
 
     expect(await adapter.fileExists(file)).to.be.true;
-    expect(await readFile(join(root, file), { encoding: 'utf8' })).to.be.eq(writeContent);
+    expect(await fsExtra.readFile(join(root, file), { encoding: 'utf8' })).to.be.eq(writeContent);
   });
 
   it('writing_and_reading_files_with_special_path', async function () {

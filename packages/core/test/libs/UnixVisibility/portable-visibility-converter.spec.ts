@@ -1,5 +1,4 @@
-import { PortableVisibilityConverter } from '../../../src/libs/UnixVisibility/portable-visibility-converter';
-import { Visibility } from '../../../src';
+import { PortableVisibilityConverter, Visibility } from '@filesystem/core';
 import { expect } from 'chai';
 
 describe('PortableVisibilityConverter test', () => {

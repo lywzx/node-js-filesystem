@@ -1,4 +1,4 @@
-import { PathPrefixer } from '../../src/libs/path-prefixer';
+import { PathPrefixer } from '@filesystem/core';
 import { expect } from 'chai';
 
 describe('PathPrefixer test', () => {

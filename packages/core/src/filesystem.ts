@@ -1,12 +1,10 @@
-import { ReadStream } from 'fs';
 import { Visibility } from './enum';
-import { InvalidArgumentException } from './exceptions';
-import { IFilesystemOperator } from './interfaces';
-import { IFilesystemConfig } from './interfaces';
+import { IFilesystemOperator, IFilesystemConfig, IFilesystemAdapter } from './interfaces';
 import { isReadableStream } from './util/util';
 import get from 'lodash/get';
-import { WhitespacePathNormalizer } from './libs/whitespace-path-normalizer';
-import { IFilesystemAdapter } from './interfaces';
+import { WhitespacePathNormalizer } from './libs';
+import { InvalidStreamProvidedException } from './exceptions';
+import { Readable } from 'stream';
 
 /**
  * filesystem manager
@@ -53,9 +51,9 @@ export class Filesystem implements IFilesystemOperator {
   /**
    * @inheritdoc
    */
-  public async writeStream(path: string, resource: ReadStream, config?: Record<string, any>) {
+  public async writeStream(path: string, resource: Readable, config?: Record<string, any>) {
     if (!isReadableStream(resource)) {
-      throw new InvalidArgumentException('writeStream expects argument #2 to be a valid readStream.');
+      throw new InvalidStreamProvidedException('writeStream expects argument #2 to be a valid readStream.');
     }
     path = this.pathNormalizer.normalizePath(path);
     config = this.prepareConfig(config);
@@ -82,7 +80,7 @@ export class Filesystem implements IFilesystemOperator {
   /**
    * @inheritdoc
    */
-  public copy(path: string, newPath: string, config: any) {
+  public copy(path: string, newPath: string, config?: any) {
     return this.getAdapter().copy(
       this.pathNormalizer.normalizePath(path),
       this.pathNormalizer.normalizePath(newPath),
@@ -107,7 +105,7 @@ export class Filesystem implements IFilesystemOperator {
   /**
    * @inheritdoc
    */
-  public createDirectory(dirname: string, config: any) {
+  public createDirectory(dirname: string, config?: any) {
     config = this.prepareConfig(config);
 
     return this.getAdapter().createDirectory(this.pathNormalizer.normalizePath(dirname), this.prepareConfig(config));
@@ -182,7 +180,7 @@ export class Filesystem implements IFilesystemOperator {
     );
   }
 
-  protected prepareConfig(config: any) {
+  protected prepareConfig(config?: any) {
     return config;
   }
 }

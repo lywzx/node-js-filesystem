@@ -4,19 +4,21 @@ import chaiAsPromised from 'chai-as-promised';
 import * as fs from 'fs';
 import { join } from 'path';
 import { fake, replace, restore } from 'sinon';
-import { SymbolicLinkEncounteredException } from '../../src/exceptions/symbolic-link-encountered.exception';
-import { UnableToCopyFileException } from '../../src/exceptions/unable-to-copy-file.exception';
-import { UnableToCreateDirectoryException } from '../../src/exceptions/unable-to-create-directory.exception';
-import { UnableToDeleteFileException } from '../../src/exceptions/unable-to-delete-file.exception';
-import { UnableToRetrieveMetadataException } from '../../src/exceptions/unable-to-retrieve-metadata.exception';
-import { UnableToSetVisibilityException } from '../../src/exceptions/unable-to-set-visibility.exception';
-import { UnableToWriteFileException } from '../../src/exceptions/unable-to-write-file.exception';
-import { UnableToMoveFileException } from '../../src/interfaces/unable-to-move-file.exception';
-import { PortableVisibilityConverter } from '../../src/libs/UnixVisibility/portable-visibility-converter';
+import {
+  UnableToRetrieveMetadataException,
+  UnableToSetVisibilityException,
+  UnableToMoveFileException,
+  UnableToReadFileException,
+  SymbolicLinkEncounteredException,
+  UnableToCopyFileException,
+  UnableToCreateDirectoryException,
+  UnableToDeleteFileException,
+  UnableToWriteFileException,
+  PortableVisibilityConverter,
+} from '@filesystem/core';
 import { isDir, mkDir, rmDir } from '../../src/util';
 import * as fsExtra from '../../src/util/fs-extra.util';
 import { lstat, readFile, stat } from '../../src/util/fs-extra.util';
-import { UnableToReadFileException } from '../../src/exceptions/unable-to-read-file.exception';
 import { filesystemAdapterSpecUtil } from '../adapter-test-utilties/filesystem-adapter.spec.util';
 import { stream_with_contents } from '../test-util';
 

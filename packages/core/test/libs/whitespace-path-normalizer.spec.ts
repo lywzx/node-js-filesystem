@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { WhitespacePathNormalizer } from '../../src/libs/whitespace-path-normalizer';
+import { WhitespacePathNormalizer } from '@filesystem/core';
 
 const validatePathProvide = [
   ['.', ''],

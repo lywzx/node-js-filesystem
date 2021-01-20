@@ -2,14 +2,14 @@ import { IVisibilityConverter } from '../../interfaces/visibility-converter';
 import { Visibility } from '../../enum';
 import { PortableVisibilityGuard } from '../portable-visibility-guard';
 
-export interface IVisibilityConfig {
+export interface IPortableVisibilityConfig {
   [Visibility.PUBLIC]?: number;
   [Visibility.PRIVATE]?: number;
 }
 
 export interface IPortableVisibilityObj {
-  file: IVisibilityConfig;
-  dir: IVisibilityConfig;
+  file: IPortableVisibilityConfig;
+  dir: IPortableVisibilityConfig;
 }
 
 export class PortableVisibilityConverter implements IVisibilityConverter {
