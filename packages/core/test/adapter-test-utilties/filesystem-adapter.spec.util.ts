@@ -75,10 +75,9 @@ export function filesystemAdapterSpecUtil(root: string, getAdapter: (root?: stri
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     for (const [desc, path] of new Map(validateArr).entries()) {
-      console.log(desc);
       await adapter.write(path, 'contents');
       const content = await adapter.read(path, { encoding: 'utf8' });
-      expect(content).to.be.eq('contents');
+      expect(content).to.be.eq('contents', desc);
     }
   });
 

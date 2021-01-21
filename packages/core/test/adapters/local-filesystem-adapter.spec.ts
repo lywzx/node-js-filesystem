@@ -32,17 +32,13 @@ describe('local adapter test', function (): void {
   beforeEach(async function () {
     try {
       await rmDir(root);
-    } catch (e) {
-      // console.log(e);
-    }
+    } catch (e) {}
   });
 
   afterEach(async function () {
     try {
       await rmDir(root);
-    } catch (e) {
-      // console.log(e);
-    }
+    } catch (e) {}
   });
 
   it('creating_a_local_filesystem_creates_a_root_directory', async function () {

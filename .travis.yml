@@ -13,34 +13,34 @@ cache:
     - node_modules/ # npm packages
     - .nyc_output/
 
-node_js:
-  - 'node'
-  - '14'
-  - '13'
-  - '12'
-  - '11'
-  - '10'
-
 before_install:
-  - npm install yarn -g
-  - npm install codecov -g
+  - npm install yarn -g --registry https://registry.npmjs.org/
+  - npm install codecov -g --registry https://registry.npmjs.org/
 
 install:
-  - yarn --ignore-engines
+  - yarn --ignore-engines --registry https://registry.npmjs.org/
+
+script:
+  - yarn coverage
 
 stages:
   - test
-  - compile
-  - deploy
+  - name: compile
+  - name: deploy
+    if: brance = master
 
 jobs:
   include:
+    - stage: lint
+      name: "eslint"
+      script: yarn lint
     - stage: test
       name: "Unit Tests"
       script: yarn coverage
       after_success:
         - codecov -f .nyc_output/*.json
     - stage: compile
+      branches: master
       script: yarn build
       after_success:
         - codecov -f .nyc_output/*.json
