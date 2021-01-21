@@ -13,6 +13,14 @@ cache:
     - node_modules/ # npm packages
     - .nyc_output/
 
+node_js:
+  - 'node'
+  - '14'
+  - '13'
+  - '12'
+  - '11'
+  - '10'
+
 before_install:
   - npm install yarn -g
   - npm install codecov -g
@@ -23,19 +31,11 @@ install:
 stages:
   - test
   - compile
-  - deploy
 
 jobs:
   include:
     - stage: test
       name: "Unit Tests"
-      node_js:
-        - 'node'
-        - '14'
-        - '13'
-        - '12'
-        - '11'
-        - '10'
       script: yarn coverage
       after_success:
         - codecov -f .nyc_output/*.json
