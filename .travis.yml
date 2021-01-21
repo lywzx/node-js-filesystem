@@ -20,10 +20,15 @@ before_install:
 install:
   - yarn --ignore-engines
 
+stages:
+  - test
+  - compile
+  - deploy
 
 jobs:
   include:
     - stage: test
+      name: "Unit Tests"
       node_js:
         - 'node'
         - '14'
@@ -36,14 +41,16 @@ jobs:
         - codecov -f .nyc_output/*.json
     - stage: compile
       script: yarn build
-      node_js: '12'
+      on:
+        node: "12"
     - stage: deploy
       if: tag IS present
-      node_js: '12'
       provider: npm
       email: "$NPM_EMAIL",
       api_key："$NPM_TOKEN"
       skip_cleanup: true
       on:
+        node: "12"
         tags: true
+
 
