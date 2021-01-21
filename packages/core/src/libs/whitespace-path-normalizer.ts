@@ -1,3 +1,4 @@
+import { PathTraversalDetectedException } from '../exceptions';
 import { IPathNormalizer } from '../interfaces/path/path-normalizer';
 import { isEmpty } from 'lodash';
 
@@ -28,8 +29,7 @@ export class WhitespacePathNormalizer implements IPathNormalizer {
 
         case '..':
           if (isEmpty(parts)) {
-            throw new Error(`Path traversal detected: ${path}`);
-            // throw PathTraversalDetected::forPath($path);
+            throw PathTraversalDetectedException.forPath(path);
           }
           parts.pop();
           break;

@@ -6,6 +6,9 @@ import {
   InvalidStreamProvidedException,
   DirectoryAttributes,
   FileAttributes,
+  Visibility,
+  IFilesystemOperator,
+  PathTraversalDetectedException,
 } from '@filesystem/core';
 import chaiAsPromised from 'chai-as-promised';
 import { stream_with_contents } from './test-util';
@@ -139,109 +142,106 @@ describe('filesystem test', function () {
   });
 
   it('fetching_mime_type', async function () {
-    /*await filesystem.write('path.txt', 'contents');
+    await filesystem.write('path.txt', 'contents');
 
-    $mimeType = await filesystem.mimeType('path.txt');
+    const mimeType = await filesystem.mimeType('path.txt');
 
-    $this->assertEquals('text/plain', $mimeType);*/
+    expect(mimeType).to.be.eq('text/plain');
   });
 
   it('fetching_file_size', async function () {
-    /*await filesystem.write('path.txt', 'contents');
+    await filesystem.write('path.txt', 'contents');
 
-    $fileSize = await filesystem.fileSize('path.txt');
+    const fileSize = await filesystem.fileSize('path.txt');
 
-    $this->assertEquals(8, $fileSize);*/
+    expect(fileSize).to.be.eq(8);
   });
 
   it('ensuring_streams_are_rewound_when_writing', async function () {
-    /* $writeStream = stream_with_contents('contents');
-    fseek($writeStream, 4);
+    const writeStream = stream_with_contents('contents');
+    // TODO rewind
+    // fseek($writeStream, 4);
 
-    await filesystem.writeStream('path.txt', $writeStream);
-    $contents = await filesystem.read('path.txt');
+    await filesystem.writeStream('path.txt', writeStream);
+    const contents = await filesystem.read('path.txt');
 
-    $this->assertEquals('contents', $contents);*/
+    expect(contents).to.be.eq('contents');
   });
 
   it('setting_visibility', async function () {
-    /*await filesystem.write('path.txt', 'contents');
+    await filesystem.write('path.txt', 'contents');
 
-    await filesystem.setVisibility('path.txt', Visibility::PUBLIC);
-    $publicVisibility = await filesystem.visibility('path.txt');
+    await filesystem.setVisibility('path.txt', Visibility.PUBLIC);
+    const publicVisibility = await filesystem.visibility('path.txt');
 
-    await filesystem.setVisibility('path.txt', Visibility::PRIVATE);
-    $privateVisibility = await filesystem.visibility('path.txt');
+    await filesystem.setVisibility('path.txt', Visibility.PRIVATE);
+    const privateVisibility = await filesystem.visibility('path.txt');
 
-    $this->assertEquals(Visibility::PUBLIC, $publicVisibility);
-    $this->assertEquals(Visibility::PRIVATE, $privateVisibility);*/
+    expect(publicVisibility).to.be.eq(Visibility.PUBLIC);
+    expect(privateVisibility).to.be.eq(Visibility.PRIVATE);
   });
 
   it('protecting_against_path_traversals', async function () {
-    /*const fns = [
-      function (FilesystemOperator $filesystem) {
-        $filesystem->delete('../path.txt');
+    const fns = [
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.delete('../path.txt');
       },
-    function (FilesystemOperator $filesystem) {
-      $filesystem->deleteDirectory('../path');
-    },
-    function (FilesystemOperator $filesystem) {
-      $filesystem->createDirectory('../path');
-    },
-    function (FilesystemOperator $filesystem) {
-      $filesystem->read('../path.txt');
-    },
-    function (FilesystemOperator $filesystem) {
-      $filesystem->readStream('../path.txt');
-    },
-    function (FilesystemOperator $filesystem) {
-      $filesystem->write('../path.txt', 'contents');
-    },
-    function (FilesystemOperator $filesystem) {
-      $stream = stream_with_contents('contents');
-      try {
-        $filesystem->writeStream('../path.txt', $stream);
-      } finally {
-        fclose($stream);
-      }
-    },
-    function (FilesystemOperator $filesystem) {
-      $filesystem->listContents('../path');
-    },
-    function (FilesystemOperator $filesystem) {
-      $filesystem->fileExists('../path.txt');
-    },
-    function (FilesystemOperator $filesystem) {
-      $filesystem->mimeType('../path.txt');
-    },
-    function (FilesystemOperator $filesystem) {
-      $filesystem->fileSize('../path.txt');
-    },
-    function (FilesystemOperator $filesystem) {
-      $filesystem->lastModified('../path.txt');
-    },
-    function (FilesystemOperator $filesystem) {
-      $filesystem->visibility('../path.txt');
-    },
-    function (FilesystemOperator $filesystem) {
-      $filesystem->setVisibility('../path.txt', Visibility::PUBLIC);
-    },
-    function (FilesystemOperator $filesystem) {
-      $filesystem->copy('../path.txt', 'path.txt');
-    },
-    function (FilesystemOperator $filesystem) {
-      $filesystem->copy('path.txt', '../path.txt');
-    },
-    function (FilesystemOperator $filesystem) {
-      $filesystem->move('../path.txt', 'path.txt');
-    },
-    function (FilesystemOperator $filesystem) {
-      $filesystem->move('path.txt', '../path.txt');
-    }
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.deleteDirectory('../path');
+      },
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.createDirectory('../path');
+      },
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.read('../path.txt');
+      },
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.readStream('../path.txt');
+      },
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.write('../path.txt', 'contents');
+      },
+      async function (filesystem: IFilesystemOperator) {
+        const stream = stream_with_contents('contents');
+        await filesystem.writeStream('../path.txt', stream);
+      },
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.listContents('../path');
+      },
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.fileExists('../path.txt');
+      },
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.mimeType('../path.txt');
+      },
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.fileSize('../path.txt');
+      },
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.lastModified('../path.txt');
+      },
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.visibility('../path.txt');
+      },
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.setVisibility('../path.txt', Visibility.PUBLIC);
+      },
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.copy('../path.txt', 'path.txt');
+      },
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.copy('path.txt', '../path.txt');
+      },
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.move('../path.txt', 'path.txt');
+      },
+      async function (filesystem: IFilesystemOperator) {
+        await filesystem.move('path.txt', '../path.txt');
+      },
     ];
-    
-    
-    $this->expectException(PathTraversalDetected::class);
-    $scenario($this->filesystem);*/
+
+    for (const fn of fns) {
+      await expect(fn(filesystem)).to.be.rejectedWith(PathTraversalDetectedException);
+    }
   });
 });

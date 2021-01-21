@@ -17,3 +17,4 @@ export * from './unable-to-copy-file.exception';
 export * from './unable-to-create-directory.exception';
 export * from './unable-to-delete-file.exception';
 export * from './unable-to-write-file.exception';
+export * from './path-traversal-detected.exception';

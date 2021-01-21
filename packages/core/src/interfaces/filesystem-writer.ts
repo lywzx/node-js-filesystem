@@ -1,5 +1,5 @@
+import { Readable } from 'stream';
 import { Visibility } from '../enum';
-import { ReadStream } from 'fs';
 
 export interface IFilesystemWriter {
   /**
@@ -14,7 +14,7 @@ export interface IFilesystemWriter {
    * @throws UnableToWriteFile
    * @throws FilesystemException
    */
-  writeStream(path: string, contents: ReadStream, config?: Record<string, any>): Promise<void>;
+  writeStream(path: string, contents: Readable, config?: Record<string, any>): Promise<void>;
 
   /**
    * @throws UnableToSetVisibility
