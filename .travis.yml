@@ -13,16 +13,6 @@ cache:
     - node_modules/ # npm packages
     - .nyc_output/
 
-node_js:
-  - 'node'
-  - '14'
-  - '13'
-  - '12'
-  - '11'
-  - '10'
-  - '9'
-  - '8'
-
 before_install:
   - npm install yarn -g
   - npm install codecov -g
@@ -30,10 +20,30 @@ before_install:
 install:
   - yarn --ignore-engines
 
-script:
-  - npm run build
-  - npm run coverage
 
-after_script:
-  - codecov -f .nyc_output/*.json
-  - travis_terminate 0 # try to make Windows quit
+jobs:
+  include:
+    - stage: test
+      node_js:
+        - 'node'
+        - '14'
+        - '13'
+        - '12'
+        - '11'
+        - '10'
+      script: yarn coverage
+      after_success:
+        - codecov -f .nyc_output/*.json
+    - stage: compile
+      script: yarn build
+      node_js: '12'
+    - stage: deploy
+      if: tag IS present
+      node_js: '12'
+      provider: npm
+      email: "$NPM_EMAIL",
+      api_key："$NPM_TOKEN"
+      skip_cleanup: true
+      on:
+        tags: true
+
