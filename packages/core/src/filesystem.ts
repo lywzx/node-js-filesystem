@@ -66,15 +66,15 @@ export class Filesystem implements IFilesystemOperator {
   /**
    * @inheritdoc
    */
-  public read(path: string) {
-    return this.adapter.read(this.pathNormalizer.normalizePath(path));
+  public read(path: string, config?: any) {
+    return this.adapter.read(this.pathNormalizer.normalizePath(path), config);
   }
 
   /**
    * @inheritdoc
    */
-  public readStream(path: string) {
-    return this.adapter.readStream(this.pathNormalizer.normalizePath(path));
+  public readStream(path: string, config?: any) {
+    return this.adapter.readStream(this.pathNormalizer.normalizePath(path), config);
   }
 
   /**

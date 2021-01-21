@@ -37,7 +37,7 @@ export interface IFilesystemAdapter {
    * @throws UnableToReadFile
    * @throws FilesystemException
    */
-  readStream(path: string): Promise<ReadStream>;
+  readStream(path: string, config?: Record<string, any>): Promise<ReadStream>;
 
   /**
    * @throws UnableToDeleteFile

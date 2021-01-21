@@ -163,7 +163,7 @@ describe('filesystem test', function () {
     // fseek($writeStream, 4);
 
     await filesystem.writeStream('path.txt', writeStream);
-    const contents = await filesystem.read('path.txt');
+    const contents = await filesystem.read('path.txt', { encoding: 'utf8' });
 
     expect(contents).to.be.eq('contents');
   });
