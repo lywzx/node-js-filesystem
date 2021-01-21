@@ -13,6 +13,11 @@ cache:
     - node_modules/ # npm packages
     - .nyc_output/
 
+node_js:
+  - 'node'
+  - lts/*
+  - '10'
+
 before_install:
   - npm install yarn -g --registry https://registry.npmjs.org/
   - npm install codecov -g --registry https://registry.npmjs.org/
