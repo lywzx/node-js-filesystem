@@ -1,4 +1,4 @@
-import { IPortableVisibilityObj } from '@filesystem/core';
+import { IFilesystemAdapter, IPortableVisibilityObj, IPathNormalizer } from '@filesystem/core';
 import { ModuleMetadata, Provider, Type } from '@nestjs/common';
 
 /**
@@ -24,7 +24,12 @@ export interface IFilesystemSingleModuleOptions {
   /**
    * use any adapter
    */
-  adapter: 'local' | 'ali-oss' | 'ftp' | 'memory' | string;
+  adapter?: 'local' | 'ali-oss' | 'ftp' | 'memory' | string;
+
+  /**
+   * create adapter by self
+   */
+  createAdapter?: () => IFilesystemAdapter;
 
   /**
    * direcotry root
@@ -34,7 +39,12 @@ export interface IFilesystemSingleModuleOptions {
   /**
    * visibility config
    */
-  visibility: IPortableVisibilityObj;
+  visibility?: IPortableVisibilityObj;
+
+  /**
+   * path normalizer
+   */
+  pathNormalizer?: IPathNormalizer;
 }
 
 /**

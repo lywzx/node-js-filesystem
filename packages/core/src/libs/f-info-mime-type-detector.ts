@@ -1,4 +1,4 @@
-import { IMimeTypeDetector } from '../interfaces/mime-type-detector';
+import { IMimeTypeDetector } from '../interfaces';
 import { fromBuffer, fromFile, fromStream } from 'file-type';
 import { extname } from 'path';
 import { getType as getMimeType } from 'mime';

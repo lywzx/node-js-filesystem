@@ -1,1 +1,1 @@
-export * from './libs/ali-oss-filesystem.adapter';
+export * from './ali-oss-filesystem.adapter';
