@@ -8,8 +8,8 @@ export interface IPortableVisibilityConfig {
 }
 
 export interface IPortableVisibilityObj {
-  file: IPortableVisibilityConfig;
-  dir: IPortableVisibilityConfig;
+  file?: IPortableVisibilityConfig;
+  dir?: IPortableVisibilityConfig;
 }
 
 export class PortableVisibilityConverter implements IVisibilityConverter {
@@ -61,10 +61,10 @@ export class PortableVisibilityConverter implements IVisibilityConverter {
 
   static fromObject(permission: IPortableVisibilityObj, defaultForDirectories = Visibility.PRIVATE) {
     return new PortableVisibilityConverter(
-      permission['file']['public'] ?? 0o0644,
-      permission['file']['private'] ?? 0o0600,
-      permission['dir']['public'] ?? 0o0755,
-      permission['dir']['private'] ?? 0o0700,
+      permission.file?.public,
+      permission.file?.private,
+      permission.dir?.public,
+      permission.dir?.private,
       defaultForDirectories
     );
   }
