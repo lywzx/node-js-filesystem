@@ -8,7 +8,7 @@ import { Writable } from 'stream';
 import { AbstractFtpAdapter } from './abstract-ftp-adapter';
 import { FtpAdapterConstructorConfigInterface } from '../interfaces';
 import { ConnectionException } from '../exceptions/connection.exception';
-import { DirType, ListContentInfo } from '@filesystem/core';
+import { DirType, IListContentInfo } from '@filesystem/core';
 
 export class Ftp extends AbstractFtpAdapter {
   /**
@@ -497,7 +497,7 @@ return result;*/
    * @param {string} directory
    * @param {boolean} recursive
    */
-  protected async listDirectoryContents(directory = '', recursive = true): Promise<ListContentInfo[]> {
+  protected async listDirectoryContents(directory = '', recursive = true): Promise<IListContentInfo[]> {
     // return this.client.send(`LIST ${directory} -a`);
     /*directory = str_replace('*', '\\*', directory);
 
@@ -523,7 +523,7 @@ return result;*/
    *
    * @param string directory
    */
-  protected async listDirectoryContentsRecursive(directory: string): Promise<ListContentInfo[]> {
+  protected async listDirectoryContentsRecursive(directory: string): Promise<IListContentInfo[]> {
     /*listing = this.normalizeListing(this.ftpRawlist('-aln', directory) ?: [], directory);
   output = [];
 

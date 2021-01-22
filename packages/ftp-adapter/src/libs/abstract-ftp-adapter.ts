@@ -4,7 +4,7 @@ import isFunction from 'lodash/isFunction';
 import sortBy from 'lodash/sortBy';
 import isNumber from 'lodash/isNumber';
 import { isNumeric, stringChunk } from '@filesystem/core/src/util/util';
-import { Visibility, ListContentInfo, NotSupportedException, FileType } from '@filesystem/core';
+import { Visibility, IListContentInfo, NotSupportedException, FileType } from '@filesystem/core';
 import { FtpAdapterConstructorConfigInterface } from '../interfaces';
 
 export abstract class AbstractFtpAdapter {
@@ -276,11 +276,11 @@ export abstract class AbstractFtpAdapter {
   /**
    * @inheritdoc
    */
-  public listContents(directory = '', recursive = false): Promise<ListContentInfo[]> {
+  public listContents(directory = '', recursive = false): Promise<IListContentInfo[]> {
     return this.listDirectoryContents(directory, recursive);
   }
 
-  protected abstract listDirectoryContents(directory: string, recursive: boolean): Promise<ListContentInfo[]>;
+  protected abstract listDirectoryContents(directory: string, recursive: boolean): Promise<IListContentInfo[]>;
 
   /**
    * Normalize a directory listing.
@@ -290,8 +290,8 @@ export abstract class AbstractFtpAdapter {
    *
    * @return array directory listing
    */
-  protected async normalizeListing(listing: FileInfo[], prefix = ''): Promise<ListContentInfo[]> {
-    const result: ListContentInfo[] = [];
+  protected async normalizeListing(listing: FileInfo[], prefix = ''): Promise<IListContentInfo[]> {
+    const result: IListContentInfo[] = [];
     for (const item of listing) {
       result.push(await this.normalizeObject(item, prefix));
     }
@@ -302,11 +302,11 @@ export abstract class AbstractFtpAdapter {
   /**
    * Sort a directory listing.
    *
-   * @param {ListContentInfo[]} result
+   * @param {IListContentInfo[]} result
    *
    * @return {object} sorted listing
    */
-  protected sortListing(result: ListContentInfo[]) {
+  protected sortListing(result: IListContentInfo[]) {
     return sortBy(result, 'path');
   }
 
@@ -320,7 +320,7 @@ export abstract class AbstractFtpAdapter {
    *
    * @throws NotSupportedException
    */
-  protected async normalizeObject(item: FileInfo, base: string): Promise<ListContentInfo> {
+  protected async normalizeObject(item: FileInfo, base: string): Promise<IListContentInfo> {
     const systemType = this.systemType ? this.systemType : await this.detectSystemType(item);
 
     if (systemType === 'unix') {
@@ -352,7 +352,7 @@ export abstract class AbstractFtpAdapter {
    *
    * @return array normalized file array
    */
-  protected normalizeUnixObject(item: FileInfo, base: string): ListContentInfo & { visibility: Visibility } {
+  protected normalizeUnixObject(item: FileInfo, base: string): IListContentInfo & { visibility: Visibility } {
     const type = item.isFile ? FileType.file : item.isDirectory ? FileType.dir : FileType.link;
     // todo 待完善
     return {
@@ -435,7 +435,7 @@ export abstract class AbstractFtpAdapter {
    *
    * @return array normalized file array
    */
-  protected normalizeWindowsObject(item: FileInfo, base: string): ListContentInfo & { visibility: Visibility } {
+  protected normalizeWindowsObject(item: FileInfo, base: string): IListContentInfo & { visibility: Visibility } {
     const type = item.isFile ? FileType.file : item.isSymbolicLink ? FileType.link : FileType.dir;
 
     return {

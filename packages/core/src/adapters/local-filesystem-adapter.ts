@@ -1,18 +1,8 @@
 import { createReadStream, createWriteStream, ReadStream, Stats } from 'fs';
-import isBuffer from 'lodash/isBuffer';
 import padStart from 'lodash/padStart';
 import { dirname, sep } from 'path';
 import { Visibility } from '../enum';
-import { NotSupportedException, UnReadableFileException } from '../exceptions';
-import { IPathStats } from '../interfaces';
-import {
-  IVisibilityConfig,
-  IWriteConfig,
-  IWriteStreamConfig,
-  ListContentInfo,
-  UpdateConfig,
-  UpdateFileResult,
-} from '../types/local-adpater.types';
+import { IVisibilityConfig, IWriteConfig, IWriteStreamConfig } from '../types/local-adpater.types';
 import {
   getDirectoryIterator,
   getRecursiveDirectoryIterator,
@@ -25,7 +15,6 @@ import {
   rmDir,
 } from '../util';
 import { defer } from '../util/promise-defer.util';
-import { guessMimeType } from '../util/util';
 import { chmod, copyFile, lstat, pathExists, readFile, rename, stat, unlink, writeFile } from '../util/fs-extra.util';
 import {
   IFilesystemAdapter,
@@ -33,6 +22,7 @@ import {
   IMimeTypeDetector,
   IVisibilityConverter,
   IStorageAttributes,
+  IPathStats,
 } from '../interfaces';
 import {
   PathPrefixer,
@@ -51,6 +41,8 @@ import {
   UnableToCopyFileException,
   UnableToMoveFileException,
   UnableToRetrieveMetadataException,
+  NotSupportedException,
+  UnReadableFileException,
 } from '../exceptions';
 import { OPTION_DIRECTORY_VISIBILITY, OPTION_VISIBILITY } from '../constant';
 import { RequireOne } from '../interfaces/types';
@@ -278,56 +270,6 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
   /**
    * @inheritdoc
    */
-  public updateStream(
-    path: string,
-    resource: ReadStream,
-    config: IWriteStreamConfig = { visibility: Visibility.PUBLIC }
-  ) {
-    return this.writeStream(path, resource, config);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public async update(
-    path: string,
-    contents: string | Buffer,
-    config: UpdateConfig | null = { visibility: Visibility.PUBLIC }
-  ): Promise<UpdateFileResult | false> {
-    const location = this.prefixer.prefixPath(path);
-    const visibility = config?.visibility || Visibility.PUBLIC;
-
-    const options: any = {
-      flag: config?.flag || this.writeFlags,
-      mode: this._visibility.forFile(visibility as Visibility),
-    };
-
-    if (config?.encoding) {
-      options.encoding = config.encoding;
-    }
-    try {
-      await writeFile(location, contents, options);
-    } catch (e) {
-      return false;
-    }
-
-    const result: UpdateFileResult = {
-      type: 'file',
-      path,
-      contents,
-      size: Buffer.byteLength(contents),
-    };
-
-    if (config?.mimetype) {
-      result.mimetype = await guessMimeType(path, isBuffer(contents) ? (contents as Buffer) : undefined);
-    }
-
-    return result;
-  }
-
-  /**
-   * @inheritdoc
-   */
   public async read(path: string, config?: IReadFileOptions): Promise<Buffer | string> {
     const location = this.prefixer.prefixPath(path);
 
@@ -423,19 +365,6 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
     }
 
     return result;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public async getMetadata(path: string): Promise<ListContentInfo | undefined> {
-    const location = this.prefixer.prefixPath(path);
-    const stats = await stat(location);
-
-    return this.normalizeFileInfo({
-      path: location,
-      stats,
-    });
   }
 
   /**

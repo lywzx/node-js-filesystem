@@ -67,14 +67,14 @@ export class Filesystem implements IFilesystemOperator {
    * @inheritdoc
    */
   public read(path: string, config?: any) {
-    return this.adapter.read(this.pathNormalizer.normalizePath(path), config);
+    return this.getAdapter().read(this.pathNormalizer.normalizePath(path), config);
   }
 
   /**
    * @inheritdoc
    */
   public readStream(path: string, config?: any) {
-    return this.adapter.readStream(this.pathNormalizer.normalizePath(path), config);
+    return this.getAdapter().readStream(this.pathNormalizer.normalizePath(path), config);
   }
 
   /**
@@ -122,35 +122,35 @@ export class Filesystem implements IFilesystemOperator {
    * @inheritdoc
    */
   public async mimeType(path: string) {
-    return (await this.adapter.mimeType(this.pathNormalizer.normalizePath(path))).mimeType;
+    return (await this.getAdapter().mimeType(this.pathNormalizer.normalizePath(path))).mimeType;
   }
 
   /**
    * @inheritdoc
    */
   public async lastModified(path: string) {
-    return (await this.adapter.lastModified(this.pathNormalizer.normalizePath(path))).lastModified;
+    return (await this.getAdapter().lastModified(this.pathNormalizer.normalizePath(path))).lastModified;
   }
 
   /**
    * @inheritdoc
    */
   public async visibility(path: string) {
-    return (await this.adapter.visibility(this.pathNormalizer.normalizePath(path))).visibility;
+    return (await this.getAdapter().visibility(this.pathNormalizer.normalizePath(path))).visibility;
   }
 
   /**
    * @inheritdoc
    */
   public async fileSize(path: string) {
-    return (await this.adapter.fileSize(this.pathNormalizer.normalizePath(path))).fileSize;
+    return (await this.getAdapter().fileSize(this.pathNormalizer.normalizePath(path))).fileSize;
   }
 
   /**
    * @inheritdoc
    */
   public setVisibility(path: string, visibility: Visibility | string) {
-    return this.adapter.setVisibility(this.pathNormalizer.normalizePath(path), visibility as Visibility);
+    return this.getAdapter().setVisibility(this.pathNormalizer.normalizePath(path), visibility as Visibility);
   }
 
   /**
@@ -173,7 +173,7 @@ export class Filesystem implements IFilesystemOperator {
   }*/
 
   public move(source: string, destination: string, config?: Record<string, any>): Promise<void> {
-    return this.adapter.move(
+    return this.getAdapter().move(
       this.pathNormalizer.normalizePath(source),
       this.pathNormalizer.normalizePath(destination),
       this.prepareConfig(config)

@@ -8,8 +8,17 @@ export type ReadStreamResult = {
   stream: ReadStream;
 };
 
+/**
+ * directory or file visibility
+ */
 export type IVisibilityConfig = {
+  /**
+   * file or directory default visibility
+   */
   [OPTION_VISIBILITY]?: Visibility | string;
+  /**
+   * directory default visibility
+   */
   [OPTION_DIRECTORY_VISIBILITY]?: Visibility | string;
 };
 export type IWriteStreamConfig = {
@@ -17,39 +26,17 @@ export type IWriteStreamConfig = {
   flags?: string;
 } & IVisibilityConfig;
 
-export type UpdateConfig = {
-  mimetype?: boolean;
-} & IWriteConfig;
-
 export type IWriteConfig = {
   encoding?: BufferEncoding;
   flag?: string;
 } & IVisibilityConfig;
 
-export type UpdateFileResult = {
-  type: string;
-  path: string;
-  size: number;
-  contents: string | Buffer;
-  mimetype?: string;
-};
-export type ReadFileResult = {
-  type: string;
-  path: string;
-  contents: string | Buffer;
-};
-export type ListContentInfo = {
+export type IListContentInfo = {
   basename?: string;
   path: string;
   type: FileType;
   timestamp?: number;
   size?: number;
-};
-export type FileInfo = {
-  type: FileType;
-  path: string;
-  timestamp: number;
-  size: number;
 };
 
 /**
