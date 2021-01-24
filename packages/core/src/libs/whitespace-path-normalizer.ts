@@ -1,6 +1,6 @@
 import { PathTraversalDetectedException } from '../exceptions';
-import { IPathNormalizer } from '../interfaces/path/path-normalizer';
-import { isEmpty } from 'lodash';
+import { IPathNormalizer } from '../interfaces';
+import isEmpty from 'lodash/isEmpty';
 
 /**
  * path white space remove

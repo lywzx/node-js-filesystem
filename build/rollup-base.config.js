@@ -34,6 +34,13 @@ function makeExternal(pkg, format, borwser) {
 function createEntry(config, pakg) {
   const pkgDir = pakg.dir;
   const pkg = JSON.parse(readFileSync(join(__dirname, '../packages', pkgDir, 'package.json')).toString());
+  let base = {
+    "unpkg": "index.js",
+    "jsdelivr": "index.js",
+  };
+  if (get(pakg, 'onlyModule.browser') === false) {
+    base = {};
+  }
   const c = {
     input: join(__dirname, '../packages', pkgDir, config.input),
     plugins: [
@@ -56,10 +63,9 @@ function createEntry(config, pakg) {
             transform(contents) {
               return JSON.stringify({
                 ...JSON.parse(contents),
+                ...base,
                 "main": "index.common.js",
                 "module": "index.esm.js",
-                "unpkg": "index.js",
-                "jsdelivr": "index.js",
                 "types": "index.d.ts",
               }, null, 2)
             }

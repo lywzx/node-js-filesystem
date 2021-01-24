@@ -7,3 +7,4 @@ export * from './storage-attributes.interface';
 export * from './mime-type-detector';
 export * from './visibility-converter';
 export * from './path/path-normalizer';
+export * from './types';

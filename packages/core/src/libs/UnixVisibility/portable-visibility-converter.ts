@@ -1,31 +1,31 @@
-import { IVisibilityConverter } from '../../interfaces/visibility-converter';
+import { IVisibilityConverter } from '../../interfaces';
 import { Visibility } from '../../enum';
 import { PortableVisibilityGuard } from '../portable-visibility-guard';
 
-export interface IPortableVisibilityConfig {
-  [Visibility.PUBLIC]?: number;
-  [Visibility.PRIVATE]?: number;
+export interface IPortableVisibilityConfig<T = number> {
+  [Visibility.PUBLIC]?: T;
+  [Visibility.PRIVATE]?: T;
 }
 
-export interface IPortableVisibilityObj {
-  file?: IPortableVisibilityConfig;
-  dir?: IPortableVisibilityConfig;
+export interface IPortableVisibilityObj<T = number> {
+  file?: IPortableVisibilityConfig<T>;
+  dir?: IPortableVisibilityConfig<T>;
 }
 
-export class PortableVisibilityConverter implements IVisibilityConverter {
+export class PortableVisibilityConverter<T = number> implements IVisibilityConverter<T> {
   constructor(
-    private readonly filePublic = 0o0644,
-    private readonly filePrivate = 0o0600,
-    private readonly directoryPublic = 0o0755,
-    private readonly directoryPrivate = 0o0700,
-    private readonly _defaultForDirectories = Visibility.PRIVATE
+    protected readonly filePublic: T = 0o0644 as any,
+    protected readonly filePrivate: T = 0o0600 as any,
+    protected readonly directoryPublic: T = 0o0755 as any,
+    protected readonly directoryPrivate: T = 0o0700 as any,
+    protected readonly _defaultForDirectories = Visibility.PRIVATE
   ) {}
 
-  defaultForDirectories(): number {
+  defaultForDirectories(): T {
     return this._defaultForDirectories === Visibility.PUBLIC ? this.directoryPublic : this.directoryPrivate;
   }
 
-  forDirectory(visibility: Visibility): number {
+  forDirectory(visibility: Visibility): T {
     PortableVisibilityGuard.guardAgainstInvalidInput(visibility);
     return visibility === Visibility.PUBLIC ? this.directoryPublic : this.directoryPrivate;
   }
@@ -34,12 +34,12 @@ export class PortableVisibilityConverter implements IVisibilityConverter {
    * def
    * @param visibility
    */
-  forFile(visibility: Visibility): number {
+  forFile(visibility: Visibility): T {
     PortableVisibilityGuard.guardAgainstInvalidInput(visibility);
     return visibility === Visibility.PUBLIC ? this.filePublic : this.filePrivate;
   }
 
-  inverseForDirectory(visibility: number): Visibility {
+  inverseForDirectory(visibility: T): Visibility {
     if (visibility === this.directoryPublic) {
       return Visibility.PUBLIC;
     } else if (visibility === this.directoryPrivate) {
@@ -49,7 +49,7 @@ export class PortableVisibilityConverter implements IVisibilityConverter {
     return Visibility.PUBLIC;
   }
 
-  inverseForFile(visibility: number): Visibility {
+  inverseForFile(visibility: T): Visibility {
     if (visibility === this.filePublic) {
       return Visibility.PUBLIC;
     } else if (visibility === this.filePrivate) {

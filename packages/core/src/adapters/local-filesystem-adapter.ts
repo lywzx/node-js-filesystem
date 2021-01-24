@@ -96,6 +96,13 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
     this.ensureDirectorySync(root, this._visibility.defaultForDirectories());
   }
 
+  /**
+   * get path prefix
+   */
+  getPathPrefix(): PathPrefixer {
+    return this.prefixer;
+  }
+
   fileExists(path: string): Promise<boolean> {
     return isFile(this.prefixer.prefixPath(path));
   }

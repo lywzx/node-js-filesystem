@@ -5,11 +5,6 @@
   "author": "lywzx <liuyang@lyblog.net>",
   "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
   "license": "MIT",
-  "main": "lib/index.common.js",
-  "module": "lib/index.esm.js",
-  "unpkg": "lib/index.js",
-  "jsdelivr": "lib/index.js",
-  "types": "lib/index.d.ts",
   "scripts": {
     "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
     "build": "tsc"
@@ -21,7 +16,8 @@
     "@nestjs/core": "^7.4.2",
     "@nestjs/common": "^7.4.2",
     "@nestjs/testing": "^7.4.2",
-    "@filesystem/core": "^0.0.1-alpha.0"
+    "@filesystem/core": "^0.0.1-alpha.0",
+    "reflect-metadata": "^0.1.13"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org",

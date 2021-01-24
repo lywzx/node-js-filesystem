@@ -5,6 +5,7 @@ import get from 'lodash/get';
 import { WhitespacePathNormalizer } from './libs';
 import { InvalidStreamProvidedException } from './exceptions';
 import { Readable } from 'stream';
+import { Type } from '@nestjs/common';
 
 /**
  * filesystem manager
@@ -12,6 +13,14 @@ import { Readable } from 'stream';
 export class Filesystem implements IFilesystemOperator {
   static LIST_SHALLOW = false;
   static LIST_DEEP = true;
+
+  /**
+   * adapter map
+   * @private
+   */
+  private static _adapter: {
+    [s: string]: Type<IFilesystemAdapter>;
+  } = {};
 
   public constructor(
     protected adapter: IFilesystemAdapter,
@@ -182,5 +191,23 @@ export class Filesystem implements IFilesystemOperator {
 
   protected prepareConfig(config?: any) {
     return config;
+  }
+
+  static adapter(): { [s: string]: Type<IFilesystemAdapter> };
+  static adapter(name: string): Type<IFilesystemAdapter> | void;
+  static adapter(name: string, adapter: Type<IFilesystemAdapter>): void;
+  static adapter(
+    name?: string,
+    adapter?: Type<IFilesystemAdapter>
+  ): { [s: string]: Type<IFilesystemAdapter> } | Type<IFilesystemAdapter> | void {
+    if (!name && !adapter) {
+      return this._adapter;
+    }
+    if (name && adapter) {
+      this._adapter[name] = adapter;
+    }
+    if (name && !adapter) {
+      return this._adapter[name];
+    }
   }
 }

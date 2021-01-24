@@ -77,7 +77,12 @@ const packages = [
  * @filesystem/nestjs v${lernaPackage.version}
  * (c) ${new Date().getFullYear()} LiuYang
  * @license MIT
- */`
+ */`,
+    external: ['@nestjs/core', '@nestjs/common', '@filesystem/core', '@filesystem/ali-oss-adapter'],
+    onlyModule: {
+      only: ['cjs', 'es'],
+      browser: false
+    }
   },
   {
     dir: 'sftp-adapter',

@@ -20,14 +20,12 @@
   "bugs": {
     "url": "https://github.com/lywzx/node-js-filesystem/issues"
   },
-  "dependencies": {
-    "@filesystem/core": "^0.0.1-alpha.0"
-  },
   "devDependencies": {
     "@types/ali-oss": "^6.0.5",
     "@types/merge-descriptors": "^1.0.1"
   },
   "peerDependencies": {
+    "@filesystem/core": "^0.0.1-alpha.0",
     "ali-oss": "^6.10.0"
   }
 }

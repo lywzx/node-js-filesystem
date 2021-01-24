@@ -1,11 +1,16 @@
 import { ReadStream } from 'fs';
 import { Visibility } from '../enum';
-import { FileAttributes } from '../libs/file-attributes';
+import { FileAttributes, PathPrefixer } from '../libs';
 import { IStorageAttributes } from './storage-attributes.interface';
 import { RequireOne } from './types';
 import { Readable } from 'stream';
 
 export interface IFilesystemAdapter {
+  /**
+   * get current path prefix
+   */
+  getPathPrefix(): PathPrefixer;
+
   /**
    * @throws FilesystemException
    */
