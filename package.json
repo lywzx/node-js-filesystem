@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "node --max_old_space_size=8192 node_modules/rollup/dist/bin/rollup -w -c build/rollup.config.js",
-    "build": "node --max-old-space-size=8192 build/build-pkg.js",
+    "build": "node --max-old-space-size=8192 build/build-pkg.js --only=core,nestjs,ali-oss-adapter",
     "lint": "eslint packages --ext .ts --fix",
     "format": "prettier --write \"+(packages)/**/*.ts\"",
     "test": "mocha",
