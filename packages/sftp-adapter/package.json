@@ -1,6 +1,6 @@
 {
   "name": "@filesystem/sftp-adapter",
-  "version": "0.0.2-alpha.0",
+  "version": "0.0.3-alpha.0",
   "description": "> TODO: description",
   "author": "lywzx <liuyang@lyblog.net>",
   "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
@@ -21,7 +21,7 @@
     "url": "https://github.com/lywzx/node-js-filesystem/issues"
   },
   "dependencies": {
-    "@filesystem/core": "^0.0.2-alpha.0"
+    "@filesystem/core": "^0.0.3-alpha.0"
   },
   "devDependencies": {
     "basic-ftp": "^4.5.4"
