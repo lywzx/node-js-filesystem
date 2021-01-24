@@ -7,12 +7,14 @@
   "version": "0.0.1-alpha.0",
   "command": {
     "publish": {
+      "contents": "dist",
       "ignoreChanges": [
         "**/test/**",
         "**/tsconfig.json"
       ],
       "allowBranch": [
-        "master"
+        "master",
+        "liuyang/upgrade/v2"
       ],
       "registry": "http://registry.npmjs.org"
     }
