@@ -1,12 +1,3 @@
-import OSS, {
-  ACLType,
-  CopyObjectOptions,
-  GetStreamOptions,
-  Options,
-  PutObjectOptions,
-  PutStreamOptions,
-  RequestOptions,
-} from 'ali-oss';
 import {
   DirectoryAttributes,
   FileAttributes,
@@ -25,6 +16,7 @@ import map from 'lodash/map';
 import { promiseToBoolean } from './util';
 import { AliOssVisibilityConverter } from './ali-oss-visibility-converter';
 import { AliOssMimeTypeDetector } from './ali-oss-mime-type-detector';
+import OSS from 'ali-oss';
 
 export class AliOssFilesystemAdapter implements IFilesystemAdapter {
   public client: OSS;
@@ -32,7 +24,7 @@ export class AliOssFilesystemAdapter implements IFilesystemAdapter {
   public prefixer: PathPrefixer;
 
   constructor(
-    protected options: Options,
+    protected options: OSS.Options,
     protected root: string,
     protected readonly _visibility: IVisibilityConverter = new AliOssVisibilityConverter(),
     protected mimeTypeDetector: IMimeTypeDetector = new AliOssMimeTypeDetector()
@@ -41,11 +33,11 @@ export class AliOssFilesystemAdapter implements IFilesystemAdapter {
     this.client = new OSS(options);
   }
 
-  public async copy(source: string, destination: string, config?: CopyObjectOptions): Promise<void> {
+  public async copy(source: string, destination: string, config?: OSS.CopyObjectOptions): Promise<void> {
     await this.client.copy(destination, source, config);
   }
 
-  public async createDirectory(path: string, config?: PutObjectOptions): Promise<void> {
+  public async createDirectory(path: string, config?: OSS.PutObjectOptions): Promise<void> {
     await this.client.put(this.prefixer.prefixPath(path), new Buffer(''), config).then(
       (response) => {
         return get(response, 'res.statusCode') === 200;
@@ -54,7 +46,7 @@ export class AliOssFilesystemAdapter implements IFilesystemAdapter {
     );
   }
 
-  public async delete(path: string, options?: RequestOptions): Promise<void> {
+  public async delete(path: string, options?: OSS.RequestOptions): Promise<void> {
     await this.client.delete(this.prefixer.prefixPath(path), options);
   }
 
@@ -132,7 +124,7 @@ export class AliOssFilesystemAdapter implements IFilesystemAdapter {
     >;
   }
 
-  public async move(source: string, destination: string, config?: CopyObjectOptions): Promise<void> {
+  public async move(source: string, destination: string, config?: OSS.CopyObjectOptions): Promise<void> {
     let needClean = false;
     try {
       await this.client.copy(destination, source, config);
@@ -152,7 +144,7 @@ export class AliOssFilesystemAdapter implements IFilesystemAdapter {
     });
   }
 
-  public async readStream(path: string, config?: GetStreamOptions): Promise<ReadStream> {
+  public async readStream(path: string, config?: OSS.GetStreamOptions): Promise<ReadStream> {
     return this.client.getStream(this.prefixer.prefixPath(path), config).then((result) => result.stream);
   }
 
@@ -162,20 +154,20 @@ export class AliOssFilesystemAdapter implements IFilesystemAdapter {
       public: 'public-read-write',
       private: 'private',
     }[visibility];
-    await this.client.putACL(this.prefixer.prefixPath(path), realVisibility as ACLType);
+    await this.client.putACL(this.prefixer.prefixPath(path), realVisibility as OSS.ACLType);
   }
 
   public async visibility(path: string): Promise<RequireOne<FileAttributes, 'visibility'>> {
-    const result = await this.client.getACL(this.prefixer.prefixPath(path));
+    // const result = await this.client.getACL(this.prefixer.prefixPath(path));
     return new FileAttributes(path, undefined, Visibility.PUBLIC) as RequireOne<FileAttributes, 'visibility'>;
   }
 
-  public async write(path: string, contents: string | Buffer, config?: PutObjectOptions): Promise<void> {
+  public async write(path: string, contents: string | Buffer, config?: OSS.PutObjectOptions): Promise<void> {
     await this.client.put(this.prefixer.prefixPath(path), contents, config);
     return Promise.resolve(undefined);
   }
 
-  public async writeStream(path: string, resource: Readable, config?: PutStreamOptions): Promise<void> {
+  public async writeStream(path: string, resource: Readable, config?: OSS.PutStreamOptions): Promise<void> {
     await this.client.putStream(this.prefixer.prefixPath(path), resource, config);
   }
 

@@ -42,7 +42,7 @@ export function buildFileSystem(option: IFilesystemSingleModuleOptions<any>): Fi
     if (typeof option.createAdapterArgs === 'function') {
       adapterArgs = option.createAdapterArgs();
     }
-    if (option.root) {
+    if (typeof option.root !== 'undefined') {
       adapterArgs.unshift(option.root);
     }
     adapter = new typeAdapter(...adapterArgs);
