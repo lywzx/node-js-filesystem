@@ -47,7 +47,7 @@ const packages = [
  * (c) ${new Date().getFullYear()} LiuYang
  * @license MIT
  */`,
-    external: ['ali-oss'],
+    external: ['ali-oss', '@filesystem/core'],
     globals: {
       'ali-oss': 'OSS',
     }
