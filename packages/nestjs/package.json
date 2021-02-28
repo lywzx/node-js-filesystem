@@ -1,6 +1,6 @@
 {
   "name": "@filesystem/nestjs",
-  "version": "0.0.3-alpha.0",
+  "version": "0.0.3-alpha.2",
   "description": "filesystem for nestjs framework",
   "author": "lywzx <liuyang@lyblog.net>",
   "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
@@ -10,7 +10,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@filesystem/core": "^0.0.3-alpha.0"
+    "@filesystem/core": "0.0.3-alpha.2"
   },
   "peerDependencies": {
     "@filesystem/core": "^0.0.1-alpha.0",

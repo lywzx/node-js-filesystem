@@ -1,6 +1,6 @@
 {
   "name": "@filesystem/core",
-  "version": "0.0.3-alpha.0",
+  "version": "0.0.3-alpha.2",
   "description": "Filesystem abstraction: Many filesystems, one API.",
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
