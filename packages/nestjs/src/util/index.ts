@@ -31,7 +31,7 @@ export function generateInjectToken(diskName?: string): string | Type<any> {
  *
  * @param option
  */
-export function buildFileSystem(option: IFilesystemSingleModuleOptions<any>): Filesystem {
+export function buildFileSystem(option: IFilesystemSingleModuleOptions<any>): Filesystem<IFilesystemAdapter> {
   let adapter: IFilesystemAdapter | undefined;
   if ('adapter' in option && option.adapter) {
     const typeAdapter = Filesystem.adapter(option.adapter);
