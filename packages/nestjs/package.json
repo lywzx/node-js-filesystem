@@ -1,6 +1,6 @@
 {
   "name": "@filesystem/nestjs",
-  "version": "0.0.3-alpha.2",
+  "version": "0.0.3-alpha.3",
   "description": "filesystem for nestjs framework",
   "author": "lywzx <liuyang@lyblog.net>",
   "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
