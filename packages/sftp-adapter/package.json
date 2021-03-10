@@ -27,6 +27,6 @@
     "basic-ftp": "^4.5.4"
   },
   "peerDependencies": {
-    "@filesystem/core": "^0.0.1-alpha.0"
+    "@filesystem/core": "0.0.3-alpha.2"
   }
 }

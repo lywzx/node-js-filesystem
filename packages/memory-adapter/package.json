@@ -29,6 +29,6 @@
     "@filesystem/core": "0.0.3-alpha.2"
   },
   "peerDependencies": {
-    "@filesystem/core": "^0.0.1-alpha.0"
+    "@filesystem/core": "0.0.3-alpha.2"
   }
 }
