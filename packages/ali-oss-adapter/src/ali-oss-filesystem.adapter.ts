@@ -118,10 +118,13 @@ export class AliOssFilesystemAdapter implements IFilesystemAdapter {
   public async mimeType(path: string): Promise<RequireOne<FileAttributes, 'mimeType'>> {
     const result = await this.client.head(this.prefixer.prefixPath(path));
 
-    return new FileAttributes(path, result.res.size, undefined, get(result, 'res.headers.last-modified')) as RequireOne<
-      FileAttributes,
-      'mimeType'
-    >;
+    return new FileAttributes(
+      path,
+      result.res.size,
+      undefined,
+      Date.parse(get(result, 'res.headers.last-modified')),
+      get(result, 'res.headers.content-type')
+    ) as RequireOne<FileAttributes, 'mimeType'>;
   }
 
   public async move(source: string, destination: string, config?: OSS.CopyObjectOptions): Promise<void> {

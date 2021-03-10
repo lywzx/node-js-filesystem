@@ -1,14 +1,13 @@
 import { DynamicModule, Module, Provider } from '@nestjs/common';
 import { FilesystemService } from '../services';
-import { defaultModuleOptions, NEST_FILESYSTEM_MODULE_OPTIONS } from '../constant';
 import {
-  IFilesystemModuleOptions,
   IFilesystemModuleOptionsFactory,
   INestFilesystemModuleAsyncOptions,
   NestFilesystemOptions,
 } from '../interfaces';
-import { buildFileSystem, generateInjectToken, transformOptionsToMultiple } from '../util';
-import { Filesystem } from '@filesystem/core';
+import { generateAllDiskProviders, transformOptionsToMultiple } from '../util';
+import keys from 'lodash/keys';
+import { defaultModuleOptions, NEST_FILESYSTEM_MODULE_OPTIONS } from '../constant';
 
 @Module({
   providers: [FilesystemService],
@@ -17,27 +16,15 @@ import { Filesystem } from '@filesystem/core';
 export class NestFilesystemModule {
   static register(options: NestFilesystemOptions = defaultModuleOptions): DynamicModule {
     const newOptions = transformOptionsToMultiple(options);
-    const providers = [
-      {
-        provide: Filesystem,
-        useFactory(options: IFilesystemModuleOptions) {
-          return buildFileSystem(options.disks[options.default]);
-        },
-        inject: [NEST_FILESYSTEM_MODULE_OPTIONS],
-      },
-      {
-        provide: generateInjectToken(newOptions.default),
-        useExisting: Filesystem,
-      },
-      {
-        provide: NEST_FILESYSTEM_MODULE_OPTIONS,
-        useValue: newOptions,
-      },
-    ];
+    const configProviders = {
+      provide: NEST_FILESYSTEM_MODULE_OPTIONS,
+      useValue: newOptions,
+    };
+    const allDiskProviders = generateAllDiskProviders(keys(newOptions.disks));
     return {
       module: this,
-      providers: providers,
-      exports: providers,
+      providers: [configProviders, ...allDiskProviders],
+      exports: [...allDiskProviders],
     };
   }
 
@@ -50,26 +37,23 @@ export class NestFilesystemModule {
    * @see [Async configuration](https://docs.nestjs.com/techniques/caching#async-configuration)
    */
   static registerAsync(options: INestFilesystemModuleAsyncOptions): DynamicModule {
-    const diskOptions = this.createAsyncOptionsProvider(options);
-    if (!diskOptions) {
-      throw new Error('filesystem not assign!');
+    const imports = options.imports || [];
+    const extraProviders = options.extraProviders || [];
+
+    const configProvider = this.createAsyncOptionsProvider(options);
+
+    const exportsProviders: Provider[] = generateAllDiskProviders(options.availableDisks);
+    const providers: Provider[] = [];
+
+    if (configProvider) {
+      providers.push(configProvider);
     }
-    const providers = [
-      diskOptions,
-      {
-        provide: Filesystem,
-        useFactory(options: IFilesystemModuleOptions) {
-          return buildFileSystem(options.disks[options.default]);
-        },
-        inject: [NEST_FILESYSTEM_MODULE_OPTIONS],
-      },
-    ];
 
     return {
       module: this,
-      providers: [...providers, ...(options.extraProviders || [])],
-      imports: [...(options.imports || [])],
-      exports: [...providers],
+      providers: [...providers, ...extraProviders, ...exportsProviders],
+      imports: imports,
+      exports: [...exportsProviders],
     };
   }
 
@@ -84,7 +68,7 @@ export class NestFilesystemModule {
         inject: options.inject || [],
       };
     }
-    if (options.useClass || options.useClass) {
+    if (options.useClass) {
       return {
         provide: NEST_FILESYSTEM_MODULE_OPTIONS,
         useFactory: async (optionsFactory: IFilesystemModuleOptionsFactory) => {

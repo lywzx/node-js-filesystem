@@ -1,6 +1,9 @@
 import { IFilesystemModuleOptions, IFilesystemSingleModuleOptions, NestFilesystemOptions } from '../interfaces';
 import { Filesystem, IFilesystemAdapter } from '@filesystem/core';
-import { Type } from '@nestjs/common';
+import { Type, Provider } from '@nestjs/common';
+import map from 'lodash/map';
+import { NEST_FILESYSTEM_MODULE_OPTIONS } from '../constant';
+import { ModuleRef } from '@nestjs/core';
 
 /**
  * build single filesystem to multiple
@@ -10,11 +13,41 @@ export function transformOptionsToMultiple(options: NestFilesystemOptions): IFil
     return options;
   }
   return {
-    default: 'default',
     disks: {
       default: options,
     },
+    default: 'default',
   };
+}
+
+/**
+ * 创建服务提供者
+ * @param allDiskName
+ */
+export function generateAllDiskProviders(allDiskName: string[]): Provider[] {
+  const providers: Provider[] = map(allDiskName, (diskName) => {
+    return {
+      provide: generateInjectToken(diskName),
+      inject: [NEST_FILESYSTEM_MODULE_OPTIONS],
+      useFactory: (option: IFilesystemModuleOptions) => {
+        const currentDiskOptions = option.disks[diskName];
+        return buildFileSystem(currentDiskOptions);
+      },
+    };
+  });
+
+  providers.push({
+    provide: Filesystem,
+    inject: [NEST_FILESYSTEM_MODULE_OPTIONS, ModuleRef, ...map(providers, 'provide')],
+    useFactory: (option: IFilesystemModuleOptions, moduleRef: ModuleRef) => {
+      const defaultDisk = option.default;
+      return moduleRef.get(generateInjectToken(defaultDisk), {
+        strict: true,
+      });
+    },
+  });
+
+  return providers;
 }
 
 /**

@@ -78,7 +78,7 @@ const packages = [
  * (c) ${new Date().getFullYear()} LiuYang
  * @license MIT
  */`,
-    external: ['@nestjs/core', '@nestjs/common', '@filesystem/core', '@filesystem/ali-oss-adapter'],
+    external: ['@nestjs/core', '@nestjs/common', '@filesystem/core', '@filesystem/ali-oss-adapter', 'lodash'],
     onlyModule: {
       only: ['cjs', 'es'],
       browser: false

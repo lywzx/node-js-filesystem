@@ -51,3 +51,18 @@ export interface IFilesystemSingleModuleOptions<T extends IFilesystemAdapter> {
    */
   pathNormalizer?: IPathNormalizer;
 }
+
+/**
+ * with file store name
+ */
+export interface IFilesystemSingleModuleOptionsWithName extends IFilesystemSingleModuleOptions<any> {
+  /**
+   * is default storage
+   */
+  isDefault?: boolean;
+
+  /**
+   * filesystem inject name
+   */
+  name: string;
+}
