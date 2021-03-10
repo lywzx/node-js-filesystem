@@ -1,6 +1,6 @@
 {
   "name": "@filesystem/ali-oss-adapter",
-  "version": "0.0.3-alpha.3",
+  "version": "0.0.3-alpha.4",
   "description": "aliyun oss filesystem adapter",
   "author": "lywzx <liuyang@lyblog.net>",
   "homepage": "https://github.com/lywzx/node-js-filesystem#readme",

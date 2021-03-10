@@ -1,6 +1,6 @@
 {
   "name": "@filesystem/memory-adapter",
-  "version": "0.0.3-alpha.2",
+  "version": "0.0.3-alpha.4",
   "description": "nodejs memory adapter",
   "keywords": [
     "nodejs",
