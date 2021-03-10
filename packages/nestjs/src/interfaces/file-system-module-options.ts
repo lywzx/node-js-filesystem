@@ -22,6 +22,11 @@ export interface IFilesystemModuleOptions {
  */
 export interface IFilesystemSingleModuleOptions<T extends IFilesystemAdapter> {
   /**
+   * generate visitor url
+   */
+  url?: string;
+
+  /**
    * use any adapter
    */
   adapter?: 'local' | 'ali-oss' | 'ftp' | 'memory' | string;
