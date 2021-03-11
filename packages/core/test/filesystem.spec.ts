@@ -20,7 +20,7 @@ use(chaiAsPromised);
 describe('filesystem test', function () {
   const root = join(__dirname, './files/test-root');
   let adapter: LocalFilesystemAdapter;
-  let filesystem: Filesystem;
+  let filesystem: Filesystem<LocalFilesystemAdapter>;
 
   beforeEach(() => {
     adapter = new LocalFilesystemAdapter(root);
