@@ -1,5 +1,4 @@
 /.idea
-/packages/ftp-adapter/test
 dist/
 apidocs/
 node_modules
