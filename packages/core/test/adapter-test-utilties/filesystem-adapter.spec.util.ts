@@ -20,7 +20,7 @@ use(chaiAsPromised);
 export function filesystemAdapterSpecUtil<T extends IFilesystemAdapter>(
   root: string,
   getAdapter: (root?: string) => T,
-  skip : Array<'mimetype'>= []
+  skip: Array<'mimetype'> = []
 ) {
   // const runScenario = () => {};
 
