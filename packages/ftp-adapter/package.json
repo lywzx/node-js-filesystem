@@ -1,6 +1,6 @@
 {
   "name": "@filesystem/ftp-adapter",
-  "version": "0.0.3-alpha.4",
+  "version": "0.0.3-alpha.5",
   "description": "nodejs filesystem ftp adapter",
   "author": "lywzx <liuyang@lyblog.net>",
   "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
@@ -21,7 +21,7 @@
     "url": "https://github.com/lywzx/node-js-filesystem/issues"
   },
   "dependencies": {
-    "@filesystem/core": "0.0.3-alpha.2",
+    "@filesystem/core": "^0.0.3-alpha.5",
     "basic-ftp": "^4.6.3",
     "lodash": "^4.17.20"
   },
