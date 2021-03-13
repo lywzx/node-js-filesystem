@@ -4,6 +4,7 @@
   "description": "filesystem for nestjs framework",
   "author": "lywzx <liuyang@lyblog.net>",
   "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
+  "keywords": ["nestjs", "nestjs filesystem module", "nestjs storage"],
   "license": "MIT",
   "scripts": {
     "start": "ts-node -r tsconfig-paths/register ./src/index.ts",

@@ -11,3 +11,5 @@ export function promiseToBoolean(pro: Promise<any>): Promise<boolean> {
     })
     .catch(() => false);
 }
+
+export * from './ali-oss';

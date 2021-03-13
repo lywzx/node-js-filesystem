@@ -4,6 +4,7 @@
   "description": "aliyun oss filesystem adapter",
   "author": "lywzx <liuyang@lyblog.net>",
   "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
+  "keywords": ["ali-oss", "aliyun", "oss", "filesystem"],
   "license": "MIT",
   "scripts": {
     "start": "ts-node -r tsconfig-paths/register ./src/index.ts",

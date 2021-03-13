@@ -1,15 +1,21 @@
 export class PathPrefixer {
+  /**
+   * ltrim
+   */
   static lTrim = /^[\\/]+/;
 
+  /**
+   * rtrim
+   */
   static rTrim = /[\\/]+$/;
 
   /**
    * prefix
    * @private string
    */
-  private prefix: string;
+  protected readonly prefix: string;
 
-  constructor(prefix: string, private separator: string = '/') {
+  constructor(prefix: string, protected separator: string = '/') {
     this.prefix = prefix.replace(PathPrefixer.rTrim, '');
     if (prefix !== '') {
       this.prefix += separator;

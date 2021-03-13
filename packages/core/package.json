@@ -18,7 +18,7 @@
     "node": ">=10.0.0"
   },
   "keywords": [
-    "filesystem"
+    "filesystem", "fs", "storage"
   ],
   "author": "liuyang",
   "license": "MIT",

@@ -9,3 +9,4 @@ coverage/
 /report.*.json
 /lerna-*.log
 .DS_Store
+/.env

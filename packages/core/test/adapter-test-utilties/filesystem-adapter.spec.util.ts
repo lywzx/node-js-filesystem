@@ -17,7 +17,10 @@ import chaiAsPromised from 'chai-as-promised';
 
 use(chaiAsPromised);
 
-export function filesystemAdapterSpecUtil(root: string, getAdapter: (root?: string) => IFilesystemAdapter) {
+export function filesystemAdapterSpecUtil<T extends IFilesystemAdapter>(
+  root: string,
+  getAdapter: (root?: string) => T
+) {
   // const runScenario = () => {};
 
   const givenWeHaveAnExistingFile = (
@@ -44,14 +47,14 @@ export function filesystemAdapterSpecUtil(root: string, getAdapter: (root?: stri
 
     const writeContent = 'contents';
     const stream = stream_with_contents(writeContent);
-    const file = './file.txt';
+    const file = 'file.txt';
     await adapter.write(file, writeContent);
 
     await adapter.writeStream(file, stream);
     stream.destroy();
 
     expect(await adapter.fileExists(file)).to.be.true;
-    expect(await fsExtra.readFile(join(root, file), { encoding: 'utf8' })).to.be.eq(writeContent);
+    expect(await adapter.read(file, { encoding: 'utf8' })).to.be.eq(writeContent);
   });
 
   it('writing_and_reading_files_with_special_path', async function () {
@@ -138,15 +141,19 @@ export function filesystemAdapterSpecUtil(root: string, getAdapter: (root?: stri
 
     const list = await adapter.listContents('some', false);
     /** @var StorageAttributes[] $items */
-    expect(list).to.be.length(2);
+    expect(list).to.have.length.within(1, 2);
 
     // Order of entries is not guaranteed
     const [fileIndex, directoryIndex] = list[0].isFile ? [0, 1] : [1, 0];
 
     expect('some/0-path.txt').to.be.eq(list[fileIndex].path);
-    expect('some/1-nested').to.be.eq(list[directoryIndex].path);
     expect(list[fileIndex].isFile).to.be.true;
-    expect(list[directoryIndex].isDir).to.be.true;
+
+    // oss may not support directory
+    if (list.length === 2) {
+      expect('some/1-nested').to.be.eq(list[directoryIndex].path);
+      expect(list[directoryIndex].isDir).to.be.true;
+    }
   });
 
   it('listing_contents_recursive', async function () {
@@ -157,7 +164,8 @@ export function filesystemAdapterSpecUtil(root: string, getAdapter: (root?: stri
 
     const listing = await adapter.listContents('', true);
     /** @var StorageAttributes[] $items */
-    expect(listing).to.be.length(2);
+    /** oss may not be show direcotry */
+    expect(listing).to.have.length.within(1, 2);
   });
 
   it('fetching_file_size', async function () {
@@ -239,7 +247,7 @@ export function filesystemAdapterSpecUtil(root: string, getAdapter: (root?: stri
     await givenWeHaveAnExistingFile(adapter, 'path1.txt');
     await givenWeHaveAnExistingFile(adapter, 'path2.txt');
 
-    const list = await adapter.listContents('.', true);
+    const list = await adapter.listContents('', true);
     expect(list).to.be.length(2);
   });
 
@@ -341,8 +349,7 @@ export function filesystemAdapterSpecUtil(root: string, getAdapter: (root?: stri
 
     expect(attributes).to.be.haveOwnProperty('lastModified');
     expect(attributes.lastModified).to.be.an('number');
-    expect(attributes.lastModified > Date.now() - 30).to.be.true;
-    expect(attributes.lastModified < Date.now() + 30).to.be.true;
+    expect(Math.abs(attributes.lastModified - Date.now())).to.be.within(0, 5000);
   });
 
   it('failing_to_read_a_non_existing_file_into_a_stream', async function () {

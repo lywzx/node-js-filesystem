@@ -1,8 +1,7 @@
-import { createReadStream, createWriteStream, ReadStream, Stats } from 'fs';
+import { BaseEncodingOptions, createReadStream, createWriteStream, ReadStream, Stats, WriteFileOptions } from 'fs';
 import padStart from 'lodash/padStart';
 import { dirname, sep } from 'path';
 import { Visibility } from '../enum';
-import { IVisibilityConfig, IWriteConfig, IWriteStreamConfig } from '../types/local-adpater.types';
 import {
   getDirectoryIterator,
   getRecursiveDirectoryIterator,
@@ -23,6 +22,8 @@ import {
   IVisibilityConverter,
   IStorageAttributes,
   IPathStats,
+  IFilesystemVisibility,
+  RequireOne,
 } from '../interfaces';
 import {
   PathPrefixer,
@@ -45,8 +46,12 @@ import {
   UnReadableFileException,
 } from '../exceptions';
 import { OPTION_DIRECTORY_VISIBILITY, OPTION_VISIBILITY } from '../constant';
-import { RequireOne } from '../interfaces/types';
 import { Readable } from 'stream';
+
+/**
+ * local file write config
+ */
+export type TLocalFilesystemAdapterWriteConfig = IFilesystemVisibility & BaseEncodingOptions & { flag?: string };
 
 /**
  * local filesystem adapter
@@ -169,21 +174,10 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
   /**
    * @inheritdoc
    */
-  /*
-  public async has(path: string) {
-    const location = this.prefixer.prefixPath(path);
-
-    return pathExists(location);
-  }
-*/
-
-  /**
-   * @inheritdoc
-   */
   public async write(
     path: string,
     contents: string | Buffer,
-    config: IWriteConfig = { visibility: Visibility.PUBLIC }
+    config: TLocalFilesystemAdapterWriteConfig = { visibility: Visibility.PUBLIC }
   ) {
     const location = this.prefixer.prefixPath(path);
     await this.ensureDirectoryExists(
@@ -192,19 +186,19 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
     );
     const visibility = (config[OPTION_VISIBILITY] || Visibility.PUBLIC) as Visibility;
 
-    const options: any = {
+    const options: WriteFileOptions = {
       flag: config?.flag || this.writeFlags,
       mode: this._visibility.forFile(visibility as Visibility),
     };
 
-    if (config?.encoding) {
+    if (config.encoding) {
       options.encoding = config.encoding;
     }
 
     try {
       if (options.mode && (await this.fileExists(path))) {
         // 需要更改文件的权限，再更新内容
-        await this.setPermissions(location, options.mode);
+        await this.setPermissions(location, options.mode as number);
       }
       await writeFile(location, contents, options);
     } catch (e) {
@@ -218,7 +212,7 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
   public async writeStream(
     path: string,
     resource: Readable,
-    config: IWriteStreamConfig = { visibility: Visibility.PUBLIC }
+    config: TLocalFilesystemAdapterWriteConfig = { visibility: Visibility.PUBLIC }
   ) {
     const location = this.prefixer.prefixPath(path);
     await this.ensureDirectoryExists(
@@ -228,7 +222,7 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
     const visibility = (config[OPTION_VISIBILITY] || Visibility.PUBLIC) as Visibility;
 
     const option: any = {
-      flags: config?.flags || this.writeFlags,
+      flags: config?.flag || this.writeFlags,
       mode: this._visibility.forFile(visibility),
     };
 
@@ -469,7 +463,7 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
   /**
    * @inheritdoc
    */
-  public async createDirectory(dirname: string, config: IVisibilityConfig = { visibility: Visibility.PUBLIC }) {
+  public async createDirectory(dirname: string, config: IFilesystemVisibility = { visibility: Visibility.PUBLIC }) {
     const location = this.prefixer.prefixPath(dirname);
     const visibility = (config[OPTION_DIRECTORY_VISIBILITY] ||
       config[OPTION_VISIBILITY] ||
