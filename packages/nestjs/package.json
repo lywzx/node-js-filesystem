@@ -10,8 +10,10 @@
     "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
     "build": "tsc"
   },
-  "dependencies": {
-    "@filesystem/core": "0.0.3-alpha.2"
+  "devDependencies": {
+    "@types/lodash": "^4.14.164",
+    "@filesystem/core": "0.0.3-alpha.2",
+    "lodash": "^4.17.15"
   },
   "peerDependencies": {
     "@filesystem/core": "0.0.3-alpha.2",

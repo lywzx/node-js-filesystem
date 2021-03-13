@@ -19,7 +19,8 @@ use(chaiAsPromised);
 
 export function filesystemAdapterSpecUtil<T extends IFilesystemAdapter>(
   root: string,
-  getAdapter: (root?: string) => T
+  getAdapter: (root?: string) => T,
+  skip : Array<'mimetype'>= []
 ) {
   // const runScenario = () => {};
 
@@ -229,17 +230,19 @@ export function filesystemAdapterSpecUtil<T extends IFilesystemAdapter>(
     await expect(adapter.mimeType('non-existing-file.txt')).to.be.rejectedWith(UnableToRetrieveMetadataException);
   });
 
-  it('fetching_unknown_mime_type_of_a_file', async function () {
-    const adapter = getAdapter();
+  if (!skip.includes('mimetype')) {
+    it('fetching_unknown_mime_type_of_a_file', async function () {
+      const adapter = getAdapter();
 
-    await givenWeHaveAnExistingFile(
-      adapter,
-      'unknown-mime-type.md5',
-      await fsExtra.readFile(join(root, '../unknown-mime-type.md5'))
-    );
+      await givenWeHaveAnExistingFile(
+        adapter,
+        'unknown-mime-type.md5',
+        await fsExtra.readFile(join(root, '../unknown-mime-type.md5'))
+      );
 
-    await expect(adapter.mimeType('unknown-mime-type.md5')).to.be.rejectedWith(UnableToRetrieveMetadataException);
-  });
+      await expect(adapter.mimeType('unknown-mime-type.md5')).to.be.rejectedWith(UnableToRetrieveMetadataException);
+    });
+  }
 
   it('listing_a_toplevel_directory', async function () {
     const adapter = getAdapter();

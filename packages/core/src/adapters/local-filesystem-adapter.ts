@@ -261,9 +261,9 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
       df.reject(UnableToReadFileException.fromLocation(path, e.message, e));
     });
 
-    setTimeout(() => {
+    readStream.once('ready', () => {
       df.resolve(readStream);
-    }, 0);
+    });
 
     return df.promise;
   }
