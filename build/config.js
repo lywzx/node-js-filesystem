@@ -65,10 +65,11 @@ const packages = [
     dir: 'memory-adapter',
     outputName: 'MemoryAdapter',
     banner: `/*!
- * @filesystem/core v${lernaPackage.version}
+ * @filesystem/memory-adapter v${lernaPackage.version}
  * (c) ${new Date().getFullYear()} LiuYang
  * @license MIT
- */`
+ */`,
+    external: ['memfs'],
   },
   {
     dir: 'nestjs',
