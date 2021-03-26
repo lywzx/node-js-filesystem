@@ -1,6 +1,6 @@
 {
   "name": "@filesystem/memory-adapter",
-  "version": "0.0.3-alpha.0",
+  "version": "0.0.3-alpha.5",
   "description": "nodejs memory adapter",
   "keywords": [
     "nodejs",
@@ -26,10 +26,10 @@
     "url": "https://github.com/lywzx/node-js-filesystem/issues"
   },
   "dependencies": {
-    "@filesystem/core": "^0.0.3-alpha.0"
+    "@filesystem/core": "^0.0.3-alpha.5"
   },
   "peerDependencies": {
-    "@filesystem/core": "^0.0.3-alpha.0",
+    "@filesystem/core": "0.0.3-alpha.5",
     "memfs": "^3.2.0"
   }
 }

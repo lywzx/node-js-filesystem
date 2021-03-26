@@ -27,6 +27,11 @@ export interface IFilesystemModuleOptionsFactory {
  */
 export interface INestFilesystemModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
   /**
+   * all disk name
+   * will be name to inject token
+   */
+  availableDisks: string[];
+  /**
    * Injection token resolving to an existing provider. The provider must implement
    * the `CacheOptionsFactory` interface.
    */

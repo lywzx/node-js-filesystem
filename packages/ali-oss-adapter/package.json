@@ -1,9 +1,15 @@
 {
   "name": "@filesystem/ali-oss-adapter",
-  "version": "0.0.3-alpha.0",
+  "version": "0.0.3-alpha.5",
   "description": "aliyun oss filesystem adapter",
   "author": "lywzx <liuyang@lyblog.net>",
   "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
+  "keywords": [
+    "ali-oss",
+    "aliyun",
+    "oss",
+    "filesystem"
+  ],
   "license": "MIT",
   "scripts": {
     "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
@@ -25,7 +31,7 @@
     "@types/merge-descriptors": "^1.0.1"
   },
   "peerDependencies": {
-    "@filesystem/core": "^0.0.1-alpha.0",
+    "@filesystem/core": "0.0.3-alpha.2",
     "ali-oss": "^6.10.0"
   }
 }

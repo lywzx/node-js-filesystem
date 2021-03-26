@@ -1,8 +1,5 @@
-import { IFileWithVisibility } from './path.stats';
 import { IStorageAttributes } from './storage-attributes.interface';
 import { ReadStream } from 'fs';
-import { RequireOne } from './types';
-import { FileAttributes } from '../libs/file-attributes';
 import { Visibility } from '../enum';
 
 export interface IFilesystemReader {

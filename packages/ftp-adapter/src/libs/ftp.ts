@@ -1,14 +1,13 @@
 import omit from 'lodash/omit';
-import { ReadStream, WriteStream } from 'fs';
-import { FileType, Visibility } from '@filesystem/core/src/enum';
-import { InvalidRootException } from '@filesystem/core/src/exceptions';
+import { ReadStream } from 'fs';
+import { FileType, Visibility, DirType, IListContentInfo } from '@filesystem/core';
+import { InvalidRootException } from '@filesystem/core';
 import { guessMimeType } from '@filesystem/core/src/util/util';
 import { defer } from '@filesystem/core/src/util/promise-defer.util';
 import { Writable } from 'stream';
 import { AbstractFtpAdapter } from './abstract-ftp-adapter';
 import { FtpAdapterConstructorConfigInterface } from '../interfaces';
-import { ConnectionException } from '../exceptions/connection.exception';
-import { DirType, IListContentInfo } from '@filesystem/core';
+import { ConnectionException } from '../exceptions';
 
 export class Ftp extends AbstractFtpAdapter {
   /**

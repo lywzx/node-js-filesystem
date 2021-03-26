@@ -4,6 +4,35 @@ import { FileAttributes, PathPrefixer } from '../libs';
 import { IStorageAttributes } from './storage-attributes.interface';
 import { RequireOne } from './types';
 import { Readable } from 'stream';
+import { OPTION_DIRECTORY_VISIBILITY, OPTION_VISIBILITY } from '../constant';
+
+/**
+ * directory or file visibility
+ */
+export interface IFilesystemVisibility {
+  /**
+   * file or directory default visibility
+   */
+  [OPTION_VISIBILITY]?: Visibility | string;
+  /**
+   * directory default visibility
+   */
+  [OPTION_DIRECTORY_VISIBILITY]?: Visibility | string;
+}
+
+/**
+ * read file option
+ */
+export interface IReadFileOptions {
+  /**
+   * read file encoding
+   */
+  encoding?: BufferEncoding;
+  /**
+   *
+   */
+  flag?: string;
+}
 
 export interface IFilesystemAdapter {
   /**
@@ -20,15 +49,16 @@ export interface IFilesystemAdapter {
    * @throws UnableToWriteFile
    * @throws FilesystemException
    */
-  write(path: string, contents: string | Buffer, config?: Record<string, any>): Promise<void>;
+  write(path: string, contents: string | Buffer, config?: IFilesystemVisibility): Promise<void>;
 
   /**
+   * @param path
    * @param resource {Readable}
-   *
+   * @param config
    * @throws UnableToWriteFile
    * @throws FilesystemException
    */
-  writeStream(path: string, resource: Readable, config?: Record<string, any>): Promise<void>;
+  writeStream(path: string, resource: Readable, config?: IFilesystemVisibility): Promise<void>;
 
   /**
    * @throws UnableToReadFile
@@ -60,7 +90,7 @@ export interface IFilesystemAdapter {
    * @throws UnableToCreateDirectory
    * @throws FilesystemException
    */
-  createDirectory(path: string, config?: Record<string, any>): Promise<void>;
+  createDirectory(path: string, config?: IFilesystemVisibility): Promise<void>;
 
   /**
    * @throws InvalidVisibilityProvided
@@ -110,9 +140,4 @@ export interface IFilesystemAdapter {
    * @throws FilesystemException
    */
   copy(source: string, destination: string, config?: Record<string, any>): Promise<void>;
-}
-
-export interface IReadFileOptions {
-  encoding?: BufferEncoding | null;
-  flag?: string;
 }

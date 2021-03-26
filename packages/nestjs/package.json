@@ -1,19 +1,26 @@
 {
   "name": "@filesystem/nestjs",
-  "version": "0.0.3-alpha.0",
+  "version": "0.0.3-alpha.5",
   "description": "filesystem for nestjs framework",
   "author": "lywzx <liuyang@lyblog.net>",
   "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
+  "keywords": [
+    "nestjs",
+    "nestjs filesystem module",
+    "nestjs storage"
+  ],
   "license": "MIT",
   "scripts": {
     "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
     "build": "tsc"
   },
-  "dependencies": {
-    "@filesystem/core": "^0.0.3-alpha.0"
+  "devDependencies": {
+    "@filesystem/core": "^0.0.3-alpha.5",
+    "@types/lodash": "^4.14.164",
+    "lodash": "^4.17.15"
   },
   "peerDependencies": {
-    "@filesystem/core": "^0.0.1-alpha.0",
+    "@filesystem/core": "0.0.3-alpha.2",
     "@nestjs/common": "^7.4.2",
     "@nestjs/core": "^7.4.2",
     "@nestjs/testing": "^7.4.2",

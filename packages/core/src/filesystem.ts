@@ -10,7 +10,7 @@ import { Type } from '@nestjs/common';
 /**
  * filesystem manager
  */
-export class Filesystem implements IFilesystemOperator {
+export class Filesystem<T extends IFilesystemAdapter> implements IFilesystemOperator {
   static LIST_SHALLOW = false;
   static LIST_DEEP = true;
 
@@ -23,19 +23,10 @@ export class Filesystem implements IFilesystemOperator {
   } = {};
 
   public constructor(
-    protected adapter: IFilesystemAdapter,
+    protected adapter: T,
     protected config: IFilesystemConfig = {},
     protected pathNormalizer = new WhitespacePathNormalizer()
   ) {}
-
-  /**
-   * get default config
-   * @param key
-   * @param defaultValue
-   */
-  protected getConfig(key: keyof IFilesystemConfig, defaultValue?: any) {
-    return get(this.config, key, defaultValue);
-  }
 
   /**
    * Get the Adapter.
@@ -44,6 +35,15 @@ export class Filesystem implements IFilesystemOperator {
    */
   public getAdapter() {
     return this.adapter;
+  }
+
+  /**
+   * get default config
+   * @param key
+   * @param defaultValue
+   */
+  protected getConfig(key: keyof IFilesystemConfig, defaultValue?: any) {
+    return get(this.config, key, defaultValue);
   }
 
   public fileExists(location: string): Promise<boolean> {

@@ -1,5 +1,4 @@
 /.idea
-/packages/ftp-adapter/test
 dist/
 apidocs/
 node_modules
@@ -9,3 +8,4 @@ coverage/
 /report.*.json
 /lerna-*.log
 .DS_Store
+/.env

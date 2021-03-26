@@ -1,30 +1,33 @@
-import OSS, {
-  ACLType,
-  CopyObjectOptions,
-  GetStreamOptions,
-  Options,
-  PutObjectOptions,
-  PutStreamOptions,
-  RequestOptions,
-} from 'ali-oss';
 import {
   DirectoryAttributes,
   FileAttributes,
   IFilesystemAdapter,
+  IFilesystemVisibility,
   IMimeTypeDetector,
+  IReadFileOptions,
   IStorageAttributes,
   IVisibilityConverter,
+  OPTION_DIRECTORY_VISIBILITY,
+  OPTION_VISIBILITY,
   PathPrefixer,
   RequireOne,
+  UnableToMoveFileException,
+  UnableToReadFileException,
+  UnableToRetrieveMetadataException,
+  UnableToSetVisibilityException,
   Visibility,
 } from '@filesystem/core';
 import { ReadStream } from 'fs';
 import { Readable } from 'stream';
 import get from 'lodash/get';
 import map from 'lodash/map';
-import { promiseToBoolean } from './util';
+import omit from 'lodash/omit';
+import set from 'lodash/set';
+import { getFileLastModifiedFromRes, getFileMimeTypeFromRes, getFileSizeFromRes, promiseToBoolean } from './util';
 import { AliOssVisibilityConverter } from './ali-oss-visibility-converter';
 import { AliOssMimeTypeDetector } from './ali-oss-mime-type-detector';
+import OSS from 'ali-oss';
+import { AliOssPathPrefixer } from './ali-oss-path-prefixer';
 
 export class AliOssFilesystemAdapter implements IFilesystemAdapter {
   public client: OSS;
@@ -32,21 +35,44 @@ export class AliOssFilesystemAdapter implements IFilesystemAdapter {
   public prefixer: PathPrefixer;
 
   constructor(
-    protected options: Options,
+    protected options: OSS.Options,
     protected root: string,
     protected readonly _visibility: IVisibilityConverter = new AliOssVisibilityConverter(),
     protected mimeTypeDetector: IMimeTypeDetector = new AliOssMimeTypeDetector()
   ) {
-    this.prefixer = new PathPrefixer(root, '/');
+    this.prefixer = new AliOssPathPrefixer(root, '/');
     this.client = new OSS(options);
   }
 
-  public async copy(source: string, destination: string, config?: CopyObjectOptions): Promise<void> {
-    await this.client.copy(destination, source, config);
+  /**
+   * ali oss base head request
+   * @param path
+   * @param method
+   * @protected
+   */
+  protected clientHeadBase(path: string, method: 'lastModified' | 'visibility' | 'fileSize' | 'mimeType') {
+    return this.client
+      .head(this.prefixer.prefixPath(path))
+      .then((result) => {
+        return new FileAttributes(
+          path,
+          getFileSizeFromRes(result),
+          undefined,
+          getFileLastModifiedFromRes(result),
+          getFileMimeTypeFromRes(result)
+        ) as RequireOne<FileAttributes, 'mimeType'>;
+      })
+      .catch((res) => {
+        throw UnableToRetrieveMetadataException[method](path, res?.code, res);
+      });
   }
 
-  public async createDirectory(path: string, config?: PutObjectOptions): Promise<void> {
-    await this.client.put(this.prefixer.prefixPath(path), new Buffer(''), config).then(
+  public async copy(source: string, destination: string, config?: OSS.CopyObjectOptions): Promise<void> {
+    await this.client.copy(this.prefixer.prefixPath(destination), this.prefixer.prefixPath(source), config);
+  }
+
+  public async createDirectory(path: string, config?: IFilesystemVisibility & OSS.PutObjectOptions): Promise<void> {
+    await this.client.put(this.prefixer.prefixPath(path), Buffer.from(''), config).then(
       (response) => {
         return get(response, 'res.statusCode') === 200;
       },
@@ -54,36 +80,34 @@ export class AliOssFilesystemAdapter implements IFilesystemAdapter {
     );
   }
 
-  public async delete(path: string, options?: RequestOptions): Promise<void> {
+  public async delete(path: string, options?: OSS.RequestOptions): Promise<void> {
     await this.client.delete(this.prefixer.prefixPath(path), options);
   }
 
   public async deleteDirectory(path: string): Promise<void> {
-    await this.client.delete(this.prefixer.prefixPath(path));
+    while (true) {
+      const allFiles = await this.listContents(path, true);
+      if (allFiles.length) {
+        await this.client.deleteMulti(map(allFiles, (i) => this.prefixer.prefixPath(i.path)));
+      } else {
+        break;
+      }
+    }
   }
 
   public async fileExists(path: string): Promise<boolean> {
     return promiseToBoolean(this.client.head(this.prefixer.prefixPath(path)));
   }
 
-  public async fileSize(path: string): Promise<RequireOne<FileAttributes, 'fileSize'>> {
-    const result = await this.client.head(this.prefixer.prefixPath(path));
-    return new FileAttributes(path, result.res.size, undefined, undefined, undefined) as RequireOne<
-      FileAttributes,
-      'fileSize'
-    >;
+  public fileSize(path: string) {
+    return this.clientHeadBase(path, 'fileSize') as Promise<RequireOne<FileAttributes, 'fileSize'>>;
   }
 
   /**
    * @param path
    */
-  public async lastModified(path: string): Promise<RequireOne<FileAttributes, 'lastModified'>> {
-    const result = await this.client.head(this.prefixer.prefixPath(path));
-    const date = get(result, 'res.headers.last-modified');
-    if (date) {
-      return new FileAttributes(path, undefined, undefined, date) as RequireOne<FileAttributes, 'lastModified'>;
-    }
-    throw new Error('');
+  public lastModified(path: string) {
+    return this.clientHeadBase(path, 'fileSize') as Promise<RequireOne<FileAttributes, 'lastModified'>>;
   }
 
   /**
@@ -95,8 +119,8 @@ export class AliOssFilesystemAdapter implements IFilesystemAdapter {
     return this.client
       .list(
         {
-          prefix: path,
-          delimiter: deep ? '/' : '',
+          prefix: this.prefixer.prefixDirectoryPath(path),
+          delimiter: deep ? undefined : '/',
           'max-keys': 1000,
         },
         {}
@@ -123,59 +147,95 @@ export class AliOssFilesystemAdapter implements IFilesystemAdapter {
       });
   }
 
-  public async mimeType(path: string): Promise<RequireOne<FileAttributes, 'mimeType'>> {
-    const result = await this.client.head(this.prefixer.prefixPath(path));
-
-    return new FileAttributes(path, result.res.size, undefined, get(result, 'res.headers.last-modified')) as RequireOne<
-      FileAttributes,
-      'mimeType'
-    >;
+  public mimeType(path: string): Promise<RequireOne<FileAttributes, 'mimeType'>> {
+    return this.clientHeadBase(path, 'mimeType');
   }
 
-  public async move(source: string, destination: string, config?: CopyObjectOptions): Promise<void> {
+  public async move(source: string, destination: string, config?: OSS.CopyObjectOptions): Promise<void> {
     let needClean = false;
+    const prefixSource = this.prefixer.prefixPath(source);
+    const prefixDestionation = this.prefixer.prefixPath(destination);
+    let err: UnableToMoveFileException | undefined;
     try {
-      await this.client.copy(destination, source, config);
+      await this.client.copy(prefixDestionation, prefixSource, config);
       needClean = true;
-      await this.client.delete(source);
-    } catch (e) {}
+      await this.client.delete(prefixSource);
+    } catch (e) {
+      err = UnableToMoveFileException.fromLocationTo(source, destination, e);
+    }
     try {
       if (needClean) {
-        await this.client.delete(source);
+        await this.client.delete(prefixSource);
       }
     } catch (e) {}
+    if (err) {
+      throw err;
+    }
   }
 
-  public async read(path: string): Promise<string | Buffer> {
-    return this.client.get(this.prefixer.prefixPath(path)).then((result) => {
-      return result.content;
-    });
+  public async read(path: string, config?: IReadFileOptions): Promise<string | Buffer> {
+    return this.client
+      .get(this.prefixer.prefixPath(path))
+      .then((result) => {
+        if (config) {
+          return (result.content as Buffer).toString(config?.encoding);
+        }
+        return result.content;
+      })
+      .catch((res) => {
+        throw UnableToReadFileException.fromLocation(path, res?.code, res);
+      });
   }
 
-  public async readStream(path: string, config?: GetStreamOptions): Promise<ReadStream> {
-    return this.client.getStream(this.prefixer.prefixPath(path), config).then((result) => result.stream);
+  public async readStream(path: string, config?: OSS.GetStreamOptions): Promise<ReadStream> {
+    return this.client
+      .getStream(this.prefixer.prefixPath(path), config)
+      .then((result) => result.stream)
+      .catch((res) => {
+        throw UnableToReadFileException.fromLocation(path, res?.code, res);
+      });
   }
 
   public async setVisibility(path: string, visibility: Visibility): Promise<void> {
-    // 'public-read-write' | 'public-read' | 'private'
-    const realVisibility = {
-      public: 'public-read-write',
-      private: 'private',
-    }[visibility];
-    await this.client.putACL(this.prefixer.prefixPath(path), realVisibility as ACLType);
+    await this.client
+      .putACL(this.prefixer.prefixPath(path), this._visibility.forFile(visibility) as OSS.ACLType)
+      .catch((res) => {
+        throw UnableToSetVisibilityException.atLocation(path, res?.code, res);
+      });
   }
 
   public async visibility(path: string): Promise<RequireOne<FileAttributes, 'visibility'>> {
-    const result = await this.client.getACL(this.prefixer.prefixPath(path));
-    return new FileAttributes(path, undefined, Visibility.PUBLIC) as RequireOne<FileAttributes, 'visibility'>;
+    const result = await this.client.getACL(this.prefixer.prefixPath(path)).catch((res) => {
+      throw UnableToRetrieveMetadataException.visibility(path, res?.code, res);
+    });
+    return new FileAttributes(path, undefined, this._visibility.inverseForFile(result.acl)) as RequireOne<
+      FileAttributes,
+      'visibility'
+    >;
   }
 
-  public async write(path: string, contents: string | Buffer, config?: PutObjectOptions): Promise<void> {
-    await this.client.put(this.prefixer.prefixPath(path), contents, config);
+  public async write(
+    path: string,
+    contents: string | Buffer,
+    config?: IFilesystemVisibility & OSS.PutObjectOptions
+  ): Promise<void> {
+    const content = typeof contents === 'string' ? Buffer.from(contents) : contents;
+    const options = {
+      ...omit(config, [OPTION_VISIBILITY, OPTION_DIRECTORY_VISIBILITY]),
+    };
+    // set alioss visible
+    if (config && config[OPTION_VISIBILITY]) {
+      set(options, 'headers.x-oss-object-acl', this._visibility.forFile(config[OPTION_VISIBILITY] as Visibility));
+    }
+    await this.client.put(this.prefixer.prefixPath(path), content, options);
     return Promise.resolve(undefined);
   }
 
-  public async writeStream(path: string, resource: Readable, config?: PutStreamOptions): Promise<void> {
+  public async writeStream(
+    path: string,
+    resource: Readable,
+    config?: IFilesystemVisibility & OSS.PutStreamOptions
+  ): Promise<void> {
     await this.client.putStream(this.prefixer.prefixPath(path), resource, config);
   }
 

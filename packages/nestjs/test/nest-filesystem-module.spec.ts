@@ -7,13 +7,7 @@ import 'reflect-metadata';
 describe('nest js filesystem module test util', function () {
   it('should aaaaaaa', async function () {
     const module = await Test.createTestingModule({
-      imports: [
-        NestFilesystemModule.registerAsync({
-          useFactory: () => {
-            return defaultModuleOptions;
-          },
-        }),
-      ],
+      imports: [NestFilesystemModule.register(defaultModuleOptions)],
       providers: [],
     }).compile();
     expect(module.get(Filesystem)).to.be.instanceOf(Filesystem);

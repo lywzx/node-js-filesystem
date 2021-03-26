@@ -22,6 +22,11 @@ export interface IFilesystemModuleOptions {
  */
 export interface IFilesystemSingleModuleOptions<T extends IFilesystemAdapter> {
   /**
+   * generate visitor url
+   */
+  url?: string;
+
+  /**
    * use any adapter
    */
   adapter?: 'local' | 'ali-oss' | 'ftp' | 'memory' | string;
@@ -50,4 +55,19 @@ export interface IFilesystemSingleModuleOptions<T extends IFilesystemAdapter> {
    * path normalizer
    */
   pathNormalizer?: IPathNormalizer;
+}
+
+/**
+ * with file store name
+ */
+export interface IFilesystemSingleModuleOptionsWithName extends IFilesystemSingleModuleOptions<any> {
+  /**
+   * is default storage
+   */
+  isDefault?: boolean;
+
+  /**
+   * filesystem inject name
+   */
+  name: string;
 }

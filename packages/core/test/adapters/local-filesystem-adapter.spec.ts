@@ -365,14 +365,14 @@ describe('local adapter test', function (): void {
   describe('#read', function () {
     it('not_being_able_to_read_a_file', async function () {
       const adapter = new LocalFilesystemAdapter(root);
-      await expect(adapter.read('path.txt')).to.be.rejectedWith(UnableToReadFileException);
+      await expect(adapter.read('path1.txt')).to.be.rejectedWith(UnableToReadFileException);
     });
   });
 
   describe('#readStream', function () {
     it('not_being_able_to_stream_read_a_file', async function () {
       const adapter = new LocalFilesystemAdapter(root);
-      await expect(adapter.readStream('path.txt')).to.be.rejectedWith(UnableToReadFileException);
+      await expect(adapter.readStream('path2.txt')).to.be.rejectedWith(UnableToReadFileException);
     });
   });
 
