@@ -28,6 +28,7 @@
     "@filesystem/core": "^0.0.3-alpha.5"
   },
   "peerDependencies": {
-    "@filesystem/core": "0.0.3-alpha.2"
+    "@filesystem/core": "0.0.3-alpha.5",
+    "memfs": "^3.2.0"
   }
 }

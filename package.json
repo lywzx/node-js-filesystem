@@ -92,5 +92,9 @@
   "author": {
     "name": "liuyang",
     "email": "liuyang@lyblog.net"
+  },
+  "dependencies": {
+    "memfs": "^3.2.0",
+    "rollup-plugin-copy": "^3.3.0"
   }
 }
