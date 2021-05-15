@@ -2,7 +2,7 @@
   "name": "@filesystem/core",
   "private": true,
   "scripts": {
-    "dev": "node --max_old_space_size=8192 node_modules/rollup/dist/bin/rollup -w -c node_modules/@lywzx/rollup-build-scripts/rollup.config.js -w",
+    "dev": "node --max_old_space_size=8192 node_modules/rollup/dist/bin/rollup -w -c node_modules/@lywzx/rollup-build-scripts/rollup.config.js",
     "build": "node --max_old_space_size=8192 node_modules/@lywzx/rollup-build-scripts/index.js",
     "lint": "eslint packages --ext .ts --fix",
     "format": "prettier --write \"+(packages)/**/*.ts\"",
