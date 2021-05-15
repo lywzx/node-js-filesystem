@@ -7,8 +7,7 @@
     "access": "public"
   },
   "scripts": {
-    "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
-    "build": "tsc"
+    "prepublishOnly": "cd ../.. && yarn build --only-package=@filesystem/core"
   },
   "repository": {
     "type": "git",

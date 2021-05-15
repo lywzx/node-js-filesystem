@@ -11,8 +11,7 @@
   ],
   "license": "MIT",
   "scripts": {
-    "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
-    "build": "tsc"
+    "prepublishOnly": "cd ../.. && yarn build --only-package=@filesystem/nestjs"
   },
   "devDependencies": {
     "@filesystem/core": "^0.0.3-alpha.5",
