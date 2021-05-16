@@ -1,19 +1,8 @@
 {
+  "exclude": ["./tsconfig-base.json"],
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
-    "declaration": true,
-    "declarationDir": "./dist/typings",
-    "outDir": "./dist",
-    "strict": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "lib": ["es6"]
-  },
-  "include": ["packages", "examples"],
-  "typedocOptions": {
-    "mode": "modules",
-    "out": "apidocs"
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true
   }
 }

@@ -1,6 +1,6 @@
 import { Visibility } from '../enum';
 
-export interface FilesystemConfigInterface {
+export interface IFilesystemConfig {
   // disable extra calls to assert whether or not a file exists, see
   disable_asserts?: boolean;
   // default visibility

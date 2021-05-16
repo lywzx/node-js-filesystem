@@ -1,14 +1,13 @@
 {
   "name": "@filesystem/core",
-  "version": "0.0.1-alpha.0",
+  "version": "0.0.3-alpha.5",
   "description": "Filesystem abstraction: Many filesystems, one API.",
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
     "access": "public"
   },
   "scripts": {
-    "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
-    "build": "tsc"
+    "prepublishOnly": "cd ../.. && yarn build --only-package=@filesystem/core"
   },
   "repository": {
     "type": "git",
@@ -18,7 +17,9 @@
     "node": ">=10.0.0"
   },
   "keywords": [
-    "filesystem"
+    "filesystem",
+    "fs",
+    "storage"
   ],
   "author": "liuyang",
   "license": "MIT",
@@ -31,9 +32,9 @@
     "@types/mime": "^2.0.1"
   },
   "dependencies": {
+    "file-type": "^14.2.0",
     "lodash": "^4.17.15",
-    "mime": "^2.4.5",
-    "file-type": "^14.2.0"
+    "mime": "^2.4.5"
   },
   "peerDependencies": {
     "debug": "^4.1.1",

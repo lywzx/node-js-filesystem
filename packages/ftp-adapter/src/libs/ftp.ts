@@ -1,14 +1,13 @@
 import omit from 'lodash/omit';
-import { ReadStream, WriteStream } from 'fs';
-import { FileType, Visibility } from '@filesystem/core/src/enum';
-import { InvalidRootException } from '@filesystem/core/src/exceptions';
+import { ReadStream } from 'fs';
+import { FileType, Visibility, DirType, IListContentInfo } from '@filesystem/core';
+import { InvalidRootException } from '@filesystem/core';
 import { guessMimeType } from '@filesystem/core/src/util/util';
 import { defer } from '@filesystem/core/src/util/promise-defer.util';
 import { Writable } from 'stream';
 import { AbstractFtpAdapter } from './abstract-ftp-adapter';
 import { FtpAdapterConstructorConfigInterface } from '../interfaces';
-import { ConnectionException } from '../exceptions/connection.exception';
-import { DirType, ListContentInfo } from '@filesystem/core';
+import { ConnectionException } from '../exceptions';
 
 export class Ftp extends AbstractFtpAdapter {
   /**
@@ -497,7 +496,7 @@ return result;*/
    * @param {string} directory
    * @param {boolean} recursive
    */
-  protected async listDirectoryContents(directory = '', recursive = true): Promise<ListContentInfo[]> {
+  protected async listDirectoryContents(directory = '', recursive = true): Promise<IListContentInfo[]> {
     // return this.client.send(`LIST ${directory} -a`);
     /*directory = str_replace('*', '\\*', directory);
 
@@ -523,7 +522,7 @@ return result;*/
    *
    * @param string directory
    */
-  protected async listDirectoryContentsRecursive(directory: string): Promise<ListContentInfo[]> {
+  protected async listDirectoryContentsRecursive(directory: string): Promise<IListContentInfo[]> {
     /*listing = this.normalizeListing(this.ftpRawlist('-aln', directory) ?: [], directory);
   output = [];
 

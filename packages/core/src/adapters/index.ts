@@ -1,2 +1,2 @@
-export * from './abstract-adapter';
-export * from './local';
+import './attach-local-filesystem-adapter';
+export * from './local-filesystem-adapter';

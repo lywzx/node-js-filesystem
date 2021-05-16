@@ -1,6 +1,6 @@
 import { constants, Stats } from 'fs';
 import { dirname, join } from 'path';
-import { PathStatsInterface } from '../interfaces';
+import { IPathStats } from '../interfaces';
 import { access, lstat, mkdir, readdir, rmdir, stat, unlink } from './fs-extra.util';
 
 /**
@@ -25,6 +25,19 @@ export async function isDir(dir: string): Promise<boolean> {
   try {
     const dirStat = await lstat(dir);
     return dirStat.isDirectory();
+  } catch (e) {}
+
+  return false;
+}
+
+/**
+ * check is file
+ * @param file
+ */
+export async function isFile(file: string): Promise<boolean> {
+  try {
+    const dirStat = await lstat(file);
+    return dirStat.isFile();
   } catch (e) {}
 
   return false;
@@ -88,7 +101,7 @@ export async function mkDir(dir: string, mode?: number | string): Promise<string
  * read directory content
  * @param path
  */
-export async function getRecursiveDirectoryIterator(path: string): Promise<PathStatsInterface[]> {
+export async function getRecursiveDirectoryIterator(path: string): Promise<IPathStats[]> {
   const files = await readdir(path);
   const result = await Promise.all(
     files.map((file) => {
@@ -115,7 +128,7 @@ export async function getRecursiveDirectoryIterator(path: string): Promise<PathS
  * read directory content
  * @param path
  */
-export async function getDirectoryIterator(path: string): Promise<PathStatsInterface[]> {
+export async function getDirectoryIterator(path: string): Promise<IPathStats[]> {
   const files = await readdir(path);
   return Promise.all(
     files.map((file) => {
@@ -137,21 +150,17 @@ export async function getDirectoryIterator(path: string): Promise<PathStatsInter
 export async function rmDir(dir: string): Promise<boolean> {
   const files = await readdir(dir);
 
-  try {
-    for (const file of files) {
-      const realPath = join(dir, file);
-      const stats = await stat(realPath);
+  for (const file of files) {
+    const realPath = join(dir, file);
+    const stats = await lstat(realPath);
 
-      if (stats.isDirectory()) {
-        await rmDir(realPath);
-      } else {
-        await unlink(realPath);
-      }
+    if (stats.isDirectory()) {
+      await rmDir(realPath);
+    } else {
+      await unlink(realPath);
     }
-
-    await rmdir(dir);
-    return true;
-  } catch (e) {
-    return false;
   }
+
+  await rmdir(dir);
+  return true;
 }

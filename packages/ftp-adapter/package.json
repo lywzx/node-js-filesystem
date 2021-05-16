@@ -1,13 +1,12 @@
 {
   "name": "@filesystem/ftp-adapter",
-  "version": "0.0.1-alpha.0",
+  "version": "0.0.3-alpha.5",
   "description": "nodejs filesystem ftp adapter",
   "author": "lywzx <liuyang@lyblog.net>",
   "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
-    "build": "tsc"
+    "prepublishOnly": "cd ../.. && yarn build --only-package=@filesystem/ftp-adapter"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
@@ -21,7 +20,7 @@
     "url": "https://github.com/lywzx/node-js-filesystem/issues"
   },
   "dependencies": {
-    "@filesystem/core": "^0.0.1-alpha.0",
+    "@filesystem/core": "^0.0.3-alpha.5",
     "basic-ftp": "^4.6.3",
     "lodash": "^4.17.20"
   },
@@ -29,6 +28,6 @@
     "@types/lodash": "^4.14.164"
   },
   "peerDependencies": {
-    "@filesystem/core": "^0.0.1-alpha.0"
+    "@filesystem/core": "0.0.3-alpha.2"
   }
 }

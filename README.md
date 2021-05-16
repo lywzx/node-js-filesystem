@@ -1,7 +1,7 @@
 # About Node Js Filesystem
 
 
-[![Build Status](https://img.shields.io/travis/lywzx/node-js-filesystem/master.svg)](https://travis-ci.org/lywzx/node-js-filesystem)
+[![Build Status](https://travis-ci.com/lywzx/node-js-filesystem.svg?branch=master)](https://travis-ci.com/lywzx/node-js-filesystem)
 [![codecov](https://codecov.io/gh/lywzx/node-js-filesystem/branch/master/graph/badge.svg)](https://codecov.io/gh/lywzx/node-js-filesystem)
 [![NPM version](https://img.shields.io/npm/v/@filesystem/core.svg?style=flat-square)](https://www.npmjs.com/package/@filesystem/core)
 [![NPM downloads](https://img.shields.io/npm/dm/@filesystem/core.svg?style=flat-square)](https://www.npmjs.com/package/@filesystem/core)
@@ -41,10 +41,10 @@ Adapters | Status | Description
 To safely interact with the filesystem, always wrap the adapter in a Filesystem instance.
 
 ```typescript
-import { Local, Filesystem  } from '@filesystem/core';
+import { LocalFilesystemAdapter, Filesystem  } from '@filesystem/core';
 
 // SETUP
-const adapter = new Local(rootPath);
+const adapter = new LocalFilesystemAdapter(rootPath);
 const filesystem = Filesystem(adapter);
 
 // USAGE

@@ -4,19 +4,19 @@
   ],
   "npmClient": "yarn",
   "useWorkspaces": true,
-  "version": "0.0.1-alpha.0",
+  "version": "0.0.3-alpha.5",
   "command": {
     "publish": {
-      "publish": {
-        "ignoreChanges": [
-          "**/test/**",
-          "**/tsconfig.json"
-        ],
-        "allowBranch": [
-          "master"
-        ],
-        "registry": "http://registry.npmjs.org"
-      }
+      "contents": "dist",
+      "ignoreChanges": [
+        "**/test/**",
+        "**/tsconfig.json"
+      ],
+      "allowBranch": [
+        "master",
+        "liuyang/upgrade/v2"
+      ],
+      "registry": "http://registry.npmjs.org"
     }
   }
 }

@@ -2,8 +2,8 @@
   "name": "@filesystem/core",
   "private": true,
   "scripts": {
-    "dev": "node --max_old_space_size=8192 node_modules/rollup/dist/bin/rollup -w -c build/rollup.config.js",
-    "build": "node --max-old-space-size=8192 build/build-pkg.js",
+    "dev": "node --max_old_space_size=8192 node_modules/rollup/dist/bin/rollup -w -c node_modules/@lywzx/rollup-build-scripts/rollup.config.js",
+    "build": "node --max_old_space_size=8192 node_modules/@lywzx/rollup-build-scripts/index.js",
     "lint": "eslint packages --ext .ts --fix",
     "format": "prettier --write \"+(packages)/**/*.ts\"",
     "test": "mocha",
@@ -13,6 +13,7 @@
     "lint-staged": "lint-staged"
   },
   "devDependencies": {
+    "@lywzx/rollup-build-scripts": "0.0.3",
     "@commitlint/cli": "^9.1.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@nestjs/common": "^7.4.2",
@@ -24,27 +25,30 @@
     "@rollup/plugin-node-resolve": "^8.4.0",
     "@rollup/plugin-replace": "^2.3.3",
     "@types/chai": "^4.2.9",
+    "@types/chai-as-promised": "^7.1.3",
     "@types/debug": "^4.1.5",
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.14.6",
+    "@types/sinon": "^9.0.10",
     "@typescript-eslint/eslint-plugin": "^4.6.0",
     "@typescript-eslint/parser": "^4.6.0",
     "ali-oss": "^6.10.0",
     "brotli": "^1.3.2",
     "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
     "chalk": "^4.1.0",
     "cross-env": "^7.0.2",
     "eslint": "^7.2.1",
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.1.4",
     "execa": "^4.0.3",
+    "get-stream": "^6.0.0",
     "lerna": "^3.22.1",
     "lint-staged": "^10.2.11",
-    "minimist": "^1.2.5",
     "mocha": "^8.2.0",
     "nyc": "^15.1.0",
     "prettier": "^2.1.2",
-    "rimraf": "^3.0.2",
+    "reflect-metadata": "^0.1.13",
     "rollup": "^2.32.0",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.29.0",
@@ -52,7 +56,10 @@
     "ts-node": "^9.0.0",
     "tsconfig-paths": "^3.9.0",
     "typescript": "^4.0.5",
-    "zlib": "^1.0.5"
+    "zlib": "^1.0.5",
+    "dotenv": "^8.2.0",
+    "rollup-plugin-copy": "^3.3.0",
+    "rollup-plugin-dts": "~3.0.1"
   },
   "resolutions": {
     "chalk": "^4.1.0"
@@ -87,6 +94,7 @@
     "email": "liuyang@lyblog.net"
   },
   "dependencies": {
+    "memfs": "^3.2.0",
     "rollup-plugin-copy": "^3.3.0"
   }
 }

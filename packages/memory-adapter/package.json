@@ -1,6 +1,6 @@
 {
   "name": "@filesystem/memory-adapter",
-  "version": "0.0.1-alpha.0",
+  "version": "0.0.3-alpha.5",
   "description": "nodejs memory adapter",
   "keywords": [
     "nodejs",
@@ -11,8 +11,7 @@
   "homepage": "https://github.com/lywzx/node-js-filesystem/tree/master/packages/memory-adapter#readme",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
-    "build": "tsc"
+    "prepublishOnly": "cd ../.. && yarn build --only-package=@filesystem/memory-adapter"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
@@ -26,9 +25,10 @@
     "url": "https://github.com/lywzx/node-js-filesystem/issues"
   },
   "dependencies": {
-    "@filesystem/core": "^0.0.1-alpha.0"
+    "@filesystem/core": "^0.0.3-alpha.5"
   },
   "peerDependencies": {
-    "@filesystem/core": "^0.0.1-alpha.0"
+    "@filesystem/core": "0.0.3-alpha.5",
+    "memfs": "^3.2.0"
   }
 }
