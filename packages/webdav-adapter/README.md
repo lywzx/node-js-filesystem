@@ -1,11 +1,9 @@
 # `@filesystem/webdav-adapter`
 
-> TODO: description
+filesystem node webdav adapter
 
-## Usage
+## Install
 
-```
-const webdavAdapter = require('@filesystem/webdav-adapter');
-
-// TODO: DEMONSTRATE API
+```bash
+npm i @filesystem/core @filesystem/webdav-adapter // or yarn add @filesystem/core @filesystem/webdav-adapter
 ```

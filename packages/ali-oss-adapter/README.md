@@ -1,11 +1,9 @@
 # `@filesystem/ali-oss-adapter`
 
-> TODO: description
+aliyun oss filesystem adapter
 
-## Usage
+## Install
 
-```
-const aliOssAdapter = require('@filesystem/ali-oss-adapter');
-
-// TODO: DEMONSTRATE API
+```bash
+npm i @filesystem/core @filesystem/ali-oss-adapter // or yarn add @filesystem/core @filesystem/ali-oss-adapter
 ```

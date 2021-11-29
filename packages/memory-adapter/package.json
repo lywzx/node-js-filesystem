@@ -25,10 +25,10 @@
     "url": "https://github.com/lywzx/node-js-filesystem/issues"
   },
   "dependencies": {
-    "@filesystem/core": "^0.0.3-alpha.5"
+    "@filesystem/core": "^0.0.3-alpha.5",
+    "memfs": "^3.2.0"
   },
   "peerDependencies": {
-    "@filesystem/core": "0.0.3-alpha.5",
-    "memfs": "^3.2.0"
+    "@filesystem/core": "0.0.3-alpha.5"
   }
 }

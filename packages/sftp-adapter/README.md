@@ -1,11 +1,9 @@
 # `@filesystem/sftp-adapter`
 
-> TODO: description
+sftp adapter for filesystem.
 
-## Usage
+## Install
 
-```
-const sftpAdapter = require('@filesystem/sftp-adapter');
-
-// TODO: DEMONSTRATE API
+```bash
+npm i @filesystem/core @filesystem/sftp-adapter // or yarn add @filesystem/core @filesystem/sftp-adapter
 ```

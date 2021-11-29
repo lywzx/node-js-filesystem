@@ -1,11 +1,9 @@
 # `@filesystem/memory-adapter`
 
-> TODO: description
+nodejs memory adapter
 
-## Usage
+## Install
 
-```
-const memoryAdapter = require('@filesystem/memory-adapter');
-
-// TODO: DEMONSTRATE API
+```bash
+npm i @filesystem/core @filesystem/memory-adapter // or yarn add @filesystem/core @filesystem/memory-adapter
 ```

@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import {
   FileAttributes,
   IFilesystemAdapter,
@@ -36,7 +38,7 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
   }
 
   getPathPrefix(): PathPrefixer {
-    return undefined;
+    return undefined!;
   }
 
   lastModified(path: string): Promise<RequireOne<FileAttributes, 'lastModified'>> {

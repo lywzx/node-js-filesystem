@@ -1,11 +1,9 @@
 # `@filesystem/ftp-adapter`
 
-> TODO: description
+nodejs filesystem ftp adapter
 
-## Usage
+## Install
 
-```
-const ftpAdapter = require('@filesystem/ftp-adapter');
-
-// TODO: DEMONSTRATE API
+```bash
+npm i @filesystem/core @filesystem/ftp-adapter // or yarn add @filesystem/core @filesystem/ftp-adapter
 ```

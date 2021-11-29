@@ -1,11 +1,9 @@
 # `@filesystem/nestjs`
 
-> TODO: description
+nodejs filesystem use for nestjs framework.
 
-## Usage
+## Install
 
-```
-const nestjs = require('@filesystem/nestjs');
-
-// TODO: DEMONSTRATE API
+```bash
+npm i @filesystem/core @filesystem/nestjs // or yarn add @filesystem/core @filesystem/nestjs
 ```

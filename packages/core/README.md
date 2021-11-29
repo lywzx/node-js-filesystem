@@ -1,11 +1,14 @@
-# `core`
+# `@filesystem/core`
 
-> TODO: description
+> nodejs filesystem core api. You shouldn't use it alone.
 
-## Usage
+## Feature
 
+
+## Install
+
+```bash
+npm i @filesystem/core // or yarn add @filesystem/core
 ```
-const core = require('core');
 
-// TODO: DEMONSTRATE API
-```
+

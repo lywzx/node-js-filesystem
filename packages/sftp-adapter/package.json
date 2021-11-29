@@ -1,7 +1,7 @@
 {
   "name": "@filesystem/sftp-adapter",
   "version": "0.0.3-alpha.5",
-  "description": "> TODO: description",
+  "description": "sftp adapter for filesystem",
   "author": "lywzx <liuyang@lyblog.net>",
   "homepage": "https://github.com/lywzx/node-js-filesystem#readme",
   "license": "MIT",
