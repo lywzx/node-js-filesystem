@@ -29,6 +29,10 @@ jobs:
         ALI_OSS_ENDPOINT: ${{ secrets.ALI_OSS_ENDPOINT }}
         ALI_OSS_ORIGIN: ${{ secrets.ALI_OSS_ORIGIN }}
         ALI_OSS_URL: ${{ secrets.ALI_OSS_URL }}
+        FTP_HOST: ${{ secrets.FTP_HOST }}
+        FTP_PORT: ${{ secrets.FTP_PORT }}
+        FTP_USER: ${{ secrets.FTP_USER }}
+        FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         NPM_EMAIL: ${{ secrets.NPM_EMAIL }}
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       run: |
