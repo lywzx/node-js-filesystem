@@ -7,6 +7,7 @@ on:
 jobs:
   test:
     name: Test on node ${{ matrix.node_version }} and ${{ matrix.os }}
+    environment: deploy
     runs-on: ${{ matrix.os }}
 
     strategy:
