@@ -1,4 +1,4 @@
-name: test code
+name: build
 
 on:
   push:
@@ -22,6 +22,14 @@ jobs:
       with:
         node-version: ${{ matrix.node_version }}
 
+    - name: install global dependence
+      run: |
+        npm install yarn codecov -g
+
+    - name: install dependence
+      run: |
+        yarn --ignore-engines
+
     - name: npm install, build and test
       env:
         ALI_ACCESS_KEY_ID: ${{ secrets.ALI_ACCESS_KEY_ID }}
@@ -37,7 +45,10 @@ jobs:
         NPM_EMAIL: ${{ secrets.NPM_EMAIL }}
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       run: |
-        npm install yarn -g
-        yarn
-        yarn test
+        yarn coverage
+
+    - name: upload coverage
+      if: ${{ success() && contains(matrix.os, 'Ubuntu') && contains(matrix.node_version, '12.') }}
+      run: |
+        codecov -f .nyc_output/*.json
 
