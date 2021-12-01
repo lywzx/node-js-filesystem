@@ -12,7 +12,7 @@ if (isReadableSync(envPath)) {
 /**
  * ali oss test root dir
  */
-export const aliOssTestRootDir = 'filesystem/test/root/dir';
+export const aliOssTestRootDir = process.env.REMOTE_FILESYSTEM_ROOT_DIR || 'filesystem/test/root/dir';
 
 /**
  * get ali oss config from env
