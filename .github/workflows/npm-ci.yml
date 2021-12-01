@@ -6,21 +6,21 @@ on:
 
 jobs:
   test:
-    name: Test on node ${{ matrix.node_version }} and ${{ matrix.os }}
+    name: Test on node ${{ matrix.node }} and ${{ matrix.os }}
     environment: deploy
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x]
+        node: [12.x, 14.x, 16.x]
         os: [ubuntu-latest, windows-latest, macOS-latest]
     
     steps:
     - uses: actions/checkout@v1
-    - name: Use Node.js ${{ matrix.node_version }}
-      uses: actions/setup-node@v1
+    - name: Use Node.js ${{ matrix.node }}
+      uses: actions/setup-node@v2
       with:
-        node-version: ${{ matrix.node_version }}
+        node-version: ${{ matrix.node }}
 
     - name: install global dependence
       run: |
@@ -40,7 +40,7 @@ jobs:
 
     - name: npm install, build and test
       env:
-        REMOTE_FILESYSTEM_ROOT_DIR: filesystem/test/root/dir-${{matrix.os}}-${{matrix.node_version}}
+        REMOTE_FILESYSTEM_ROOT_DIR: filesystem/test/root/dir-${{matrix.os}}-${{matrix.node}}
         ALI_ACCESS_KEY_ID: ${{ secrets.ALI_ACCESS_KEY_ID }}
         ALI_ACCESS_KEY_SECERT: ${{ secrets.ALI_ACCESS_KEY_SECERT }}
         ALI_OSS_BUCKET: ${{ secrets.ALI_OSS_BUCKET }}
@@ -57,7 +57,7 @@ jobs:
         yarn coverage
 
     - name: upload coverage
-      if: ${{ success() && contains(matrix.os, 'Ubuntu') && contains(matrix.node_version, '12.') }}
+      if: ${{ success() && contains(matrix.os, 'Ubuntu') && contains(matrix.node, '12.') }}
       run: |
         codecov -f .nyc_output/*.json
 
