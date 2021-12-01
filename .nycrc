@@ -5,7 +5,7 @@
   ],
   "exclude":[
     "packages/**/*.d.ts",
-    "packages/**/*.spec.ts",
+    "packages/**/*.spec.ts"
   ],
   "extension": [
     ".ts", ".tsx"
