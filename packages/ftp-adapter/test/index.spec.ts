@@ -7,14 +7,14 @@ describe('ftp adapter test', function () {
   it('should test', async function () {
     const adp = new Ftp(getFtpConfig());
 
-    await adp.login();
+    await adp.init();
     try {
       const result = await adp.listContents('/upload/ebook');
-      debugger;
+      console.log('......', result);
     } catch (e) {
-      debugger;
+      console.log('.......', e);
     }
     const res = await adp.read('/user/js/tinymce/lang/zh_CN.js');
-    debugger;
+    console.log(res.toString());
   });
 });

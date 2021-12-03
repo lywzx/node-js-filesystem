@@ -4,8 +4,9 @@ import isFunction from 'lodash/isFunction';
 import sortBy from 'lodash/sortBy';
 import isNumber from 'lodash/isNumber';
 import { isNumeric, stringChunk } from '@filesystem/core/src/util/util';
-import { Visibility, IListContentInfo, NotSupportedException, FileType } from '@filesystem/core';
+import { FileType, IListContentInfo, NotSupportedException, Visibility } from '@filesystem/core';
 import { FtpAdapterConstructorConfigInterface } from '../interfaces';
+import { ESystemType } from '../constant';
 
 export abstract class AbstractFtpAdapter {
   /**
@@ -66,7 +67,7 @@ export abstract class AbstractFtpAdapter {
   /**
    * @var string
    */
-  protected systemType: string | undefined;
+  protected systemType: ESystemType | undefined;
 
   /**
    * True to enable timestamps for FTP servers that return unix-style listings.
@@ -250,12 +251,12 @@ export abstract class AbstractFtpAdapter {
   /**
    * Set the FTP system type (windows or unix).
    *
-   * @param {string} systemType
+   * @param {ESystemType} systemType
    *
    * @return this
    */
-  public setSystemType(systemType: string) {
-    this.systemType = systemType.toLowerCase();
+  public setSystemType(systemType: ESystemType) {
+    this.systemType = systemType;
 
     return this;
   }
@@ -321,7 +322,7 @@ export abstract class AbstractFtpAdapter {
    * @throws NotSupportedException
    */
   protected async normalizeObject(item: FileInfo, base: string): Promise<IListContentInfo> {
-    const systemType = this.systemType ? this.systemType : await this.detectSystemType(item);
+    const systemType = this.systemType ?? (await this.detectSystemType(item));
 
     if (systemType === 'unix') {
       return this.normalizeUnixObject(item, base);
@@ -354,13 +355,14 @@ export abstract class AbstractFtpAdapter {
    */
   protected normalizeUnixObject(item: FileInfo, base: string): IListContentInfo & { visibility: Visibility } {
     const type = item.isFile ? FileType.file : item.isDirectory ? FileType.dir : FileType.link;
+    const date = item.rawModifiedAt ? new Date(item.rawModifiedAt).getTime() : 0;
     // todo 待完善
     return {
       type,
       path: item.name,
       visibility: Visibility.PUBLIC,
       size: item.size,
-      timestamp: item.modifiedAt?.getTime() || 0,
+      timestamp: date,
     };
     /*$item = preg_replace('#\s+#', ' ', trim($item), 7);
 
@@ -454,9 +456,14 @@ export abstract class AbstractFtpAdapter {
    *
    * @return string the system type
    */
-  protected async detectSystemType(item: FileInfo) {
-    const result = await this.client.send('SYSTEM');
-    return /^[0-9]{2,4}-[0-9]{2}-[0-9]{2}/.test(result.message) ? 'windows' : 'unix';
+  protected async detectSystemType(item: FileInfo): Promise<ESystemType> {
+    let message = '';
+    try {
+      const result = await this.client.send('SYST');
+      message = result.message;
+    } catch (e) {
+    }
+    return /^[0-9]{2,4}-[0-9]{2}-[0-9]{2}/.test(message) ? ESystemType.WINDOWS : ESystemType.UNIX;
   }
 
   /**
@@ -475,12 +482,14 @@ export abstract class AbstractFtpAdapter {
 
     // map the string rights to the numeric counterparts
     permissions = permissions.replace(/[-rwx]/g, ($0: string) => {
-      return (({
-        '-': '0',
-        r: '4',
-        w: '2',
-        x: '1',
-      } as any)[$0] || $0) as string;
+      return ((
+        {
+          '-': '0',
+          r: '4',
+          w: '2',
+          x: '1',
+        } as any
+      )[$0] || $0) as string;
     });
 
     // split up the permission groups

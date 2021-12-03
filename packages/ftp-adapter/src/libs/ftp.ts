@@ -1,13 +1,13 @@
 import omit from 'lodash/omit';
 import { ReadStream } from 'fs';
-import { FileType, Visibility, DirType, IListContentInfo } from '@filesystem/core';
-import { InvalidRootException } from '@filesystem/core';
+import { DirType, FileType, IListContentInfo, InvalidRootException, Visibility } from '@filesystem/core';
 import { guessMimeType } from '@filesystem/core/src/util/util';
 import { defer } from '@filesystem/core/src/util/promise-defer.util';
 import { Writable } from 'stream';
 import { AbstractFtpAdapter } from './abstract-ftp-adapter';
 import { FtpAdapterConstructorConfigInterface } from '../interfaces';
 import { ConnectionException } from '../exceptions';
+import { ESystemType } from '../constant';
 
 export class Ftp extends AbstractFtpAdapter {
   /**
@@ -189,9 +189,11 @@ export class Ftp extends AbstractFtpAdapter {
    *
    * @throws ConnectionRuntimeException
    */
-  public async login() {
+  public async init() {
     try {
       await this.client.access(omit(this.config, ['timeout']));
+      const system = await this.client.send('SYST');
+      this.setSystemType(system.message.toLowerCase().includes('unix') ? ESystemType.UNIX : ESystemType.WINDOWS);
     } catch (e) {}
     if (this.client.closed) {
       throw new ConnectionException(
@@ -514,7 +516,8 @@ return result;*/
     }
 
     const list = await this.client.list(directory);
-    return await this.normalizeListing(list);
+
+    return this.normalizeListing(list);
   }
 
   /**
