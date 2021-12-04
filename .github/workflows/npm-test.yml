@@ -61,3 +61,6 @@ jobs:
       run: |
         codecov -f .nyc_output/*.json
 
+    - name: build package
+      if: ${{ success() && contains(matrix.os, 'Ubuntu') && contains(matrix.node, '12.') }}
+      run: yarn build
