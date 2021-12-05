@@ -1,22 +1,22 @@
 import {
+  EFileType,
+  EVisibility,
   FileAttributes,
   FInfoMimeTypeDetector,
   IFilesystemAdapter,
+  IListContentInfo,
   IMimeTypeDetector,
   IReadFileOptions,
+  IStorageAttributes,
   IVisibilityConverter,
+  NotSupportedException,
   PathPrefixer,
   RequireOne,
   UnableToCreateDirectoryException,
-  UnableToDeleteFileException,
-  UnableToRetrieveMetadataException,
-  EVisibility,
   UnableToDeleteDirectoryException,
+  UnableToDeleteFileException,
   UnableToMoveFileException,
-  IStorageAttributes,
-  IListContentInfo,
-  NotSupportedException,
-  EFileType,
+  UnableToRetrieveMetadataException,
 } from '@filesystem/core';
 import { Readable, Writable } from 'stream';
 import { ReadStream } from 'fs';
@@ -168,7 +168,7 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
    *
    * @throws NotSupportedException
    */
-  protected async normalizeObject(item: FileInfo, base: string): Promise<IListContentInfo> {
+  protected async normalizeObject(item: FileInfo, base: string): Promise<IStorageAttributes> {
     const systemType = this.systemType ?? (await this.detectSystemType(item));
 
     if (systemType === 'unix') {
@@ -200,7 +200,7 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
    *
    * @return array normalized file array
    */
-  protected normalizeUnixObject(item: FileInfo, base: string): IListContentInfo & { visibility: EVisibility } {
+  protected normalizeUnixObject(item: FileInfo, base: string): IStorageAttributes {
     const type = item.isFile ? EFileType.file : item.isDirectory ? EFileType.dir : EFileType.link;
     const date = item.rawModifiedAt ? new Date(item.rawModifiedAt).getTime() : 0;
     const path = base === '' ? base : `${base.replace(/\/$/, '')}${item.name}`;
@@ -222,7 +222,7 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
    *
    * @return array normalized file array
    */
-  protected normalizeWindowsObject(item: FileInfo, base: string): IListContentInfo & { visibility: EVisibility } {
+  protected normalizeWindowsObject(item: FileInfo, base: string): IStorageAttributes {
     const type = item.isFile ? EFileType.file : item.isSymbolicLink ? EFileType.link : EFileType.dir;
 
     return {
