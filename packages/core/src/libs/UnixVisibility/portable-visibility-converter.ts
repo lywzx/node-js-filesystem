@@ -1,10 +1,10 @@
 import { IVisibilityConverter } from '../../interfaces';
-import { Visibility } from '../../enum';
+import { EVisibility } from '../../enum';
 import { PortableVisibilityGuard } from '../portable-visibility-guard';
 
 export interface IPortableVisibilityConfig<T = number> {
-  [Visibility.PUBLIC]?: T;
-  [Visibility.PRIVATE]?: T;
+  [EVisibility.PUBLIC]?: T;
+  [EVisibility.PRIVATE]?: T;
 }
 
 export interface IPortableVisibilityObj<T = number> {
@@ -18,48 +18,48 @@ export class PortableVisibilityConverter<T = number> implements IVisibilityConve
     protected readonly filePrivate: T = 0o0600 as any,
     protected readonly directoryPublic: T = 0o0755 as any,
     protected readonly directoryPrivate: T = 0o0700 as any,
-    protected readonly _defaultForDirectories = Visibility.PRIVATE
+    protected readonly _defaultForDirectories = EVisibility.PRIVATE
   ) {}
 
   defaultForDirectories(): T {
-    return this._defaultForDirectories === Visibility.PUBLIC ? this.directoryPublic : this.directoryPrivate;
+    return this._defaultForDirectories === EVisibility.PUBLIC ? this.directoryPublic : this.directoryPrivate;
   }
 
-  forDirectory(visibility: Visibility): T {
+  forDirectory(visibility: EVisibility): T {
     PortableVisibilityGuard.guardAgainstInvalidInput(visibility);
-    return visibility === Visibility.PUBLIC ? this.directoryPublic : this.directoryPrivate;
+    return visibility === EVisibility.PUBLIC ? this.directoryPublic : this.directoryPrivate;
   }
 
   /**
    * def
    * @param visibility
    */
-  forFile(visibility: Visibility): T {
+  forFile(visibility: EVisibility): T {
     PortableVisibilityGuard.guardAgainstInvalidInput(visibility);
-    return visibility === Visibility.PUBLIC ? this.filePublic : this.filePrivate;
+    return visibility === EVisibility.PUBLIC ? this.filePublic : this.filePrivate;
   }
 
-  inverseForDirectory(visibility: T): Visibility {
+  inverseForDirectory(visibility: T): EVisibility {
     if (visibility === this.directoryPublic) {
-      return Visibility.PUBLIC;
+      return EVisibility.PUBLIC;
     } else if (visibility === this.directoryPrivate) {
-      return Visibility.PRIVATE;
+      return EVisibility.PRIVATE;
     }
     // default
-    return Visibility.PUBLIC;
+    return EVisibility.PUBLIC;
   }
 
-  inverseForFile(visibility: T): Visibility {
+  inverseForFile(visibility: T): EVisibility {
     if (visibility === this.filePublic) {
-      return Visibility.PUBLIC;
+      return EVisibility.PUBLIC;
     } else if (visibility === this.filePrivate) {
-      return Visibility.PRIVATE;
+      return EVisibility.PRIVATE;
     }
     // default
-    return Visibility.PUBLIC;
+    return EVisibility.PUBLIC;
   }
 
-  static fromObject(permission: IPortableVisibilityObj, defaultForDirectories = Visibility.PRIVATE) {
+  static fromObject(permission: IPortableVisibilityObj, defaultForDirectories = EVisibility.PRIVATE) {
     return new PortableVisibilityConverter(
       permission.file?.public,
       permission.file?.private,

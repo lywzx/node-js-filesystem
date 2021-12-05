@@ -1,20 +1,14 @@
-import { Ftp } from '../src/libs/ftp';
 import { getFtpConfig } from './ftp.config';
+import { FtpFilesystemAdapter } from '../src';
 
 describe('ftp adapter test', function () {
   this.timeout(500000);
 
   it('should test', async function () {
-    const adp = new Ftp(getFtpConfig());
+    const adp = new FtpFilesystemAdapter(getFtpConfig());
 
-    await adp.init();
-    try {
-      const result = await adp.listContents('/upload/ebook');
-      console.log('......', result);
-    } catch (e) {
-      console.log('.......', e);
-    }
-    const res = await adp.read('/user/js/tinymce/lang/zh_CN.js');
-    console.log(res.toString());
+    debugger
+    const result = await adp.fetchMetadata('/user/js/tinymce/lang/zh_CN.js111');
+    console.log(result);
   });
 });

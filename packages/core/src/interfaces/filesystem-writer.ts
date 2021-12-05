@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import { Visibility } from '../enum';
+import { EVisibility } from '../enum';
 
 export interface IFilesystemWriter {
   /**
@@ -20,7 +20,7 @@ export interface IFilesystemWriter {
    * @throws UnableToSetVisibility
    * @throws FilesystemException
    */
-  setVisibility(path: string, visibility: Visibility): Promise<void>;
+  setVisibility(path: string, visibility: EVisibility): Promise<void>;
 
   /**
    * @throws UnableToDeleteFile

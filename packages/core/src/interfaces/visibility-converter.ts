@@ -1,9 +1,9 @@
-import { Visibility } from '../enum';
+import { EVisibility } from '../enum';
 
 export interface IVisibilityConverter<T = any> {
-  forFile(visibility: Visibility): T;
-  forDirectory(visibility: Visibility): T;
-  inverseForFile(visibility: T): Visibility;
-  inverseForDirectory(visibility: T): Visibility;
+  forFile(visibility: EVisibility): T;
+  forDirectory(visibility: EVisibility): T;
+  inverseForFile(visibility: T): EVisibility;
+  inverseForDirectory(visibility: T): EVisibility;
   defaultForDirectories(): T;
 }

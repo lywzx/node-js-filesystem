@@ -5,7 +5,7 @@ import { Readable, Stream } from 'stream';
 import {
   OPTION_VISIBILITY,
   IFilesystemAdapter,
-  Visibility,
+  EVisibility,
   UnableToReadFileException,
   UnableToRetrieveMetadataException,
   UnableToSetVisibilityException,
@@ -116,14 +116,14 @@ export function filesystemAdapterSpecUtil<T extends IFilesystemAdapter>(
 
   it('overwriting_a_file', async function () {
     const adapter = getAdapter();
-    await adapter.write('path.txt', 'contents', { visibility: Visibility.PUBLIC });
+    await adapter.write('path.txt', 'contents', { visibility: EVisibility.PUBLIC });
 
-    await adapter.write('path.txt', 'new contents', { visibility: Visibility.PRIVATE });
+    await adapter.write('path.txt', 'new contents', { visibility: EVisibility.PRIVATE });
 
     const contents = await adapter.read('path.txt', { encoding: 'utf8' });
 
     expect('new contents').to.be.eq(contents);
-    expect((await adapter.visibility('path.txt')).visibility).to.be.eq(Visibility.PRIVATE);
+    expect((await adapter.visibility('path.txt')).visibility).to.be.eq(EVisibility.PRIVATE);
   });
 
   it('deleting_a_file', async function () {
@@ -180,17 +180,17 @@ export function filesystemAdapterSpecUtil<T extends IFilesystemAdapter>(
   it('setting_visibility', async function () {
     const adapter = getAdapter();
     await givenWeHaveAnExistingFile(adapter, 'path.txt', 'contents', {
-      [OPTION_VISIBILITY]: Visibility.PUBLIC,
+      [OPTION_VISIBILITY]: EVisibility.PUBLIC,
     });
 
-    expect((await adapter.visibility('path.txt')).visibility).to.be.eq(Visibility.PUBLIC);
+    expect((await adapter.visibility('path.txt')).visibility).to.be.eq(EVisibility.PUBLIC);
 
-    await adapter.setVisibility('path.txt', Visibility.PRIVATE);
+    await adapter.setVisibility('path.txt', EVisibility.PRIVATE);
 
-    expect((await adapter.visibility('path.txt')).visibility).to.be.eq(Visibility.PRIVATE);
+    expect((await adapter.visibility('path.txt')).visibility).to.be.eq(EVisibility.PRIVATE);
 
-    await adapter.setVisibility('path.txt', Visibility.PUBLIC);
-    expect((await adapter.visibility('path.txt')).visibility).to.be.eq(Visibility.PUBLIC);
+    await adapter.setVisibility('path.txt', EVisibility.PUBLIC);
+    expect((await adapter.visibility('path.txt')).visibility).to.be.eq(EVisibility.PUBLIC);
   });
 
   it('fetching_file_size_of_a_directory', async function () {
@@ -271,7 +271,7 @@ export function filesystemAdapterSpecUtil<T extends IFilesystemAdapter>(
   });
 
   it('setting_visibility_on_a_file_that_does_not_exist', async function () {
-    await expect(getAdapter().setVisibility('path.txt', Visibility.PRIVATE)).to.be.rejectedWith(
+    await expect(getAdapter().setVisibility('path.txt', EVisibility.PRIVATE)).to.be.rejectedWith(
       UnableToSetVisibilityException
     );
   });
@@ -279,30 +279,30 @@ export function filesystemAdapterSpecUtil<T extends IFilesystemAdapter>(
   it('copying_a_file', async function () {
     const adapter = getAdapter();
     await adapter.write('source.txt', 'contents to be copied', {
-      [OPTION_VISIBILITY]: Visibility.PUBLIC,
+      [OPTION_VISIBILITY]: EVisibility.PUBLIC,
     });
     await adapter.copy('source.txt', 'destination.txt');
 
     expect(await adapter.fileExists('source.txt')).to.be.true;
     expect(await adapter.fileExists('destination.txt')).to.be.true;
-    expect((await adapter.visibility('destination.txt')).visibility).to.be.eq(Visibility.PUBLIC);
+    expect((await adapter.visibility('destination.txt')).visibility).to.be.eq(EVisibility.PUBLIC);
     expect(await adapter.read('destination.txt', { encoding: 'utf8' })).to.be.eq('contents to be copied');
   });
 
   it('copying_a_file_again', async function () {
     const adapter = getAdapter();
-    await adapter.write('source.txt', 'contents to be copied', { [OPTION_VISIBILITY]: Visibility.PUBLIC });
+    await adapter.write('source.txt', 'contents to be copied', { [OPTION_VISIBILITY]: EVisibility.PUBLIC });
     await adapter.copy('source.txt', 'destination.txt');
 
     expect(await adapter.fileExists('source.txt')).to.be.true;
     expect(await adapter.fileExists('destination.txt')).to.be.true;
-    expect((await adapter.visibility('destination.txt')).visibility).to.be.eq(Visibility.PUBLIC);
+    expect((await adapter.visibility('destination.txt')).visibility).to.be.eq(EVisibility.PUBLIC);
     expect(await adapter.read('destination.txt', { encoding: 'utf8' })).to.be.eq('contents to be copied');
   });
 
   it('moving_a_file', async function () {
     const adapter = getAdapter();
-    await adapter.write('source.txt', 'contents to be copied', { [OPTION_VISIBILITY]: Visibility.PUBLIC });
+    await adapter.write('source.txt', 'contents to be copied', { [OPTION_VISIBILITY]: EVisibility.PUBLIC });
     await adapter.move('source.txt', 'destination.txt');
     expect(await adapter.fileExists('source.txt')).to.be.eq(
       false,
@@ -312,7 +312,7 @@ export function filesystemAdapterSpecUtil<T extends IFilesystemAdapter>(
       true,
       'After moving, a file should be present at the new location.'
     );
-    expect((await adapter.visibility('destination.txt')).visibility).to.be.eq(Visibility.PUBLIC);
+    expect((await adapter.visibility('destination.txt')).visibility).to.be.eq(EVisibility.PUBLIC);
     expect(await adapter.read('destination.txt', { encoding: 'utf8' })).to.be.eq('contents to be copied');
   });
 

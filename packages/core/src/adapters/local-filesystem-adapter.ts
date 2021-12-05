@@ -1,7 +1,7 @@
 import { BaseEncodingOptions, createReadStream, createWriteStream, ReadStream, Stats, WriteFileOptions } from 'fs';
 import padStart from 'lodash/padStart';
 import { dirname, sep } from 'path';
-import { Visibility } from '../enum';
+import { EVisibility } from '../enum';
 import {
   getDirectoryIterator,
   getRecursiveDirectoryIterator,
@@ -167,7 +167,7 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
    * @param visibility
    * @protected
    */
-  protected resolveDirectoryVisibility(visibility?: Visibility): number {
+  protected resolveDirectoryVisibility(visibility?: EVisibility): number {
     return visibility ? this._visibility.forDirectory(visibility) : this._visibility.defaultForDirectories();
   }
 
@@ -177,18 +177,18 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
   public async write(
     path: string,
     contents: string | Buffer,
-    config: TLocalFilesystemAdapterWriteConfig = { visibility: Visibility.PUBLIC }
+    config: TLocalFilesystemAdapterWriteConfig = { visibility: EVisibility.PUBLIC }
   ) {
     const location = this.prefixer.prefixPath(path);
     await this.ensureDirectoryExists(
       dirname(location),
-      this.resolveDirectoryVisibility(config[OPTION_DIRECTORY_VISIBILITY] as Visibility | undefined)
+      this.resolveDirectoryVisibility(config[OPTION_DIRECTORY_VISIBILITY] as EVisibility | undefined)
     );
-    const visibility = (config[OPTION_VISIBILITY] || Visibility.PUBLIC) as Visibility;
+    const visibility = (config[OPTION_VISIBILITY] || EVisibility.PUBLIC) as EVisibility;
 
     const options: WriteFileOptions = {
       flag: config?.flag || this.writeFlags,
-      mode: this._visibility.forFile(visibility as Visibility),
+      mode: this._visibility.forFile(visibility as EVisibility),
     };
 
     if (config.encoding) {
@@ -212,14 +212,14 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
   public async writeStream(
     path: string,
     resource: Readable,
-    config: TLocalFilesystemAdapterWriteConfig = { visibility: Visibility.PUBLIC }
+    config: TLocalFilesystemAdapterWriteConfig = { visibility: EVisibility.PUBLIC }
   ) {
     const location = this.prefixer.prefixPath(path);
     await this.ensureDirectoryExists(
       dirname(location),
-      this.resolveDirectoryVisibility(config[OPTION_DIRECTORY_VISIBILITY] as Visibility | undefined)
+      this.resolveDirectoryVisibility(config[OPTION_DIRECTORY_VISIBILITY] as EVisibility | undefined)
     );
-    const visibility = (config[OPTION_VISIBILITY] || Visibility.PUBLIC) as Visibility;
+    const visibility = (config[OPTION_VISIBILITY] || EVisibility.PUBLIC) as EVisibility;
 
     const option: any = {
       flags: config?.flag || this.writeFlags,
@@ -300,7 +300,7 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
   /**
    * @inheritdoc
    */
-  public async copy(path: string, newPath: string, config?: { [OPTION_DIRECTORY_VISIBILITY]?: Visibility }) {
+  public async copy(path: string, newPath: string, config?: { [OPTION_DIRECTORY_VISIBILITY]?: EVisibility }) {
     const location = this.prefixer.prefixPath(path);
     const destination = this.prefixer.prefixPath(newPath);
     await this.ensureDirectoryExists(
@@ -451,11 +451,11 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
   /**
    * @inheritdoc
    */
-  public async setVisibility(path: string, visibility: Visibility | string) {
+  public async setVisibility(path: string, visibility: EVisibility | string) {
     const location = this.prefixer.prefixPath(path);
     const mode = (await isDir(location))
-      ? this._visibility.forDirectory(visibility as Visibility)
-      : this._visibility.forFile(visibility as Visibility);
+      ? this._visibility.forDirectory(visibility as EVisibility)
+      : this._visibility.forFile(visibility as EVisibility);
 
     await this.setPermissions(location, mode);
   }
@@ -463,11 +463,11 @@ export class LocalFilesystemAdapter implements IFilesystemAdapter {
   /**
    * @inheritdoc
    */
-  public async createDirectory(dirname: string, config: IFilesystemVisibility = { visibility: Visibility.PUBLIC }) {
+  public async createDirectory(dirname: string, config: IFilesystemVisibility = { visibility: EVisibility.PUBLIC }) {
     const location = this.prefixer.prefixPath(dirname);
     const visibility = (config[OPTION_DIRECTORY_VISIBILITY] ||
       config[OPTION_VISIBILITY] ||
-      Visibility.PUBLIC) as Visibility;
+      EVisibility.PUBLIC) as EVisibility;
     const permission = this.resolveDirectoryVisibility(visibility);
 
     if (await isDir(location)) {

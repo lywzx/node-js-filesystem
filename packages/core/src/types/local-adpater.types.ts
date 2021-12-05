@@ -1,9 +1,9 @@
-import { FileType } from '../enum';
+import { EFileType } from '../enum';
 
 export type IListContentInfo = {
   basename?: string;
   path: string;
-  type: FileType;
+  type: EFileType;
   timestamp?: number;
   size?: number;
 };
@@ -12,6 +12,6 @@ export type IListContentInfo = {
  * dir type
  */
 export type DirType = {
-  type: FileType.dir;
+  type: EFileType.dir;
   path: string;
 };

@@ -7,7 +7,7 @@ import {
   InvalidStreamProvidedException,
   LocalFilesystemAdapter,
   PathTraversalDetectedException,
-  Visibility,
+  EVisibility,
 } from '../../src';
 import { join } from 'path';
 import { expect } from 'chai';
@@ -177,14 +177,14 @@ export function filesystemTestCode<T extends IFilesystemAdapter>(
   it('setting_visibility', async function () {
     await filesystem.write('path.txt', 'contents');
 
-    await filesystem.setVisibility('path.txt', Visibility.PUBLIC);
+    await filesystem.setVisibility('path.txt', EVisibility.PUBLIC);
     const publicVisibility = await filesystem.visibility('path.txt');
 
-    await filesystem.setVisibility('path.txt', Visibility.PRIVATE);
+    await filesystem.setVisibility('path.txt', EVisibility.PRIVATE);
     const privateVisibility = await filesystem.visibility('path.txt');
 
-    expect(publicVisibility).to.be.eq(Visibility.PUBLIC);
-    expect(privateVisibility).to.be.eq(Visibility.PRIVATE);
+    expect(publicVisibility).to.be.eq(EVisibility.PUBLIC);
+    expect(privateVisibility).to.be.eq(EVisibility.PRIVATE);
   });
 
   it('protecting_against_path_traversals', async function () {
@@ -230,7 +230,7 @@ export function filesystemTestCode<T extends IFilesystemAdapter>(
         await filesystem.visibility('../path.txt');
       },
       async function (filesystem: IFilesystemOperator) {
-        await filesystem.setVisibility('../path.txt', Visibility.PUBLIC);
+        await filesystem.setVisibility('../path.txt', EVisibility.PUBLIC);
       },
       async function (filesystem: IFilesystemOperator) {
         await filesystem.copy('../path.txt', 'path.txt');
