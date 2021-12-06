@@ -21,9 +21,12 @@
   },
   "dependencies": {
     "@filesystem/core": "^0.0.3-alpha.5",
-    "basic-ftp": "^4.6.3"
+    "ssh2-sftp-client": "~7.2.0"
   },
   "peerDependencies": {
     "@filesystem/core": "0.0.3-alpha.2"
+  },
+  "devDependencies": {
+    "@types/ssh2-sftp-client": "~7.0.0"
   }
 }
