@@ -1,15 +1,14 @@
 import {
+  DirectoryAttributes,
   EFileType,
   EVisibility,
   FileAttributes,
   FInfoMimeTypeDetector,
   IFilesystemAdapter,
-  IListContentInfo,
   IMimeTypeDetector,
   IReadFileOptions,
   IStorageAttributes,
   IVisibilityConverter,
-  NotSupportedException,
   PathPrefixer,
   RequireOne,
   UnableToCreateDirectoryException,
@@ -154,7 +153,7 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
    *
    * @return {object} sorted listing
    */
-  protected sortListing(result: IListContentInfo[]) {
+  protected sortListing(result: IStorageAttributes[]) {
     return sortBy(result, 'path');
   }
 
@@ -170,69 +169,29 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
    */
   protected async normalizeObject(item: FileInfo, base: string): Promise<IStorageAttributes> {
     const systemType = this.systemType ?? (await this.detectSystemType(item));
-
-    if (systemType === 'unix') {
-      return this.normalizeUnixObject(item, base);
-    } else if (systemType === 'windows') {
-      return this.normalizeWindowsObject(item, base);
-    }
-
-    throw new NotSupportedException(`The FTP system type '${systemType}' is currently not supported.`);
-  }
-
-  /**
-   * Normalize a Unix file entry.
-   *
-   * Given $item contains:
-   *    '-rw-r--r--   1 ftp      ftp           409 Aug 19 09:01 file1.txt'
-   *
-   * This will return:
-   * [
-   *   'type' => 'file',
-   *   'path' => 'file1.txt',
-   *   'visibility' => 'public',
-   *   'size' => 409,
-   *   'timestamp' => 1566205260
-   * ]
-   *
-   * @param {FileInfo} item
-   * @param {string} base
-   *
-   * @return array normalized file array
-   */
-  protected normalizeUnixObject(item: FileInfo, base: string): IStorageAttributes {
     const type = item.isFile ? EFileType.file : item.isDirectory ? EFileType.dir : EFileType.link;
-    const date = item.rawModifiedAt ? new Date(item.rawModifiedAt).getTime() : 0;
+    const lastModified = item.rawModifiedAt ? new Date(item.rawModifiedAt).getTime() : 0;
     const path = base === '' ? base : `${base.replace(/\/$/, '')}${item.name}`;
 
-    return {
-      type,
+    const size = item.size;
+    if (type === EFileType.file) {
+      return new FileAttributes(
+        path,
+        size,
+        systemType === ESystemType.UNIX ? this._visibility.inverseForFile(item.permissions!) : undefined,
+        lastModified
+      );
+    }
+
+    return new DirectoryAttributes(
       path,
-      visibility: EVisibility.PUBLIC,
-      size: item.size,
-      timestamp: date,
-    };
+      systemType === ESystemType.UNIX ? this._visibility.inverseForDirectory(item.permissions!) : undefined,
+      lastModified
+    );
+
+    // throw new NotSupportedException(`The FTP system type '${systemType}' is currently not supported.`);
   }
 
-  /**
-   * Normalize a Windows/DOS file entry.
-   *
-   * @param {string} item
-   * @param {string} base
-   *
-   * @return array normalized file array
-   */
-  protected normalizeWindowsObject(item: FileInfo, base: string): IStorageAttributes {
-    const type = item.isFile ? EFileType.file : item.isSymbolicLink ? EFileType.link : EFileType.dir;
-
-    return {
-      type,
-      path: item.name,
-      visibility: EVisibility.PUBLIC,
-      size: item.size,
-      timestamp: item.modifiedAt?.getDate() || 0,
-    };
-  }
   /**
    * Get the system type from a listing item.
    *
@@ -248,6 +207,8 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
     } catch (e) {}
     return /^[0-9]{2,4}-[0-9]{2}-[0-9]{2}/.test(message) ? ESystemType.WINDOWS : ESystemType.UNIX;
   }
+
+  protected async listDirectoryContentsRecursive() {}
 
   getPathPrefix(): PathPrefixer {
     return this.prefixer;

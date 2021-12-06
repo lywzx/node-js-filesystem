@@ -1,11 +1,10 @@
 import omit from 'lodash/omit';
 import { ReadStream } from 'fs';
-import { DirType, EFileType, IListContentInfo, InvalidRootException, EVisibility } from '@filesystem/core';
+import { EFileType, InvalidRootException, EVisibility } from '@filesystem/core';
 import { guessMimeType } from '@filesystem/core/src/util/util';
 import { defer } from '@filesystem/core/src/util/promise-defer.util';
 import { Writable } from 'stream';
 import { AbstractFtpAdapter } from './abstract-ftp-adapter';
-import { FtpAdapterConstructorConfigInterface } from '../interfaces';
 import { ConnectionException } from '../exceptions';
 import { ESystemType } from '../constant';
 
@@ -57,7 +56,7 @@ export class Ftp extends AbstractFtpAdapter {
    */
   protected isPureFtpd = true;
 
-  constructor(protected config: FtpAdapterConstructorConfigInterface) {
+  constructor(protected config: any) {
     super(config);
     this.setConfig(config);
   }
@@ -303,7 +302,7 @@ return result;*/
   /**
    * @inheritdoc
    */
-  public async createDir(dirname: string, config?: any): Promise<DirType> {
+  public async createDir(dirname: string, config?: any) {
     await this.client.ensureDir(dirname);
     return {
       type: EFileType.dir,
