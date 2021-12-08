@@ -11,6 +11,7 @@ import {
   IVisibilityConverter,
   PathPrefixer,
   RequireOne,
+  UnableToCopyFileException,
   UnableToCreateDirectoryException,
   UnableToDeleteDirectoryException,
   UnableToDeleteFileException,
@@ -138,7 +139,7 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
    * @return array directory listing
    */
   protected async normalizeListing(listing: FileInfo[], prefix = ''): Promise<IStorageAttributes[]> {
-    const result: IListContentInfo[] = [];
+    const result: IStorageAttributes[] = [];
     for (const item of listing) {
       result.push(await this.normalizeObject(item, prefix));
     }
@@ -208,23 +209,23 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
     return /^[0-9]{2,4}-[0-9]{2}-[0-9]{2}/.test(message) ? ESystemType.WINDOWS : ESystemType.UNIX;
   }
 
-  protected async listDirectoryContentsRecursive() {}
+  protected async listDirectoryContentsRecursive(): Promise<IStorageAttributes[]> {
+    return [];
+  }
 
   getPathPrefix(): PathPrefixer {
     return this.prefixer;
   }
 
   public async copy(source: string, destination: string, config?: Record<string, any>): Promise<void> {
-    /*try {
-      const readStream = await this.readStream($source);
-      $visibility = $this._visibility(source).visibility();
-      $this->writeStream($destination, $readStream, new Config(compact('visibility')));
-    } catch (Throwable $exception) {
-      if (isset($readStream) && is_resource($readStream)) {
-      @fclose($readStream);
-      }
-      throw UnableToCopyFile::fromLocationTo($source, $destination, $exception);
-    }*/
+    const sourceLocation = this.getPathPrefix().prefixPath(source);
+    const destinationLocation = this.getPathPrefix().prefixPath(destination);
+    try {
+      const readStream = await this.readStream(sourceLocation);
+      await this.client.uploadFrom(readStream, destinationLocation);
+    } catch (e) {
+      throw UnableToCopyFileException.fromLocationTo(source, destination, e);
+    }
   }
 
   async createDirectory(path: string, config?: Record<string, any>): Promise<void> {
@@ -327,11 +328,11 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
   }
 
   async move(source: string, destination: string, config?: Record<string, any>): Promise<void> {
-    await this.ensureParentDirectoryExists(destination);
     const sourceLocation = this.getPathPrefix().prefixPath(source);
     const destinationLocation = this.getPathPrefix().prefixPath(destination);
     await this.connect();
     try {
+      await this.ensureParentDirectoryExists(destination);
       await this.client.rename(sourceLocation, destinationLocation);
     } catch (e) {
       throw UnableToMoveFileException.fromLocationTo(source, destination, e);
@@ -394,12 +395,14 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
         }
       },
     });
+    await this.connect();
     await client.downloadTo(wS, path);
 
     return readable;
   }
 
-  setVisibility(path: string, visibility: EVisibility): Promise<void> {
+  async setVisibility(path: string, visibility: EVisibility): Promise<void> {
+    await this.connect();
     return Promise.resolve(undefined);
   }
 
