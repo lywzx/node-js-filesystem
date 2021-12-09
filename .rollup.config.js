@@ -16,7 +16,9 @@ module.exports = {
     'ali-oss',
     '@nestjs/core',
     '@nestjs/common',
-    'lodash'
+    'lodash',
+    'basic-ftp',
+    'ssh2-sftp-client'
   ],
   inputPrefix: 'src',
   workspace: ['packages'],

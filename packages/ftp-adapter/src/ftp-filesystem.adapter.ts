@@ -20,11 +20,11 @@ import {
 } from '@filesystem/core';
 import { Readable, Writable } from 'stream';
 import { ReadStream } from 'fs';
-import { IFtpFilesystemAdapterConfig } from '../interfaces';
+import { IFtpFilesystemAdapterConfig } from './interfaces';
 import { Client, FileInfo } from 'basic-ftp';
 import omit from 'lodash/omit';
-import { ESystemType } from '../constant';
-import { ConnectionException } from '../exceptions';
+import { ESystemType } from './constant';
+import { ConnectionException } from './exceptions';
 import { FtpVisibilityConverter } from './ftp-visibility-converter';
 import { dirname } from 'path';
 import { defer } from '@filesystem/core/src/util/promise-defer.util';
@@ -105,6 +105,7 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
 
   public async fetchMetadata(path: string, type?: string): Promise<FileAttributes> {
     await this.connect();
+    return {} as any;
     /*const location = this.getPathPrefix().prefixPath(path);
     let err: Error;
     let result;
@@ -201,15 +202,10 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
    * @return string the system type
    */
   protected async detectSystemType(item: FileInfo): Promise<ESystemType> {
-    let message = '';
-    try {
-      const result = await this.client.send('SYST');
-      message = result.message;
-    } catch (e) {}
-    return /^[0-9]{2,4}-[0-9]{2}-[0-9]{2}/.test(message) ? ESystemType.WINDOWS : ESystemType.UNIX;
+    return item.permissions === undefined ? ESystemType.WINDOWS : ESystemType.UNIX;
   }
 
-  protected async listDirectoryContentsRecursive(): Promise<IStorageAttributes[]> {
+  protected async listDirectoryContentsRecursive(location: string): Promise<IStorageAttributes[]> {
     return [];
   }
 
