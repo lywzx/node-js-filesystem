@@ -1,14 +1,25 @@
-import { getFtpConfig } from './ftp.config';
+import { filesystemAdapterSpecUtil } from '@filesystem/core/test/adapter-test-utilties/filesystem-adapter.spec.util';
 import { FtpFilesystemAdapter } from '../src';
+import { join } from 'path';
+import { ftpRootConfig, getFtpConfig } from './ftp.config';
 
-describe('ftp adapter test', function () {
-  this.timeout(500000);
+describe('ftp adapter test', function (): void {
+  this.timeout(10000);
 
-  it('should test', async function () {
-    const adp = new FtpFilesystemAdapter(getFtpConfig());
+  const aliOssRoot = ftpRootConfig;
+  const getAdapter = () => new FtpFilesystemAdapter(getFtpConfig(), aliOssRoot);
 
-    debugger
-    const result = await adp.fetchMetadata('/user/js/tinymce/lang/zh_CN.js111');
-    console.log(result);
+  beforeEach(async function () {
+    try {
+      await getAdapter().deleteDirectory('');
+    } catch (e) {}
   });
+
+  afterEach(async function () {
+    try {
+      await getAdapter().deleteDirectory('');
+    } catch (e) {}
+  });
+
+  filesystemAdapterSpecUtil(join(__dirname, '../../core/test/files/test-root'), getAdapter, ['mimetype']);
 });

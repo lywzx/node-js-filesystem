@@ -9,6 +9,11 @@ if (isReadableSync(envPath)) {
   });
 }
 
+/**
+ * ali oss test root dir
+ */
+export const ftpRootConfig = process.env.REMOTE_FILESYSTEM_ROOT_DIR || 'root/dir';
+
 export const getFtpConfig = () => {
   return {
     host: process.env.FTP_HOST,
