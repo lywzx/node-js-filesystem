@@ -255,7 +255,6 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
   }
 
   async fileExists(path: string): Promise<boolean> {
-    await this.connect();
     try {
       await this.fileSize(path);
       return true;
@@ -267,7 +266,7 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
   async fileSize(path: string): Promise<RequireOne<FileAttributes, 'fileSize'>> {
     await this.connect();
     const location = this.getPathPrefix().prefixPath(path);
-    let size: number | undefined;
+    let size: number | undefined = -1;
     let err: Error | undefined;
     try {
       size = await this.client.size(location);
@@ -275,7 +274,7 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
       err = e;
     }
 
-    if (size === undefined || size < 0) {
+    if (err || size < 0) {
       throw UnableToRetrieveMetadataException.fileSize(path, err?.message, err);
     }
 
@@ -360,9 +359,15 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
         }
       },
     });
-    await client.downloadTo(wS, path);
+    await client.downloadTo(wS, this.getPathPrefix().prefixPath(path));
 
-    return promiseDefer.promise;
+    const res = await promiseDefer.promise;
+
+    if (config?.encoding != 'binary') {
+      return res.toString();
+    }
+
+    return res;
   }
 
   async readStream(path: string, config?: Record<string, any>): Promise<ReadStream> {
@@ -392,7 +397,7 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
       },
     });
     await this.connect();
-    await client.downloadTo(wS, path);
+    await client.downloadTo(wS, this.getPathPrefix().prefixPath(path));
 
     return readable;
   }

@@ -40,7 +40,7 @@ export function filesystemAdapterSpecUtil<T extends IFilesystemAdapter>(
     const contents = await adapter.read('path.txt', { encoding: 'utf8' });
 
     expect(fileExists).to.be.true;
-    expect(contents).to.be.eq(contents);
+    expect(contents).to.be.eq('contents');
   });
 
   it('writing_a_file_with_a_stream', async function () {
