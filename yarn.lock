@@ -2080,7 +2080,7 @@ base@^0.11.1:
     mixin-deep "^1.2.0"
     pascalcase "^0.1.1"
 
-basic-ftp@^4.5.4, basic-ftp@^4.6.3:
+basic-ftp@^4.6.3:
   version "4.6.6"
   resolved "https://registry.yarnpkg.com/basic-ftp/-/basic-ftp-4.6.6.tgz#c37abae3b3bffa131027adb6a5b60938d9109501"
   integrity sha512-5nTclY5mVxjeFoq9cBTzgQvcM1UfeGTd4hCCvb8AgC88wHMDQCD4UX5hZo2jaiSh96Nf+gFy1joNI9iH639bvQ==
@@ -3747,9 +3747,9 @@ flush-write-stream@^1.0.0:
     readable-stream "^2.3.6"
 
 follow-redirects@^1.10.0, follow-redirects@^1.14.0:
-  version "1.14.5"
-  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.14.5.tgz#f09a5848981d3c772b5392309778523f8d85c381"
-  integrity sha512-wtphSXy7d4/OR+MvIFbCVBDzZ5520qV8XfPklSN5QtxuMUJZ+b0Wnst1e1lCDocfzuCkHqj8k0FpZqO+UIaKNA==
+  version "1.14.8"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.14.8.tgz#016996fb9a11a100566398b1c6839337d7bfa8fc"
+  integrity sha512-1x0S9UVJHsQprFcEC/qnNzBLcIxsjAV905f/UkQxbclCsoTWlacCNOpQa/anodLl2uaEKFhfWOvM2Qg77+15zA==
 
 for-in@^1.0.2:
   version "1.0.2"
