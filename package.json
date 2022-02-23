@@ -10,7 +10,6 @@
     "test": "mocha",
     "coverage": "nyc mocha",
     "coverage:watch": "nyc mocha --watch",
-    "generate-code": "ts-node -r tsconfig-paths/register packages/scripts/src/index.ts",
     "lint-staged": "lint-staged"
   },
   "devDependencies": {
