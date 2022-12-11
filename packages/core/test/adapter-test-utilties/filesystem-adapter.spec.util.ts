@@ -110,7 +110,7 @@ export function filesystemAdapterSpecUtil<T extends IFilesystemAdapter>(
     await adapter.write('path.txt', 'contents');
     const readStream = await adapter.readStream('path.txt');
 
-    expect(readStream instanceof Readable).to.be.true;
+    expect(readStream).to.be.instanceof(Readable);
     expect(await getStream(readStream)).to.be.eq('contents');
   });
 
