@@ -337,7 +337,7 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
   async read(path: string, config?: IReadFileOptions): Promise<string | Buffer> {
     const promiseDefer = defer<any>();
     const client = this.client;
-    let result: Buffer | string;
+    let result: Buffer | string = new Buffer([]);
     const wS = new Writable({
       autoDestroy: true,
       write(chunk: any, encoding: string, callback: (error?: Error | null) => void) {
@@ -352,14 +352,17 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
       },
       final(callback: (error?: Error | null) => void) {
         callback();
-        if (result === undefined) {
-          promiseDefer.reject(new Error(''));
-        } else {
-          promiseDefer.resolve(result);
-        }
+        promiseDefer.resolve(result);
       },
     });
-    await client.downloadTo(wS, this.getPathPrefix().prefixPath(path));
+    try {
+      const result = await client.downloadTo(wS, this.getPathPrefix().prefixPath(path));
+      if (result.code < 200 || result.code > 300) {
+        promiseDefer.reject(new Error(result.message));
+      }
+    } catch (e) {
+      promiseDefer.reject(e);
+    }
 
     const res = await promiseDefer.promise;
 
@@ -373,7 +376,6 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
   async readStream(path: string, config?: Record<string, any>): Promise<ReadStream> {
     const promiseDefer = defer<any>();
     const client = this.client;
-    const readable = new ReadStream();
     let result: Buffer | string;
     const wS = new Writable({
       autoDestroy: true,
@@ -397,9 +399,12 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
       },
     });
     await this.connect();
+
+    wS.pipe()
+
     await client.downloadTo(wS, this.getPathPrefix().prefixPath(path));
 
-    return readable;
+    return ReadStream.from(result!);
   }
 
   async setVisibility(path: string, visibility: EVisibility): Promise<void> {
