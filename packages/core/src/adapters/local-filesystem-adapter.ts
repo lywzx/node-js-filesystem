@@ -12,9 +12,17 @@ import {
   mkDir,
   mkDirSync,
   rmDir,
+  chmod,
+  copyFile,
+  lstat,
+  pathExists,
+  readFile,
+  rename,
+  stat,
+  unlink,
+  writeFile,
+  defer,
 } from '../util';
-import { defer } from '../util/promise-defer.util';
-import { chmod, copyFile, lstat, pathExists, readFile, rename, stat, unlink, writeFile } from '../util/fs-extra.util';
 import {
   IFilesystemAdapter,
   IReadFileOptions,

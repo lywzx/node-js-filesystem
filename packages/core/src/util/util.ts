@@ -1,4 +1,4 @@
-import { ReadStream, Stats } from 'fs';
+import { Stats } from 'fs';
 import { fromBuffer, fromFile } from 'file-type';
 import { getType as getMimeType } from 'mime';
 import { extname } from 'path';
