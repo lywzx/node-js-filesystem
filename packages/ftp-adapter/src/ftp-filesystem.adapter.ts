@@ -29,6 +29,7 @@ import { FtpVisibilityConverter } from './ftp-visibility-converter';
 import { dirname } from 'path';
 import { defer } from '@filesystem/core/src/util/promise-defer.util';
 import sortBy from 'lodash/sortBy';
+import { createReadStreamFromWriteStream } from './util';
 
 export class FtpFilesystemAdapter implements IFilesystemAdapter {
   /**
@@ -377,34 +378,13 @@ export class FtpFilesystemAdapter implements IFilesystemAdapter {
     const promiseDefer = defer<any>();
     const client = this.client;
     let result: Buffer | string;
-    const wS = new Writable({
-      autoDestroy: true,
-      write(chunk: any, encoding: string, callback: (error?: Error | null) => void) {
-        if (encoding === 'buffer') {
-          if (!result) {
-            result = chunk;
-          } else {
-            result = Buffer.concat([result, chunk]);
-          }
-        }
-        callback(null);
-      },
-      final(callback: (error?: Error | null) => void) {
-        callback();
-        if (result === undefined) {
-          promiseDefer.reject(new Error(''));
-        } else {
-          promiseDefer.resolve(result);
-        }
-      },
-    });
     await this.connect();
 
-    wS.pipe()
+    const { from, to } = createReadStreamFromWriteStream();
 
-    await client.downloadTo(wS, this.getPathPrefix().prefixPath(path));
+    await client.downloadTo(from, this.getPathPrefix().prefixPath(path));
 
-    return ReadStream.from(result!);
+    return to;
   }
 
   async setVisibility(path: string, visibility: EVisibility): Promise<void> {
