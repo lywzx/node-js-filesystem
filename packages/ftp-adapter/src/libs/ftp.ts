@@ -1,11 +1,10 @@
 import omit from 'lodash/omit';
 import { ReadStream } from 'fs';
-import { DirType, FileType, IListContentInfo, InvalidRootException, Visibility } from '@filesystem/core';
+import { EFileType, InvalidRootException, EVisibility } from '@filesystem/core';
 import { guessMimeType } from '@filesystem/core/src/util/util';
 import { defer } from '@filesystem/core/src/util/promise-defer.util';
 import { Writable } from 'stream';
 import { AbstractFtpAdapter } from './abstract-ftp-adapter';
-import { FtpAdapterConstructorConfigInterface } from '../interfaces';
 import { ConnectionException } from '../exceptions';
 import { ESystemType } from '../constant';
 
@@ -57,7 +56,7 @@ export class Ftp extends AbstractFtpAdapter {
    */
   protected isPureFtpd = true;
 
-  constructor(protected config: FtpAdapterConstructorConfigInterface) {
+  constructor(protected config: any) {
     super(config);
     this.setConfig(config);
   }
@@ -136,14 +135,6 @@ export class Ftp extends AbstractFtpAdapter {
     if (this.client.ftp.encoding === 'utf8') {
       throw new ConnectionException(`Could not set UTF-8 mode for connection: ${this.getHost()} :: ${this.getPort()}`);
     }
-    /*if (this.utf8) {
-      response = ftp_raw(this.connection, "OPTS UTF8 ON");
-      if (substr(response[0], 0, 3) !== '200') {
-        throw new ConnectionRuntimeException(
-          'Could not set UTF-8 mode for connection: ' . this.getHost() . '::' . this.getPort()
-      );
-      }
-    }*/
   }
 
   /**
@@ -169,7 +160,6 @@ export class Ftp extends AbstractFtpAdapter {
   protected async setConnectionRoot() {
     const root = this.getRoot();
     if (root) {
-      // TODO check
       try {
         await this.client.cd(root);
       } catch (e) {
@@ -312,10 +302,10 @@ return result;*/
   /**
    * @inheritdoc
    */
-  public async createDir(dirname: string, config?: any): Promise<DirType> {
+  public async createDir(dirname: string, config?: any) {
     await this.client.ensureDir(dirname);
     return {
-      type: FileType.dir,
+      type: EFileType.dir,
       path: dirname,
     };
   }
@@ -343,13 +333,13 @@ return result;*/
   public async getMetadata(path: string) {
     if (path === '') {
       return {
-        type: FileType.dir,
+        type: EFileType.dir,
         path: '',
       };
     }
     let isDir = false;
     try {
-      const result = await this.client.cd(path);
+      await this.client.cd(path);
       isDir = true;
     } catch (e) {
       const message = (e.message || '').toLowerCase();
@@ -361,7 +351,7 @@ return result;*/
     if (isDir) {
       await this.setConnectionRoot();
       return {
-        type: FileType.dir,
+        type: EFileType.dir,
         path,
       };
     }
@@ -481,7 +471,7 @@ return result;*/
   /**
    * @inheritdoc
    */
-  public setVisibility(path: string, visibility: Visibility | string) {
+  public setVisibility(path: string, visibility: EVisibility | string) {
     return {} as any;
     /*mode = visibility === AdapterInterface::VISIBILITY_PUBLIC ? this.getPermPublic() : this.getPermPrivate();
 

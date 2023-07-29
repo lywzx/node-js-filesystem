@@ -1,9 +1,9 @@
-export * from './visibility';
+export * from './EVisibility';
 
 /**
  * file type
  */
-export enum FileType {
+export enum EFileType {
   /**
    * file
    */

@@ -4,9 +4,9 @@ import isFunction from 'lodash/isFunction';
 import sortBy from 'lodash/sortBy';
 import isNumber from 'lodash/isNumber';
 import { isNumeric, stringChunk } from '@filesystem/core/src/util/util';
-import { FileType, IListContentInfo, NotSupportedException, Visibility } from '@filesystem/core';
-import { FtpAdapterConstructorConfigInterface } from '../interfaces';
+import { EFileType, IListContentInfo, NotSupportedException, EVisibility } from '@filesystem/core';
 import { ESystemType } from '../constant';
+import { IFtpFilesystemAdapterConfig } from '../interfaces';
 
 export abstract class AbstractFtpAdapter {
   /**
@@ -81,7 +81,7 @@ export abstract class AbstractFtpAdapter {
    *
    * @param {FtpAdapterConstructorConfigInterface} config
    */
-  protected constructor(protected config: FtpAdapterConstructorConfigInterface) {
+  protected constructor(protected config: IFtpFilesystemAdapterConfig) {
     this.client = new Client(config.timeout || 3000);
   }
 
@@ -92,7 +92,7 @@ export abstract class AbstractFtpAdapter {
    *
    * @return this
    */
-  public setConfig(config: FtpAdapterConstructorConfigInterface) {
+  public setConfig(config: IFtpFilesystemAdapterConfig) {
     for (const setting of this.configurable) {
       if (!(setting in config)) {
         continue;
@@ -353,14 +353,14 @@ export abstract class AbstractFtpAdapter {
    *
    * @return array normalized file array
    */
-  protected normalizeUnixObject(item: FileInfo, base: string): IListContentInfo & { visibility: Visibility } {
-    const type = item.isFile ? FileType.file : item.isDirectory ? FileType.dir : FileType.link;
+  protected normalizeUnixObject(item: FileInfo, base: string): IListContentInfo & { visibility: EVisibility } {
+    const type = item.isFile ? EFileType.file : item.isDirectory ? EFileType.dir : EFileType.link;
     const date = item.rawModifiedAt ? new Date(item.rawModifiedAt).getTime() : 0;
     // todo 待完善
     return {
       type,
       path: item.name,
-      visibility: Visibility.PUBLIC,
+      visibility: EVisibility.PUBLIC,
       size: item.size,
       timestamp: date,
     };
@@ -437,13 +437,13 @@ export abstract class AbstractFtpAdapter {
    *
    * @return array normalized file array
    */
-  protected normalizeWindowsObject(item: FileInfo, base: string): IListContentInfo & { visibility: Visibility } {
-    const type = item.isFile ? FileType.file : item.isSymbolicLink ? FileType.link : FileType.dir;
+  protected normalizeWindowsObject(item: FileInfo, base: string): IListContentInfo & { visibility: EVisibility } {
+    const type = item.isFile ? EFileType.file : item.isSymbolicLink ? EFileType.link : EFileType.dir;
 
     return {
       type,
       path: item.name,
-      visibility: Visibility.PUBLIC,
+      visibility: EVisibility.PUBLIC,
       size: item.size,
       timestamp: item.modifiedAt?.getDate() || 0,
     };
@@ -461,8 +461,7 @@ export abstract class AbstractFtpAdapter {
     try {
       const result = await this.client.send('SYST');
       message = result.message;
-    } catch (e) {
-    }
+    } catch (e) {}
     return /^[0-9]{2,4}-[0-9]{2}-[0-9]{2}/.test(message) ? ESystemType.WINDOWS : ESystemType.UNIX;
   }
 
@@ -524,7 +523,6 @@ export abstract class AbstractFtpAdapter {
   public async has(path: string) {
     try {
       const result = await this.client.sendIgnoringError('pwd');
-      debugger;
     } catch (e) {
       debugger;
     }

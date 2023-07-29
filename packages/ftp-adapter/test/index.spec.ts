@@ -1,20 +1,25 @@
-import { Ftp } from '../src/libs/ftp';
-import { getFtpConfig } from './ftp.config';
+import { filesystemAdapterSpecUtil } from '@filesystem/core/test/adapter-test-utilties/filesystem-adapter.spec.util';
+import { FtpFilesystemAdapter } from '../src';
+import { join } from 'path';
+import { ftpRootConfig, getFtpConfig } from './ftp.config';
 
-describe('ftp adapter test', function () {
-  this.timeout(500000);
+describe('ftp adapter test', function (): void {
+  this.timeout(10000);
 
-  it('should test', async function () {
-    const adp = new Ftp(getFtpConfig());
+  const aliOssRoot = ftpRootConfig;
+  const getAdapter = () => new FtpFilesystemAdapter(getFtpConfig(), aliOssRoot);
 
-    await adp.init();
+  beforeEach(async function () {
     try {
-      const result = await adp.listContents('/upload/ebook');
-      console.log('......', result);
-    } catch (e) {
-      console.log('.......', e);
-    }
-    const res = await adp.read('/user/js/tinymce/lang/zh_CN.js');
-    console.log(res.toString());
+      await getAdapter().deleteDirectory('');
+    } catch (e) {}
   });
+
+  afterEach(async function () {
+    try {
+      await getAdapter().deleteDirectory('');
+    } catch (e) {}
+  });
+
+  filesystemAdapterSpecUtil(join(__dirname, '../../core/test/files/test-root'), getAdapter, ['mimetype']);
 });

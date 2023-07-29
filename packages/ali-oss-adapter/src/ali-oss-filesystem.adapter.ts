@@ -15,7 +15,7 @@ import {
   UnableToReadFileException,
   UnableToRetrieveMetadataException,
   UnableToSetVisibilityException,
-  Visibility,
+  EVisibility,
 } from '@filesystem/core';
 import { ReadStream } from 'fs';
 import { Readable } from 'stream';
@@ -196,7 +196,7 @@ export class AliOssFilesystemAdapter implements IFilesystemAdapter {
       });
   }
 
-  public async setVisibility(path: string, visibility: Visibility): Promise<void> {
+  public async setVisibility(path: string, visibility: EVisibility): Promise<void> {
     await this.client
       .putACL(this.prefixer.prefixPath(path), this._visibility.forFile(visibility) as OSS.ACLType)
       .catch((res) => {
@@ -225,7 +225,7 @@ export class AliOssFilesystemAdapter implements IFilesystemAdapter {
     };
     // set alioss visible
     if (config && config[OPTION_VISIBILITY]) {
-      set(options, 'headers.x-oss-object-acl', this._visibility.forFile(config[OPTION_VISIBILITY] as Visibility));
+      set(options, 'headers.x-oss-object-acl', this._visibility.forFile(config[OPTION_VISIBILITY] as EVisibility));
     }
     await this.client.put(this.prefixer.prefixPath(path), content, options);
     return Promise.resolve(undefined);

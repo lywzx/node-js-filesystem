@@ -1,4 +1,4 @@
-import { Visibility } from './enum';
+import { EVisibility } from './enum';
 import { IFilesystemOperator, IFilesystemConfig, IFilesystemAdapter } from './interfaces';
 import { isReadableStream } from './util/util';
 import get from 'lodash/get';
@@ -158,8 +158,8 @@ export class Filesystem<T extends IFilesystemAdapter> implements IFilesystemOper
   /**
    * @inheritdoc
    */
-  public setVisibility(path: string, visibility: Visibility | string) {
-    return this.getAdapter().setVisibility(this.pathNormalizer.normalizePath(path), visibility as Visibility);
+  public setVisibility(path: string, visibility: EVisibility | string) {
+    return this.getAdapter().setVisibility(this.pathNormalizer.normalizePath(path), visibility as EVisibility);
   }
 
   /**

@@ -1,7 +1,7 @@
 /**
  * file visible
  */
-export enum Visibility {
+export enum EVisibility {
   /**
    * public visibility
    */

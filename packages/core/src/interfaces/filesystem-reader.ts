@@ -1,6 +1,6 @@
 import { IStorageAttributes } from './storage-attributes.interface';
 import { ReadStream } from 'fs';
-import { Visibility } from '../enum';
+import { EVisibility } from '../enum';
 
 export interface IFilesystemReader {
   /**
@@ -68,7 +68,7 @@ export interface IFilesystemReader {
    * Get the visibility of a file.
    * @param {string} path
    *
-   * @returns {Visibility|undefined}
+   * @returns {EVisibility|undefined}
    */
-  visibility(path: string): Promise<Visibility>;
+  visibility(path: string): Promise<EVisibility>;
 }

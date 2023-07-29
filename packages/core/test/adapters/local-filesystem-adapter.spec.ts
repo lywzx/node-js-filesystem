@@ -1,4 +1,4 @@
-import { LocalFilesystemAdapter, Visibility } from '@filesystem/core';
+import { LocalFilesystemAdapter, EVisibility } from '@filesystem/core';
 import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import * as fs from 'fs';
@@ -66,7 +66,7 @@ describe('local adapter test', function (): void {
   it('writing_a_file_with_visibility', async function () {
     const adapter = new LocalFilesystemAdapter(root, new PortableVisibilityConverter());
     await adapter.write('/file.txt', 'contents', {
-      visibility: Visibility.PRIVATE,
+      visibility: EVisibility.PRIVATE,
     });
     expect(await readFile(join(root, './file.txt'), { encoding: 'utf8' })).to.be.contain('contents');
     expect((await stat(join(root, './file.txt'))).mode & 0o0777).to.be.eq(0o0600);
@@ -75,7 +75,7 @@ describe('local adapter test', function (): void {
   it('failing_to_set_visibility', async function () {
     const adapter = new LocalFilesystemAdapter(root);
 
-    await expect(adapter.setVisibility('./file.txt', Visibility.PUBLIC)).to.be.rejectedWith(
+    await expect(adapter.setVisibility('./file.txt', EVisibility.PUBLIC)).to.be.rejectedWith(
       UnableToSetVisibilityException
     );
   });
@@ -236,16 +236,16 @@ describe('local adapter test', function (): void {
   describe('#createDirectory', function () {
     it('creating_a_directory', async function () {
       const adapter = new LocalFilesystemAdapter(root);
-      await adapter.createDirectory('public', { visibility: Visibility.PUBLIC });
+      await adapter.createDirectory('public', { visibility: EVisibility.PUBLIC });
 
       expect(await isDir(join(root, './public'))).to.be.true;
       expect((await lstat(join(root, './public'))).mode & 0o1777).to.be.eq(0o0755);
 
-      await adapter.createDirectory('private', { visibility: Visibility.PRIVATE });
+      await adapter.createDirectory('private', { visibility: EVisibility.PRIVATE });
       expect(await isDir(join(root, './private'))).to.be.true;
       expect((await lstat(join(root, './private'))).mode & 0o1777).to.be.eq(0o0700);
 
-      await adapter.createDirectory('also_private', { directory_visibility: Visibility.PRIVATE });
+      await adapter.createDirectory('also_private', { directory_visibility: EVisibility.PRIVATE });
       expect(await isDir(join(root, './also_private'))).to.be.true;
       expect((await lstat(join(root, './also_private'))).mode & 0o1777).to.be.eq(0o0700);
     });
@@ -257,11 +257,11 @@ describe('local adapter test', function (): void {
 
     it('creating_a_directory_is_idempotent', async function () {
       const adapter = new LocalFilesystemAdapter(root);
-      await adapter.createDirectory('/something/', { visibility: Visibility.PRIVATE });
+      await adapter.createDirectory('/something/', { visibility: EVisibility.PRIVATE });
 
       expect((await lstat(join(root, './something'))).mode & 0o1777).to.be.eq(0o0700);
 
-      await adapter.createDirectory('/something/', { visibility: Visibility.PUBLIC });
+      await adapter.createDirectory('/something/', { visibility: EVisibility.PUBLIC });
       expect((await lstat(join(root, './something'))).mode & 0o1777).to.be.eq(0o0755);
     });
   });
@@ -269,11 +269,11 @@ describe('local adapter test', function (): void {
   describe('#visibility', function () {
     it('retrieving_visibility', async function () {
       const adapter = new LocalFilesystemAdapter(root);
-      await adapter.write('public.txt', 'contents', { visibility: Visibility.PUBLIC });
-      expect((await adapter.visibility('public.txt')).visibility).to.be.eq(Visibility.PUBLIC);
+      await adapter.write('public.txt', 'contents', { visibility: EVisibility.PUBLIC });
+      expect((await adapter.visibility('public.txt')).visibility).to.be.eq(EVisibility.PUBLIC);
 
       await adapter.write('private.txt', 'contents', { visibility: 'private' });
-      expect((await adapter.visibility('private.txt')).visibility).to.be.eq(Visibility.PRIVATE);
+      expect((await adapter.visibility('private.txt')).visibility).to.be.eq(EVisibility.PRIVATE);
     });
 
     it('not_being_able_to_retrieve_visibility', async function () {

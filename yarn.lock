@@ -1592,6 +1592,28 @@
   resolved "https://registry.yarnpkg.com/@types/sinonjs__fake-timers/-/sinonjs__fake-timers-8.1.1.tgz#b49c2c70150141a15e0fa7e79cf1f92a72934ce3"
   integrity sha512-0kSuKjAS0TrGLJ0M/+8MaFkGsQhZpB6pxOmvS3K8FYI72K//YmdfoW9X2qPsAKh1mkwxGD5zib9s1FIFed6E8g==
 
+"@types/ssh2-sftp-client@~7.0.0":
+  version "7.0.0"
+  resolved "https://rg.cnpmjs.org/@types/ssh2-sftp-client/download/@types/ssh2-sftp-client-7.0.0.tgz#0b4a7c7985c128c5392a8f03cba9e8aac32a9e90"
+  integrity sha1-C0p8eYXBKMU5Ko8Dy6noqsMqnpA=
+  dependencies:
+    "@types/ssh2" "*"
+
+"@types/ssh2-streams@*":
+  version "0.1.9"
+  resolved "https://rg.cnpmjs.org/@types/ssh2-streams/download/@types/ssh2-streams-0.1.9.tgz#8ca51b26f08750a780f82ee75ff18d7160c07a87"
+  integrity sha1-jKUbJvCHUKeA+C7nX/GNcWDAeoc=
+  dependencies:
+    "@types/node" "*"
+
+"@types/ssh2@*":
+  version "0.5.49"
+  resolved "https://rg.cnpmjs.org/@types/ssh2/download/@types/ssh2-0.5.49.tgz#40014f780e3b7e6e667503df414fc884089c76e4"
+  integrity sha512-ffxhQhJqgTzrw8NxHTgkaDtAmAj2qxCyoves7ztpRgqvzbHcZTpTcm+ATWuuCbPQzxnnF4F3SGGTLGEWTZpwqA==
+  dependencies:
+    "@types/node" "*"
+    "@types/ssh2-streams" "*"
+
 "@typescript-eslint/eslint-plugin@^4.6.0":
   version "4.33.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-4.33.0.tgz#c24dc7c8069c7706bc40d99f6fa87edcb2005276"
@@ -1984,7 +2006,7 @@ asap@^2.0.0:
   resolved "https://registry.yarnpkg.com/asap/-/asap-2.0.6.tgz#e50347611d7e690943208bbdafebcbc2fb866d46"
   integrity sha1-5QNHYR1+aQlDIIu9r+vLwvuGbUY=
 
-asn1@~0.2.3:
+asn1@^0.2.4, asn1@~0.2.3:
   version "0.2.6"
   resolved "https://registry.yarnpkg.com/asn1/-/asn1-0.2.6.tgz#0d3a7bb6e64e02a90c0303b31f292868ea09a08d"
   integrity sha512-ix/FxPn0MDjeyJ7i/yoHGFt/EX6LyNbxSEhPPXODPL+KB0VPk86UYfL0lMdy+KCnv+fmvIzySwaK5COwqVbWTQ==
@@ -2090,7 +2112,7 @@ basic-ftp@^4.6.3:
   resolved "https://registry.yarnpkg.com/basic-ftp/-/basic-ftp-4.6.6.tgz#c37abae3b3bffa131027adb6a5b60938d9109501"
   integrity sha512-5nTclY5mVxjeFoq9cBTzgQvcM1UfeGTd4hCCvb8AgC88wHMDQCD4UX5hZo2jaiSh96Nf+gFy1joNI9iH639bvQ==
 
-bcrypt-pbkdf@^1.0.0:
+bcrypt-pbkdf@^1.0.0, bcrypt-pbkdf@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/bcrypt-pbkdf/-/bcrypt-pbkdf-1.0.2.tgz#a4301d389b6a43f9b67ff3ca11a3f6637e360e9e"
   integrity sha1-pDAdOJtqQ/m2f/PKEaP2Y342Dp4=
@@ -2809,6 +2831,13 @@ cosmiconfig@^7.0.0:
     path-type "^4.0.0"
     yaml "^1.10.0"
 
+cpu-features@0.0.2:
+  version "0.0.2"
+  resolved "https://rg.cnpmjs.org/cpu-features/download/cpu-features-0.0.2.tgz#9f636156f1155fd04bdbaa028bb3c2fbef3cea7a"
+  integrity sha1-n2NhVvEVX9BL26oCi7PC++886no=
+  dependencies:
+    nan "^2.14.1"
+
 create-require@^1.1.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/create-require/-/create-require-1.1.1.tgz#c1d7e8f1e5f6cfc9ff65f9cd352d37348756c333"
@@ -3229,6 +3258,11 @@ err-code@^1.0.0:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/err-code/-/err-code-1.1.2.tgz#06e0116d3028f6aef4806849eb0ea6a748ae6960"
   integrity sha1-BuARbTAo9q70gGhJ6w6mp0iuaWA=
+
+err-code@^2.0.2:
+  version "2.0.3"
+  resolved "https://rg.cnpmjs.org/err-code/download/err-code-2.0.3.tgz#23c2f3b756ffdfc608d30e27c9a941024807e7f9"
+  integrity sha1-I8Lzt1b/38YI0w4nyalBAkgH5/k=
 
 error-ex@^1.2.0, error-ex@^1.3.1:
   version "1.3.2"
@@ -5821,6 +5855,11 @@ mz@^2.5.0, mz@^2.7.0:
     object-assign "^4.0.1"
     thenify-all "^1.0.0"
 
+nan@^2.14.1, nan@^2.15.0:
+  version "2.15.0"
+  resolved "https://rg.cnpmjs.org/nan/download/nan-2.15.0.tgz#3f34a473ff18e15c1b5626b62903b5ad6e665fee"
+  integrity sha1-PzSkc/8Y4VwbVia2KQO1rW5mX+4=
+
 nanoid@3.1.20:
   version "3.1.20"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.1.20.tgz#badc263c6b1dcf14b71efaa85f6ab4c1d6cfc788"
@@ -6687,6 +6726,14 @@ promise-retry@^1.1.1:
     err-code "^1.0.0"
     retry "^0.10.0"
 
+promise-retry@^2.0.1:
+  version "2.0.1"
+  resolved "https://rg.cnpmjs.org/promise-retry/download/promise-retry-2.0.1.tgz#ff747a13620ab57ba688f5fc67855410c370da22"
+  integrity sha1-/3R6E2IKtXumiPX8Z4VUEMNw2iI=
+  dependencies:
+    err-code "^2.0.2"
+    retry "^0.12.0"
+
 promzard@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/promzard/-/promzard-0.3.0.tgz#26a5d6ee8c7dee4cb12208305acfb93ba382a9ee"
@@ -7211,6 +7258,11 @@ retry@^0.10.0:
   resolved "https://registry.yarnpkg.com/retry/-/retry-0.10.1.tgz#e76388d217992c252750241d3d3956fed98d8ff4"
   integrity sha1-52OI0heZLCUnUCQdPTlW/tmNj/Q=
 
+retry@^0.12.0:
+  version "0.12.0"
+  resolved "https://rg.cnpmjs.org/retry/download/retry-0.12.0.tgz#1b42a6266a21f07421d1b0b54b7dc167b01c013b"
+  integrity sha1-G0KmJmoh8HQh0bC1S33BZ7AcATs=
+
 reusify@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/reusify/-/reusify-1.0.4.tgz#90da382b1e126efc02146e90845a88db12925d76"
@@ -7695,6 +7747,26 @@ sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw=
+
+ssh2-sftp-client@~7.2.0:
+  version "7.2.0"
+  resolved "https://rg.cnpmjs.org/ssh2-sftp-client/download/ssh2-sftp-client-7.2.0.tgz#819792dcb288f09424c6bf840988125ba39c3ab8"
+  integrity sha512-h850dHBeLuKfL9uTQ7y11p8QA687Sr057+Q1paB7dMuO4GDtNwxj/CPwJmvIM5BCzEuNrWf9CnMnIdC23TxzcA==
+  dependencies:
+    concat-stream "^2.0.0"
+    promise-retry "^2.0.1"
+    ssh2 "^1.5.0"
+
+ssh2@^1.5.0:
+  version "1.5.0"
+  resolved "https://rg.cnpmjs.org/ssh2/download/ssh2-1.5.0.tgz#4dc559ba98a1cbb420e8d42998dfe35d0eda92bc"
+  integrity sha1-TcVZupihy7Qg6NQpmN/jXQ7akrw=
+  dependencies:
+    asn1 "^0.2.4"
+    bcrypt-pbkdf "^1.0.2"
+  optionalDependencies:
+    cpu-features "0.0.2"
+    nan "^2.15.0"
 
 sshpk@^1.7.0:
   version "1.16.1"

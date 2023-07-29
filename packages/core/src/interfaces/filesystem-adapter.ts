@@ -1,5 +1,5 @@
 import { ReadStream } from 'fs';
-import { Visibility } from '../enum';
+import { EVisibility } from '../enum';
 import { FileAttributes, PathPrefixer } from '../libs';
 import { IStorageAttributes } from './storage-attributes.interface';
 import { RequireOne } from './types';
@@ -13,11 +13,11 @@ export interface IFilesystemVisibility {
   /**
    * file or directory default visibility
    */
-  [OPTION_VISIBILITY]?: Visibility | string;
+  [OPTION_VISIBILITY]?: EVisibility | string;
   /**
    * directory default visibility
    */
-  [OPTION_DIRECTORY_VISIBILITY]?: Visibility | string;
+  [OPTION_DIRECTORY_VISIBILITY]?: EVisibility | string;
 }
 
 /**
@@ -96,7 +96,7 @@ export interface IFilesystemAdapter {
    * @throws InvalidVisibilityProvided
    * @throws FilesystemException
    */
-  setVisibility(path: string, visibility: Visibility): Promise<void>;
+  setVisibility(path: string, visibility: EVisibility): Promise<void>;
 
   /**
    * @throws UnableToRetrieveMetadata

@@ -2,7 +2,8 @@ import { Stream } from 'stream';
 
 export interface IMimeTypeDetector {
   /**
-   * @param string|resource $contents
+   * @param path
+   * @param contents
    */
   detectMimeType(path: string, contents?: string | Buffer | Stream): Promise<string | void>;
 

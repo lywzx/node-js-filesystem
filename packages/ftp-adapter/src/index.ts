@@ -1,2 +1,2 @@
-export * from './libs/ftp-filesystem.adapter';
 export * from './interfaces';
+export * from './ftp-filesystem.adapter';

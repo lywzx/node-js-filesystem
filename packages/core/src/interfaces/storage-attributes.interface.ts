@@ -1,9 +1,9 @@
-import { FileType, Visibility } from '../enum';
+import { EFileType, EVisibility } from '../enum';
 
 export interface IStorageAttributes {
   path: string;
-  type: FileType;
-  visibility?: Visibility;
+  type: EFileType;
+  visibility?: EVisibility;
   lastModified?: number;
   size?: number;
   isFile: boolean;

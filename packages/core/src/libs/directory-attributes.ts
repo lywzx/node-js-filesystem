@@ -1,10 +1,10 @@
 import { IStorageAttributes } from '../interfaces';
-import { FileType, Visibility } from '../enum';
+import { EFileType, EVisibility } from '../enum';
 
 export class DirectoryAttributes implements IStorageAttributes {
   isDir = true;
   isFile = false;
-  type = FileType.file;
+  type = EFileType.file;
 
-  constructor(public path: string, public visibility?: Visibility, public lastModified?: number) {}
+  constructor(public path: string, public visibility?: EVisibility, public lastModified?: number) {}
 }
